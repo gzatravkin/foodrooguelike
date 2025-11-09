@@ -77,7 +77,7 @@ export class GameScreen {
       this.svgsLoaded = true;
     } catch (error) {
       console.error('Failed to preload SVG assets:', error);
-      this.svgsLoaded = true; // Continue anyway, will fall back to shapes
+      throw error; // No fallbacks - game must have SVG assets
     }
   }
 
@@ -183,8 +183,8 @@ export class GameScreen {
       );
       enemy.update(deltaTime);
 
-      // Enemy attack player
-      if (enemy.canAttack()) {
+      // Enemy attack player (but not if player is dashing)
+      if (enemy.canAttack() && !this.player.isDashing) {
         if (enemy.isRangedWeapon()) {
           // Spawn projectile
           this.spawnEnemyProjectile(enemy);
@@ -263,8 +263,8 @@ export class GameScreen {
           }
         }
       } else {
-        // Enemy projectiles hit player
-        if (this.player.alive && proj.checkCollision(this.player.x, this.player.y, this.player.size)) {
+        // Enemy projectiles hit player (but not if dashing)
+        if (this.player.alive && !this.player.isDashing && proj.checkCollision(this.player.x, this.player.y, this.player.size)) {
           this.player.takeDamage(proj.damage);
           proj.alive = false;
         }
@@ -336,21 +336,42 @@ export class GameScreen {
   private handlePlayerMovement(deltaTime: number): void {
     const movement = this.input.getMovementVector();
 
-    if (movement.x !== 0 || movement.y !== 0) {
-      // Calculate new position
-      const newX = this.player.x + movement.x * this.player.stats.speed * deltaTime;
-      const newY = this.player.y + movement.y * this.player.stats.speed * deltaTime;
+    // Handle dash input (Shift key)
+    if ((this.input.isKeyPressed('Shift') || this.input.isKeyPressed('ShiftLeft') || this.input.isKeyPressed('ShiftRight')) &&
+        movement.x !== 0 || movement.y !== 0) {
+      if (this.player.canDash()) {
+        this.player.dash(movement.x, movement.y);
+      }
+    }
 
-      // Check collision with map
+    if (movement.x !== 0 || movement.y !== 0) {
+      // Calculate new position (considering dash speed)
+      const speed = this.player.isDashing ? this.player.stats.speed * 3 : this.player.stats.speed;
+      const dx = this.player.isDashing ? this.player.dashDirection.x : movement.x;
+      const dy = this.player.isDashing ? this.player.dashDirection.y : movement.y;
+
+      const newX = this.player.x + dx * speed * deltaTime;
+      const newY = this.player.y + dy * speed * deltaTime;
+
+      // Check collision with map (dashing can go through slightly)
       if (this.mapSystem.canMoveTo(newX, newY, this.player.size)) {
-        this.player.move(movement.x, movement.y, deltaTime);
-      } else {
-        // Try moving in just X or Y
+        this.player.move(dx, dy, deltaTime);
+      } else if (!this.player.isDashing) {
+        // Try moving in just X or Y (only if not dashing)
         if (this.mapSystem.canMoveTo(newX, this.player.y, this.player.size)) {
           this.player.move(movement.x, 0, deltaTime);
         } else if (this.mapSystem.canMoveTo(this.player.x, newY, this.player.size)) {
           this.player.move(0, movement.y, deltaTime);
         }
+      }
+    } else if (this.player.isDashing) {
+      // Continue dashing even if no input
+      const dashSpeed = this.player.stats.speed * 3;
+      const newX = this.player.x + this.player.dashDirection.x * dashSpeed * deltaTime;
+      const newY = this.player.y + this.player.dashDirection.y * dashSpeed * deltaTime;
+
+      if (this.mapSystem.canMoveTo(newX, newY, this.player.size)) {
+        this.player.move(this.player.dashDirection.x, this.player.dashDirection.y, deltaTime);
       }
     }
   }
@@ -495,30 +516,19 @@ export class GameScreen {
     for (const enemy of this.enemies) {
       if (!enemy.alive) continue;
 
-      // Use SVG art if loaded, otherwise fall back to circles
-      if (this.svgsLoaded) {
-        const spriteKey = enemy.enemyData.id;
-        const spriteSize = enemy.size * 1.5; // Make sprites slightly larger than hitbox
-        this.renderer.drawCachedSVG(spriteKey, enemy.x, enemy.y, spriteSize, spriteSize, enemy.facingAngle);
+      // Render enemy sprite without rotation
+      const spriteKey = enemy.enemyData.id;
+      const spriteSize = enemy.size * 1.5;
+      this.renderer.drawCachedSVG(spriteKey, enemy.x, enemy.y, spriteSize, spriteSize, 0);
 
-        // Draw weapon indicator for ranged enemies
-        if (enemy.isRangedWeapon()) {
-          const gunLength = 10;
-          const endX = enemy.x + Math.cos(enemy.facingAngle) * gunLength;
-          const endY = enemy.y + Math.sin(enemy.facingAngle) * gunLength;
-          this.renderer.drawLine(enemy.x, enemy.y, endX, endY, '#333', 2);
-        }
-      } else {
-        // Fallback to simple circle
-        this.renderer.drawCircleWithBorder(enemy.x, enemy.y, enemy.size / 2, enemy.color, '#000', 2);
-
-        // Draw weapon indicator
-        if (enemy.isRangedWeapon()) {
-          const gunLength = 8;
-          const endX = enemy.x + Math.cos(enemy.facingAngle) * gunLength;
-          const endY = enemy.y + Math.sin(enemy.facingAngle) * gunLength;
-          this.renderer.drawLine(enemy.x, enemy.y, endX, endY, '#333', 3);
-        }
+      // Draw weapon indicator for ranged enemies
+      if (enemy.isRangedWeapon()) {
+        const gunLength = 15;
+        const endX = enemy.x + Math.cos(enemy.facingAngle) * gunLength;
+        const endY = enemy.y + Math.sin(enemy.facingAngle) * gunLength;
+        this.renderer.drawLine(enemy.x, enemy.y, endX, endY, '#FF5722', 3);
+        // Draw muzzle
+        this.renderer.drawCircle(endX, endY, 2, '#FFD700');
       }
 
       // Draw health bar
@@ -527,59 +537,60 @@ export class GameScreen {
 
     // Render projectiles
     for (const proj of this.projectiles) {
-      if (this.svgsLoaded) {
-        // Use bullet SVG for all projectiles (can be enhanced later)
-        const projSize = proj.size * 2;
-        const angle = Math.atan2(proj.vy, proj.vx);
-        this.renderer.drawCachedSVG('bullet', proj.x, proj.y, projSize, projSize, angle);
-      } else {
-        // Fallback to circle
-        this.renderer.drawCircle(proj.x, proj.y, proj.size, proj.color);
+      // Render projectile with glowing effect
+      const projSize = proj.size * 3;
+      const angle = Math.atan2(proj.vy, proj.vx);
 
-        // Draw trail effect
-        const trailLength = 10;
-        const trailX = proj.x - (proj.vx / Math.abs(proj.vx + proj.vy)) * trailLength;
-        const trailY = proj.y - (proj.vy / Math.abs(proj.vx + proj.vy)) * trailLength;
-        this.renderer.drawLine(trailX, trailY, proj.x, proj.y, proj.color, 2);
+      // Draw glow
+      this.renderer.drawCircle(proj.x, proj.y, projSize, 'rgba(255, 215, 0, 0.3)');
+      // Draw bullet
+      this.renderer.drawCircle(proj.x, proj.y, proj.size, proj.color);
+
+      // Draw trail
+      const trailLength = 15;
+      const speed = Math.sqrt(proj.vx * proj.vx + proj.vy * proj.vy);
+      const normalizedVx = proj.vx / speed;
+      const normalizedVy = proj.vy / speed;
+      const trailX = proj.x - normalizedVx * trailLength;
+      const trailY = proj.y - normalizedVy * trailLength;
+      this.renderer.drawLine(trailX, trailY, proj.x, proj.y, proj.color, 3);
+    }
+
+    // Draw dash trail effect
+    if (this.player.isDashing) {
+      for (let i = 1; i <= 5; i++) {
+        const trailX = this.player.x - this.player.dashDirection.x * i * 10;
+        const trailY = this.player.y - this.player.dashDirection.y * i * 10;
+        const opacity = (6 - i) * 0.15;
+        this.renderer.drawCircle(trailX, trailY, this.player.size / 2, `rgba(76, 175, 80, ${opacity})`);
       }
     }
 
-    // Render player
-    if (this.svgsLoaded) {
-      const playerSize = this.player.size * 1.5;
-      this.renderer.drawCachedSVG('player', this.player.x, this.player.y, playerSize, playerSize, this.player.facingAngle);
+    // Render player without rotation
+    const playerSize = this.player.size * 1.5;
+    this.renderer.drawCachedSVG('player', this.player.x, this.player.y, playerSize, playerSize, 0);
 
-      // Draw weapon indicator
-      if (this.player.isRangedWeapon()) {
-        const gunLength = 15;
-        const endX = this.player.x + Math.cos(this.player.facingAngle) * gunLength;
-        const endY = this.player.y + Math.sin(this.player.facingAngle) * gunLength;
-        this.renderer.drawLine(this.player.x, this.player.y, endX, endY, '#FFD700', 3);
-      } else {
-        // Draw melee weapon indicator
-        const angle = this.player.facingAngle;
-        const indicatorLength = this.player.size / 2 + 8;
-        const endX = this.player.x + Math.cos(angle) * indicatorLength;
-        const endY = this.player.y + Math.sin(angle) * indicatorLength;
-        this.renderer.drawLine(this.player.x, this.player.y, endX, endY, '#fff', 3);
-      }
+    // Draw glow effect when dashing
+    if (this.player.isDashing) {
+      this.renderer.drawCircle(this.player.x, this.player.y, playerSize * 0.8, 'rgba(76, 175, 80, 0.4)');
+    }
+
+    // Draw weapon indicator
+    if (this.player.isRangedWeapon()) {
+      const gunLength = 18;
+      const endX = this.player.x + Math.cos(this.player.facingAngle) * gunLength;
+      const endY = this.player.y + Math.sin(this.player.facingAngle) * gunLength;
+      this.renderer.drawLine(this.player.x, this.player.y, endX, endY, '#FFD700', 4);
+      // Draw muzzle
+      this.renderer.drawCircle(endX, endY, 2.5, '#FF5722');
     } else {
-      // Fallback to circle
-      this.renderer.drawCircleWithBorder(this.player.x, this.player.y, this.player.size / 2, this.player.color, '#000', 2);
-
-      // Draw player facing indicator / weapon
-      if (this.player.isRangedWeapon()) {
-        const gunLength = 12;
-        const endX = this.player.x + Math.cos(this.player.facingAngle) * gunLength;
-        const endY = this.player.y + Math.sin(this.player.facingAngle) * gunLength;
-        this.renderer.drawLine(this.player.x, this.player.y, endX, endY, '#FFD700', 3);
-      } else {
-        const angle = this.player.facingAngle;
-        const indicatorLength = this.player.size / 2 + 5;
-        const endX = this.player.x + Math.cos(angle) * indicatorLength;
-        const endY = this.player.y + Math.sin(angle) * indicatorLength;
-        this.renderer.drawLine(this.player.x, this.player.y, endX, endY, '#fff', 2);
-      }
+      // Draw melee weapon indicator
+      const angle = this.player.facingAngle;
+      const indicatorLength = this.player.size / 2 + 10;
+      const endX = this.player.x + Math.cos(angle) * indicatorLength;
+      const endY = this.player.y + Math.sin(angle) * indicatorLength;
+      this.renderer.drawLine(this.player.x, this.player.y, endX, endY, '#E0E0E0', 4);
+      this.renderer.drawCircle(endX, endY, 3, '#FFF');
     }
 
     // Draw player attack visualization
@@ -599,12 +610,86 @@ export class GameScreen {
     for (let y = 0; y < map.height; y++) {
       for (let x = 0; x < map.width; x++) {
         const tileType = map.tiles[y][x];
-        const color = this.mapSystem.getTileColor(tileType);
-
         const worldX = x * map.tileSize;
         const worldY = y * map.tileSize;
+        const size = map.tileSize;
 
-        this.renderer.drawTileWithBorder(worldX, worldY, map.tileSize, color, '#111');
+        // Render tiles with enhanced graphics
+        if (tileType === 0) { // FLOOR
+          // Base floor
+          this.renderer.drawRect(worldX, worldY, size, size, '#1a1a1a');
+
+          // Add stone texture pattern
+          const seed = x * 7 + y * 13; // Pseudo-random based on position
+          if (seed % 5 === 0) {
+            this.renderer.drawCircle(worldX + size * 0.3, worldY + size * 0.3, 1, 'rgba(255, 255, 255, 0.05)');
+          }
+          if (seed % 7 === 0) {
+            this.renderer.drawCircle(worldX + size * 0.7, worldY + size * 0.6, 1.5, 'rgba(0, 0, 0, 0.1)');
+          }
+
+          // Tile lines
+          this.renderer.drawLine(worldX, worldY, worldX + size, worldY, '#0a0a0a', 1);
+          this.renderer.drawLine(worldX, worldY, worldX, worldY + size, '#0a0a0a', 1);
+
+        } else if (tileType === 1) { // WALL
+          // Base wall with gradient effect
+          this.renderer.drawRect(worldX, worldY, size, size, '#3a3a3a');
+
+          // Top highlight (3D effect)
+          this.renderer.drawRect(worldX, worldY, size, size * 0.2, 'rgba(70, 70, 70, 0.8)');
+
+          // Bottom shadow
+          this.renderer.drawRect(worldX, worldY + size * 0.8, size, size * 0.2, 'rgba(20, 20, 20, 0.8)');
+
+          // Brick pattern
+          const brickWidth = size / 2;
+          const brickHeight = size / 3;
+          const offsetX = y % 2 === 0 ? 0 : brickWidth / 2;
+
+          for (let by = 0; by < 3; by++) {
+            for (let bx = 0; bx < 2; bx++) {
+              const brickX = worldX + bx * brickWidth + offsetX;
+              const brickY = worldY + by * brickHeight;
+
+              // Only draw if brick is within tile
+              if (brickX >= worldX && brickX + brickWidth <= worldX + size) {
+                this.renderer.drawLine(brickX, brickY, brickX + brickWidth, brickY, '#2a2a2a', 0.5);
+                this.renderer.drawLine(brickX, brickY, brickX, brickY + brickHeight, '#2a2a2a', 0.5);
+              }
+            }
+          }
+
+          // Border
+          this.renderer.drawLine(worldX + size, worldY, worldX + size, worldY + size, '#1a1a1a', 2);
+          this.renderer.drawLine(worldX, worldY + size, worldX + size, worldY + size, '#1a1a1a', 2);
+
+        } else if (tileType === 2) { // DOOR
+          this.renderer.drawRect(worldX, worldY, size, size, '#654321');
+          this.renderer.drawRect(worldX + size * 0.2, worldY + size * 0.1, size * 0.6, size * 0.8, '#8b6f47');
+          this.renderer.drawCircle(worldX + size * 0.7, worldY + size * 0.5, 2, '#FFD700');
+
+        } else if (tileType === 3) { // COOKING_STATION
+          this.renderer.drawRect(worldX, worldY, size, size, '#1a1a1a');
+          this.renderer.drawRect(worldX + size * 0.2, worldY + size * 0.2, size * 0.6, size * 0.6, '#ff6b35');
+          this.renderer.drawCircle(worldX + size / 2, worldY + size / 2, size * 0.2, '#ff9f5e');
+
+        } else if (tileType === 4) { // SHOP
+          this.renderer.drawRect(worldX, worldY, size, size, '#1a1a1a');
+          this.renderer.drawRect(worldX + size * 0.2, worldY + size * 0.2, size * 0.6, size * 0.6, '#4ecdc4');
+          this.renderer.drawText('$', worldX + size / 2, worldY + size / 2 + 5, '#FFD700', 16, 'center');
+
+        } else if (tileType === 5) { // EXPEDITION_PORTAL
+          this.renderer.drawRect(worldX, worldY, size, size, '#1a1a1a');
+          this.renderer.drawCircle(worldX + size / 2, worldY + size / 2, size * 0.4, '#9b59b6');
+          this.renderer.drawCircle(worldX + size / 2, worldY + size / 2, size * 0.25, '#bb79d6');
+          this.renderer.drawCircle(worldX + size / 2, worldY + size / 2, size * 0.1, '#e0aaff');
+
+        } else {
+          // Default
+          const color = this.mapSystem.getTileColor(tileType);
+          this.renderer.drawRect(worldX, worldY, size, size, color);
+        }
       }
     }
   }
@@ -613,7 +698,7 @@ export class GameScreen {
     const canvas = this.renderer.getCanvas();
 
     // Draw player stats (top-left)
-    this.renderer.drawUIRectWithBorder(10, 10, 300, 120, 'rgba(0, 0, 0, 0.7)', '#4CAF50', 2);
+    this.renderer.drawUIRectWithBorder(10, 10, 300, 150, 'rgba(0, 0, 0, 0.7)', '#4CAF50', 2);
 
     this.renderer.drawUIText(`HP: ${this.player.stats.health}/${this.player.stats.maxHealth}`, 20, 35, '#fff', 18);
     this.renderer.drawUIText(`Gold: ${this.player.gold}`, 20, 60, '#FFD700', 18);
@@ -623,16 +708,31 @@ export class GameScreen {
     const weaponType = this.player.isRangedWeapon() ? '🔫' : '⚔️';
     this.renderer.drawUIText(`${weaponType} ${weaponName}`, 20, 110, '#FFD700', 16);
 
+    // Dash cooldown indicator
+    const dashCooldownPercent = Math.max(0, this.player.dashCooldown / 1.0);
+    const dashColor = this.player.canDash() ? '#4CAF50' : '#666';
+    this.renderer.drawUIText('💨 Dash:', 20, 135, dashColor, 14);
+    // Dash cooldown bar
+    const dashBarWidth = 80;
+    this.renderer.drawUIRect(100, 123, dashBarWidth, 14, '#222');
+    if (!this.player.canDash()) {
+      const fillWidth = dashBarWidth * (1 - dashCooldownPercent);
+      this.renderer.drawUIRect(100, 123, fillWidth, 14, '#4CAF50');
+    } else {
+      this.renderer.drawUIRect(100, 123, dashBarWidth, 14, '#4CAF50');
+    }
+
     // Draw mode indicator
     this.renderer.drawUIText(this.mode === 'base' ? 'BASE CAMP' : 'EXPEDITION', canvas.width / 2, 30, '#fff', 24, 'center');
 
     // Draw controls (bottom-left)
-    this.renderer.drawUIRectWithBorder(10, canvas.height - 130, 320, 120, 'rgba(0, 0, 0, 0.7)', '#fff', 2);
-    this.renderer.drawUIText('WASD/Arrows: Move', 20, canvas.height - 105, '#fff', 14);
-    this.renderer.drawUIText('Space/Click: Attack', 20, canvas.height - 85, '#fff', 14);
-    this.renderer.drawUIText('E: Interact | F: Loot', 20, canvas.height - 65, '#fff', 14);
-    this.renderer.drawUIText('ESC: Menu', 20, canvas.height - 45, '#fff', 14);
-    this.renderer.drawUIText('🎯 Aim: Mouse/Movement', 20, canvas.height - 25, '#fff', 14);
+    this.renderer.drawUIRectWithBorder(10, canvas.height - 155, 320, 145, 'rgba(0, 0, 0, 0.7)', '#fff', 2);
+    this.renderer.drawUIText('WASD/Arrows: Move', 20, canvas.height - 130, '#fff', 14);
+    this.renderer.drawUIText('Shift: Dash (dodge)', 20, canvas.height - 110, '#4CAF50', 14);
+    this.renderer.drawUIText('Space/Click: Attack', 20, canvas.height - 90, '#fff', 14);
+    this.renderer.drawUIText('E: Interact | F: Loot', 20, canvas.height - 70, '#fff', 14);
+    this.renderer.drawUIText('ESC: Menu', 20, canvas.height - 50, '#fff', 14);
+    this.renderer.drawUIText('🎯 Aim: Mouse/Movement', 20, canvas.height - 30, '#fff', 14);
 
     // Draw interaction prompt
     if (this.showInteractionPrompt) {

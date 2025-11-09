@@ -11,6 +11,10 @@ export class Player extends Entity {
   public gold: number = 100;
   public attackCooldown: number = 0;
   public facingAngle: number = 0; // Direction player is facing
+  public dashCooldown: number = 0;
+  public dashDuration: number = 0;
+  public dashDirection: { x: number; y: number } = { x: 0, y: 0 };
+  public isDashing: boolean = false;
 
   constructor(x: number, y: number, initialWeapon?: Weapon) {
     const stats: EntityStats = {
@@ -30,9 +34,30 @@ export class Player extends Entity {
     if (this.attackCooldown > 0) {
       this.attackCooldown -= deltaTime;
     }
+
+    // Update dash cooldown
+    if (this.dashCooldown > 0) {
+      this.dashCooldown -= deltaTime;
+    }
+
+    // Update dash duration
+    if (this.dashDuration > 0) {
+      this.dashDuration -= deltaTime;
+      this.isDashing = true;
+    } else {
+      this.isDashing = false;
+    }
   }
 
   move(dx: number, dy: number, deltaTime: number): void {
+    // If dashing, use dash direction and speed
+    if (this.isDashing) {
+      const dashSpeed = this.stats.speed * 3; // 3x speed during dash
+      this.x += this.dashDirection.x * dashSpeed * deltaTime;
+      this.y += this.dashDirection.y * dashSpeed * deltaTime;
+      return;
+    }
+
     // Update facing direction
     if (dx !== 0 || dy !== 0) {
       this.facingAngle = Math.atan2(dy, dx);
@@ -41,6 +66,27 @@ export class Player extends Entity {
     // Move based on speed
     this.x += dx * this.stats.speed * deltaTime;
     this.y += dy * this.stats.speed * deltaTime;
+  }
+
+  canDash(): boolean {
+    return this.dashCooldown <= 0 && !this.isDashing;
+  }
+
+  dash(dx: number, dy: number): void {
+    if (!this.canDash()) return;
+
+    // Normalize direction
+    const magnitude = Math.sqrt(dx * dx + dy * dy);
+    if (magnitude === 0) return;
+
+    this.dashDirection = {
+      x: dx / magnitude,
+      y: dy / magnitude,
+    };
+
+    this.dashDuration = 0.15; // Dash lasts 0.15 seconds
+    this.dashCooldown = 1.0; // 1 second cooldown
+    this.isDashing = true;
   }
 
   canAttack(): boolean {

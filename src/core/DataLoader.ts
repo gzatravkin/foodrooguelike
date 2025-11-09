@@ -8,6 +8,7 @@ import enemiesData from '../data/enemies.json';
 import ingredientsData from '../data/ingredients.json';
 import cookingMethodsData from '../data/cookingMethods.json';
 import equipmentData from '../data/equipment.json';
+import weaponsData from '../data/weapons.json';
 
 export class DataLoader {
     async loadAll(): Promise<void> {
@@ -17,6 +18,7 @@ export class DataLoader {
             entityFactory.registerTemplates(ingredientsData);
             entityFactory.registerTemplates(cookingMethodsData);
             entityFactory.registerTemplates(equipmentData);
+            entityFactory.registerTemplates(weaponsData);
 
             console.log('All game data loaded successfully');
         } catch (error) {

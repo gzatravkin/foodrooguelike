@@ -3,18 +3,19 @@
  */
 
 import { Entity, EntityType, EntityStats } from './Entity';
-import { Enemy as EnemyData } from './types';
+import { Enemy as EnemyData, Weapon } from './types';
 
 export class Enemy extends Entity {
   public enemyData: EnemyData;
+  public weapon: Weapon | null = null;
   public aiState: 'idle' | 'chase' | 'attack' = 'idle';
   public attackCooldown: number = 0;
-  public attackRange: number = 30;
   public chaseRange: number = 200;
   public targetX: number = 0;
   public targetY: number = 0;
+  public facingAngle: number = 0;
 
-  constructor(x: number, y: number, enemyData: EnemyData) {
+  constructor(x: number, y: number, enemyData: EnemyData, weapon: Weapon | null = null) {
     const stats: EntityStats = {
       maxHealth: enemyData.health,
       health: enemyData.health,
@@ -25,6 +26,7 @@ export class Enemy extends Entity {
 
     super(EntityType.ENEMY, x, y, 20, stats, '#F44336');
     this.enemyData = enemyData;
+    this.weapon = weapon;
   }
 
   update(deltaTime: number): void {
@@ -39,8 +41,12 @@ export class Enemy extends Entity {
     const dy = playerY - this.y;
     const distanceToPlayer = Math.sqrt(dx * dx + dy * dy);
 
+    // Update facing angle towards player
+    this.facingAngle = Math.atan2(dy, dx);
+
     // State machine
-    if (distanceToPlayer <= this.attackRange) {
+    const attackRange = this.getAttackRange();
+    if (distanceToPlayer <= attackRange) {
       this.aiState = 'attack';
     } else if (distanceToPlayer <= this.chaseRange) {
       this.aiState = 'chase';
@@ -84,7 +90,12 @@ export class Enemy extends Entity {
   private attackPlayer(): void {
     if (this.attackCooldown > 0) return;
 
-    this.attackCooldown = 1.0; // 1 attack per second
+    // Set cooldown based on weapon
+    if (this.weapon) {
+      this.attackCooldown = this.weapon.attackSpeed;
+    } else {
+      this.attackCooldown = 1.0;
+    }
   }
 
   canAttack(): boolean {
@@ -92,7 +103,39 @@ export class Enemy extends Entity {
   }
 
   getAttackDamage(): number {
+    if (this.weapon) {
+      return this.stats.attack + this.weapon.damage;
+    }
     return this.stats.attack;
+  }
+
+  getAttackRange(): number {
+    return this.weapon?.range || 30;
+  }
+
+  isRangedWeapon(): boolean {
+    return this.weapon?.weaponType === 'ranged';
+  }
+
+  getProjectileSpeed(): number {
+    return this.weapon?.projectileSpeed || 0;
+  }
+
+  getPelletCount(): number {
+    return this.weapon?.pelletCount || 1;
+  }
+
+  getSpread(): number {
+    return this.weapon?.spread || 0;
+  }
+
+  // Get projectile spawn position
+  getProjectileSpawn(): { x: number; y: number } {
+    const offsetDistance = this.size / 2 + 5;
+    return {
+      x: this.x + Math.cos(this.facingAngle) * offsetDistance,
+      y: this.y + Math.sin(this.facingAngle) * offsetDistance,
+    };
   }
 
   // Get loot drops when defeated

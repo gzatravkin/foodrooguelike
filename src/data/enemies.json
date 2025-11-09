@@ -42,5 +42,169 @@
       { "itemId": "fire_pepper", "chance": 0.6 },
       { "itemId": "premium_meat", "chance": 0.8 }
     ]
+  },
+  "rat": {
+    "id": "rat",
+    "type": "enemy",
+    "name": "Giant Rat",
+    "description": "A diseased rodent lurking in the shadows",
+    "health": 20,
+    "attack": 3,
+    "defense": 1,
+    "goldReward": 5,
+    "lootTable": [
+      { "itemId": "meat", "chance": 0.5 },
+      { "itemId": "herb", "chance": 0.3 }
+    ]
+  },
+  "bat": {
+    "id": "bat",
+    "type": "enemy",
+    "name": "Cave Bat",
+    "description": "A swift creature of the night",
+    "health": 25,
+    "attack": 6,
+    "defense": 1,
+    "goldReward": 8,
+    "lootTable": [
+      { "itemId": "jelly", "chance": 0.4 },
+      { "itemId": "mushroom", "chance": 0.6 }
+    ]
+  },
+  "skeleton": {
+    "id": "skeleton",
+    "type": "enemy",
+    "name": "Skeleton Warrior",
+    "description": "Animated bones wielding rusty weapons",
+    "health": 40,
+    "attack": 7,
+    "defense": 4,
+    "goldReward": 15,
+    "lootTable": [
+      { "itemId": "mushroom", "chance": 0.8 },
+      { "itemId": "herb", "chance": 0.6 },
+      { "itemId": "sugar", "chance": 0.4 }
+    ]
+  },
+  "orc": {
+    "id": "orc",
+    "type": "enemy",
+    "name": "Orc Brute",
+    "description": "A massive warrior with brutal strength",
+    "health": 60,
+    "attack": 12,
+    "defense": 5,
+    "goldReward": 30,
+    "lootTable": [
+      { "itemId": "meat", "chance": 0.9 },
+      { "itemId": "premium_meat", "chance": 0.3 },
+      { "itemId": "herb", "chance": 0.7 }
+    ]
+  },
+  "troll": {
+    "id": "troll",
+    "type": "enemy",
+    "name": "Forest Troll",
+    "description": "A regenerating monster with thick hide",
+    "health": 80,
+    "attack": 10,
+    "defense": 10,
+    "goldReward": 40,
+    "lootTable": [
+      { "itemId": "mushroom", "chance": 0.95 },
+      { "itemId": "meat", "chance": 0.8 },
+      { "itemId": "herb", "chance": 0.9 }
+    ]
+  },
+  "ice_golem": {
+    "id": "ice_golem",
+    "type": "enemy",
+    "name": "Ice Golem",
+    "description": "A frozen construct of magical ice (Boss)",
+    "health": 120,
+    "attack": 12,
+    "defense": 12,
+    "goldReward": 80,
+    "lootTable": [
+      { "itemId": "dragon_fruit", "chance": 0.7 },
+      { "itemId": "sugar", "chance": 0.9 },
+      { "itemId": "jelly", "chance": 0.95 }
+    ]
+  },
+  "fire_elemental": {
+    "id": "fire_elemental",
+    "type": "enemy",
+    "name": "Fire Elemental",
+    "description": "A being of pure flame and fury (Boss)",
+    "health": 90,
+    "attack": 18,
+    "defense": 6,
+    "goldReward": 90,
+    "lootTable": [
+      { "itemId": "fire_pepper", "chance": 0.95 },
+      { "itemId": "dragon_fruit", "chance": 0.5 },
+      { "itemId": "premium_meat", "chance": 0.4 }
+    ]
+  },
+  "spider": {
+    "id": "spider",
+    "type": "enemy",
+    "name": "Giant Spider",
+    "description": "A venomous arachnid with poisonous fangs",
+    "health": 45,
+    "attack": 9,
+    "defense": 3,
+    "goldReward": 25,
+    "lootTable": [
+      { "itemId": "jelly", "chance": 0.7 },
+      { "itemId": "mushroom", "chance": 0.8 },
+      { "itemId": "herb", "chance": 0.5 }
+    ]
+  },
+  "wolf": {
+    "id": "wolf",
+    "type": "enemy",
+    "name": "Dire Wolf",
+    "description": "A fierce predator that hunts in packs",
+    "health": 55,
+    "attack": 11,
+    "defense": 4,
+    "goldReward": 28,
+    "lootTable": [
+      { "itemId": "meat", "chance": 0.95 },
+      { "itemId": "premium_meat", "chance": 0.4 },
+      { "itemId": "herb", "chance": 0.6 }
+    ]
+  },
+  "giant_crab": {
+    "id": "giant_crab",
+    "type": "enemy",
+    "name": "Giant Crab",
+    "description": "An armored crustacean with powerful claws",
+    "health": 70,
+    "attack": 10,
+    "defense": 9,
+    "goldReward": 35,
+    "lootTable": [
+      { "itemId": "premium_meat", "chance": 0.7 },
+      { "itemId": "meat", "chance": 0.9 },
+      { "itemId": "sugar", "chance": 0.5 }
+    ]
+  },
+  "demon_lord": {
+    "id": "demon_lord",
+    "type": "enemy",
+    "name": "Demon Lord",
+    "description": "An ancient evil of unfathomable power (Ultimate Boss)",
+    "health": 150,
+    "attack": 20,
+    "defense": 10,
+    "goldReward": 150,
+    "lootTable": [
+      { "itemId": "dragon_fruit", "chance": 0.95 },
+      { "itemId": "fire_pepper", "chance": 0.9 },
+      { "itemId": "premium_meat", "chance": 0.95 },
+      { "itemId": "meat", "chance": 1.0 }
+    ]
   }
 }

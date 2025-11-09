@@ -8,10 +8,10 @@
     "attack": 5,
     "defense": 2,
     "weaponId": "fists",
-    "goldReward": 10,
     "lootTable": [
-      { "itemId": "jelly", "chance": 0.8 },
-      { "itemId": "sugar", "chance": 0.3 }
+      { "itemId": "jelly", "chance": 0.9 },
+      { "itemId": "sugar", "chance": 0.5 },
+      { "itemId": "salt", "chance": 0.3 }
     ]
   },
   "goblin": {
@@ -23,11 +23,12 @@
     "attack": 8,
     "defense": 3,
     "weaponId": "crossbow",
-    "goldReward": 20,
     "lootTable": [
-      { "itemId": "mushroom", "chance": 0.7 },
-      { "itemId": "herb", "chance": 0.5 },
-      { "itemId": "meat", "chance": 0.4 }
+      { "itemId": "mushroom", "chance": 0.8 },
+      { "itemId": "herb", "chance": 0.6 },
+      { "itemId": "meat", "chance": 0.5 },
+      { "itemId": "onion", "chance": 0.4 },
+      { "itemId": "garlic", "chance": 0.3 }
     ]
   },
   "dragon": {
@@ -39,11 +40,12 @@
     "attack": 15,
     "defense": 8,
     "weaponId": "dragon_breath",
-    "goldReward": 100,
     "lootTable": [
-      { "itemId": "dragon_fruit", "chance": 0.9 },
-      { "itemId": "fire_pepper", "chance": 0.6 },
-      { "itemId": "premium_meat", "chance": 0.8 }
+      { "itemId": "dragon_fruit", "chance": 0.95 },
+      { "itemId": "fire_pepper", "chance": 0.8 },
+      { "itemId": "premium_meat", "chance": 0.9 },
+      { "itemId": "phoenix_egg", "chance": 0.3 },
+      { "itemId": "spice_blend", "chance": 0.5 }
     ]
   },
   "rat": {
@@ -55,10 +57,11 @@
     "attack": 3,
     "defense": 1,
     "weaponId": "fists",
-    "goldReward": 8,
     "lootTable": [
-      { "itemId": "meat", "chance": 0.5 },
-      { "itemId": "herb", "chance": 0.3 }
+      { "itemId": "meat", "chance": 0.6 },
+      { "itemId": "herb", "chance": 0.4 },
+      { "itemId": "flour", "chance": 0.5 },
+      { "itemId": "rice", "chance": 0.4 }
     ]
   },
   "bat": {
@@ -70,10 +73,10 @@
     "attack": 6,
     "defense": 1,
     "weaponId": "fists",
-    "goldReward": 10,
     "lootTable": [
-      { "itemId": "jelly", "chance": 0.4 },
-      { "itemId": "mushroom", "chance": 0.6 }
+      { "itemId": "jelly", "chance": 0.5 },
+      { "itemId": "mushroom", "chance": 0.7 },
+      { "itemId": "egg", "chance": 0.4 }
     ]
   },
   "skeleton": {
@@ -85,11 +88,11 @@
     "attack": 7,
     "defense": 4,
     "weaponId": "rusty_sword",
-    "goldReward": 15,
     "lootTable": [
-      { "itemId": "mushroom", "chance": 0.8 },
-      { "itemId": "herb", "chance": 0.6 },
-      { "itemId": "sugar", "chance": 0.4 }
+      { "itemId": "mushroom", "chance": 0.9 },
+      { "itemId": "herb", "chance": 0.7 },
+      { "itemId": "sugar", "chance": 0.5 },
+      { "itemId": "ancient_grain", "chance": 0.2 }
     ]
   },
   "orc": {
@@ -101,11 +104,12 @@
     "attack": 12,
     "defense": 5,
     "weaponId": "iron_sword",
-    "goldReward": 30,
     "lootTable": [
-      { "itemId": "meat", "chance": 0.9 },
-      { "itemId": "premium_meat", "chance": 0.3 },
-      { "itemId": "herb", "chance": 0.7 }
+      { "itemId": "meat", "chance": 0.95 },
+      { "itemId": "premium_meat", "chance": 0.4 },
+      { "itemId": "herb", "chance": 0.8 },
+      { "itemId": "onion", "chance": 0.6 },
+      { "itemId": "garlic", "chance": 0.5 }
     ]
   },
   "troll": {
@@ -117,11 +121,12 @@
     "attack": 10,
     "defense": 10,
     "weaponId": "fists",
-    "goldReward": 40,
     "lootTable": [
       { "itemId": "mushroom", "chance": 0.95 },
-      { "itemId": "meat", "chance": 0.8 },
-      { "itemId": "herb", "chance": 0.9 }
+      { "itemId": "meat", "chance": 0.9 },
+      { "itemId": "herb", "chance": 0.95 },
+      { "itemId": "mana_herb", "chance": 0.3 },
+      { "itemId": "honey", "chance": 0.4 }
     ]
   },
   "ice_golem": {
@@ -133,11 +138,12 @@
     "attack": 12,
     "defense": 12,
     "weaponId": "magic_staff",
-    "goldReward": 80,
     "lootTable": [
-      { "itemId": "dragon_fruit", "chance": 0.7 },
-      { "itemId": "sugar", "chance": 0.9 },
-      { "itemId": "jelly", "chance": 0.95 }
+      { "itemId": "dragon_fruit", "chance": 0.8 },
+      { "itemId": "sugar", "chance": 0.95 },
+      { "itemId": "jelly", "chance": 1.0 },
+      { "itemId": "crystal_salt", "chance": 0.6 },
+      { "itemId": "mana_herb", "chance": 0.7 }
     ]
   },
   "fire_elemental": {
@@ -149,11 +155,12 @@
     "attack": 18,
     "defense": 6,
     "weaponId": "dragon_breath",
-    "goldReward": 90,
     "lootTable": [
-      { "itemId": "fire_pepper", "chance": 0.95 },
-      { "itemId": "dragon_fruit", "chance": 0.5 },
-      { "itemId": "premium_meat", "chance": 0.4 }
+      { "itemId": "fire_pepper", "chance": 1.0 },
+      { "itemId": "dragon_fruit", "chance": 0.7 },
+      { "itemId": "premium_meat", "chance": 0.6 },
+      { "itemId": "spice_blend", "chance": 0.8 },
+      { "itemId": "phoenix_egg", "chance": 0.4 }
     ]
   },
   "spider": {
@@ -165,11 +172,11 @@
     "attack": 9,
     "defense": 3,
     "weaponId": "fists",
-    "goldReward": 22,
     "lootTable": [
-      { "itemId": "jelly", "chance": 0.7 },
-      { "itemId": "mushroom", "chance": 0.8 },
-      { "itemId": "herb", "chance": 0.5 }
+      { "itemId": "jelly", "chance": 0.8 },
+      { "itemId": "mushroom", "chance": 0.9 },
+      { "itemId": "herb", "chance": 0.6 },
+      { "itemId": "mana_herb", "chance": 0.3 }
     ]
   },
   "wolf": {
@@ -181,11 +188,11 @@
     "attack": 11,
     "defense": 4,
     "weaponId": "fists",
-    "goldReward": 28,
     "lootTable": [
-      { "itemId": "meat", "chance": 0.95 },
-      { "itemId": "premium_meat", "chance": 0.4 },
-      { "itemId": "herb", "chance": 0.6 }
+      { "itemId": "meat", "chance": 1.0 },
+      { "itemId": "premium_meat", "chance": 0.5 },
+      { "itemId": "herb", "chance": 0.7 },
+      { "itemId": "garlic", "chance": 0.4 }
     ]
   },
   "giant_crab": {
@@ -197,11 +204,12 @@
     "attack": 10,
     "defense": 9,
     "weaponId": "fists",
-    "goldReward": 32,
     "lootTable": [
-      { "itemId": "premium_meat", "chance": 0.7 },
-      { "itemId": "meat", "chance": 0.9 },
-      { "itemId": "sugar", "chance": 0.5 }
+      { "itemId": "premium_meat", "chance": 0.8 },
+      { "itemId": "meat", "chance": 0.95 },
+      { "itemId": "sugar", "chance": 0.6 },
+      { "itemId": "fish", "chance": 0.7 },
+      { "itemId": "butter", "chance": 0.5 }
     ]
   },
   "demon_lord": {
@@ -213,12 +221,14 @@
     "attack": 20,
     "defense": 10,
     "weaponId": "plasma_cannon",
-    "goldReward": 150,
     "lootTable": [
-      { "itemId": "dragon_fruit", "chance": 0.95 },
-      { "itemId": "fire_pepper", "chance": 0.9 },
-      { "itemId": "premium_meat", "chance": 0.95 },
-      { "itemId": "meat", "chance": 1.0 }
+      { "itemId": "dragon_fruit", "chance": 1.0 },
+      { "itemId": "fire_pepper", "chance": 1.0 },
+      { "itemId": "premium_meat", "chance": 1.0 },
+      { "itemId": "void_essence", "chance": 0.5 },
+      { "itemId": "celestial_nectar", "chance": 0.3 },
+      { "itemId": "phoenix_egg", "chance": 0.7 },
+      { "itemId": "truffle", "chance": 0.8 }
     ]
   }
 }

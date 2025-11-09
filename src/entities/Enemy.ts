@@ -133,9 +133,8 @@ export class Enemy extends Entity {
     };
   }
 
-  // Get loot drops when defeated
+  // Get loot drops when defeated (ingredients only, no direct gold)
   getLoot(): { gold: number; items: string[] } {
-    const gold = this.enemyData.goldReward || 10;
     const items: string[] = [];
 
     // Drop ingredients based on drop table
@@ -145,6 +144,6 @@ export class Enemy extends Entity {
       }
     }
 
-    return { gold, items };
+    return { gold: 0, items };
   }
 }

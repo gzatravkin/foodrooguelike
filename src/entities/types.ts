@@ -35,20 +35,29 @@ export interface CookingMethod extends BaseEntity {
     qualityModifier: number;
 }
 
-export interface Recipe {
-    id: string;
+export interface Recipe extends BaseEntity {
+    type: 'recipe';
     ingredients: string[];
     cookingMethod: string;
-    result: Dish;
-    discoveryHint?: string;
+    cookingTime: number;
+    cookingTimeRange: {
+        min: number;
+        max: number;
+    };
+    buffType: 'health' | 'attack' | 'defense';
+    rarity: 'common' | 'uncommon' | 'rare' | 'legendary';
 }
 
 export interface Dish extends BaseEntity {
     type: 'dish';
+    recipeId: string;
     ingredients: string[];
     cookingMethod: string;
+    cookingTime: number;
     quality: number;
     value: number;
+    rarity: 'common' | 'uncommon' | 'rare' | 'legendary';
+    buffType: 'health' | 'attack' | 'defense';
     effects?: {
         health?: number;
         attack?: number;
@@ -81,4 +90,4 @@ export interface Weapon extends BaseEntity {
     cost: number;
 }
 
-export type GameEntity = Enemy | Ingredient | CookingMethod | Dish | Equipment | Weapon;
+export type GameEntity = Enemy | Ingredient | CookingMethod | Dish | Equipment | Weapon | Recipe;

@@ -1,0 +1,197 @@
+{
+  "better_oven": {
+    "id": "better_oven",
+    "type": "kitchenUpgrade",
+    "category": "kitchen",
+    "name": "Better Oven",
+    "description": "Improves baking quality by 10% per level",
+    "maxLevel": 5,
+    "baseCost": 100,
+    "costMultiplier": 1.5,
+    "effects": {
+      "bakingQualityBonus": 0.1
+    }
+  },
+  "premium_grill": {
+    "id": "premium_grill",
+    "type": "kitchenUpgrade",
+    "category": "kitchen",
+    "name": "Premium Grill",
+    "description": "Improves grilling quality by 10% per level",
+    "maxLevel": 5,
+    "baseCost": 100,
+    "costMultiplier": 1.5,
+    "effects": {
+      "grillingQualityBonus": 0.1
+    }
+  },
+  "professional_fryer": {
+    "id": "professional_fryer",
+    "type": "kitchenUpgrade",
+    "category": "kitchen",
+    "name": "Professional Fryer",
+    "description": "Improves frying quality by 10% per level",
+    "maxLevel": 5,
+    "baseCost": 80,
+    "costMultiplier": 1.5,
+    "effects": {
+      "fryingQualityBonus": 0.1
+    }
+  },
+  "master_cookware": {
+    "id": "master_cookware",
+    "type": "kitchenUpgrade",
+    "category": "kitchen",
+    "name": "Master Cookware",
+    "description": "Increases all cooking quality by 5% per level",
+    "maxLevel": 10,
+    "baseCost": 200,
+    "costMultiplier": 2.0,
+    "effects": {
+      "globalQualityBonus": 0.05
+    }
+  },
+  "ingredient_preserver": {
+    "id": "ingredient_preserver",
+    "type": "kitchenUpgrade",
+    "category": "kitchen",
+    "name": "Ingredient Preserver",
+    "description": "5% chance per level to not consume ingredients when cooking",
+    "maxLevel": 5,
+    "baseCost": 150,
+    "costMultiplier": 1.8,
+    "effects": {
+      "ingredientSaveChance": 0.05
+    }
+  },
+  "dining_area": {
+    "id": "dining_area",
+    "type": "restaurantUpgrade",
+    "category": "restaurantUpgrades",
+    "name": "Dining Area",
+    "description": "Increases dish sell price by 15% per level",
+    "maxLevel": 5,
+    "baseCost": 120,
+    "costMultiplier": 1.6,
+    "effects": {
+      "sellPriceMultiplier": 0.15
+    }
+  },
+  "restaurant_reputation": {
+    "id": "restaurant_reputation",
+    "type": "restaurantUpgrade",
+    "category": "restaurantUpgrades",
+    "name": "Marketing Campaign",
+    "description": "Increases reputation gain by 20% per level",
+    "maxLevel": 5,
+    "baseCost": 100,
+    "costMultiplier": 1.5,
+    "effects": {
+      "reputationMultiplier": 0.2
+    }
+  },
+  "premium_ingredients_access": {
+    "id": "premium_ingredients_access",
+    "type": "restaurantUpgrade",
+    "category": "restaurantUpgrades",
+    "name": "Premium Supplier Network",
+    "description": "Increases rare ingredient drop rates by 10% per level",
+    "maxLevel": 5,
+    "baseCost": 250,
+    "costMultiplier": 2.0,
+    "effects": {
+      "rareDropRateBonus": 0.1
+    }
+  },
+  "faster_service": {
+    "id": "faster_service",
+    "type": "restaurantUpgrade",
+    "category": "restaurantUpgrades",
+    "name": "Efficient Service",
+    "description": "Reduces optimal cooking time by 5% per level",
+    "maxLevel": 5,
+    "baseCost": 150,
+    "costMultiplier": 1.7,
+    "effects": {
+      "cookingTimeReduction": 0.05
+    }
+  },
+  "health_boost": {
+    "id": "health_boost",
+    "type": "characterPerk",
+    "category": "characterPerks",
+    "name": "Healthy Eating",
+    "description": "Increases max health by 20 per level",
+    "maxLevel": 10,
+    "baseCost": 150,
+    "costMultiplier": 1.5,
+    "effects": {
+      "maxHealthBonus": 20
+    }
+  },
+  "attack_boost": {
+    "id": "attack_boost",
+    "type": "characterPerk",
+    "category": "characterPerks",
+    "name": "Combat Training",
+    "description": "Increases attack by 2 per level",
+    "maxLevel": 10,
+    "baseCost": 200,
+    "costMultiplier": 1.6,
+    "effects": {
+      "attackBonus": 2
+    }
+  },
+  "defense_boost": {
+    "id": "defense_boost",
+    "type": "characterPerk",
+    "category": "characterPerks",
+    "name": "Armor Proficiency",
+    "description": "Increases defense by 1 per level",
+    "maxLevel": 10,
+    "baseCost": 180,
+    "costMultiplier": 1.5,
+    "effects": {
+      "defenseBonus": 1
+    }
+  },
+  "chef_expertise": {
+    "id": "chef_expertise",
+    "type": "characterPerk",
+    "category": "characterPerks",
+    "name": "Chef Expertise",
+    "description": "Food buffs last 20% longer per level",
+    "maxLevel": 5,
+    "baseCost": 300,
+    "costMultiplier": 2.0,
+    "effects": {
+      "buffDurationMultiplier": 0.2
+    }
+  },
+  "loot_magnet": {
+    "id": "loot_magnet",
+    "type": "characterPerk",
+    "category": "characterPerks",
+    "name": "Ingredient Hunter",
+    "description": "Increases all ingredient drop rates by 10% per level",
+    "maxLevel": 5,
+    "baseCost": 250,
+    "costMultiplier": 1.8,
+    "effects": {
+      "dropRateMultiplier": 0.1
+    }
+  },
+  "dash_cooldown": {
+    "id": "dash_cooldown",
+    "type": "characterPerk",
+    "category": "characterPerks",
+    "name": "Nimble Feet",
+    "description": "Reduces dash cooldown by 10% per level",
+    "maxLevel": 5,
+    "baseCost": 200,
+    "costMultiplier": 1.6,
+    "effects": {
+      "dashCooldownReduction": 0.1
+    }
+  }
+}

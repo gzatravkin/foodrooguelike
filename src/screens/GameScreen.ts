@@ -30,6 +30,8 @@ export class GameScreen {
   private interactionPromptText: string = '';
   private nearbyCorpse: Corpse | null = null;
   private svgsLoaded: boolean = false;
+  private shopOpen: boolean = false;
+  private availableWeapons: Weapon[] = [];
 
   constructor(
     renderer: CanvasRenderer,
@@ -48,6 +50,72 @@ export class GameScreen {
 
     // Preload SVG assets
     this.preloadSVGAssets();
+
+    // Listen for weapon equip events
+    this.setupEventListeners();
+  }
+
+  private setupEventListeners(): void {
+    import('../core/EventBus').then(({ eventBus }) => {
+      eventBus.on('weapon:equipped', (weaponId: string) => {
+        const weapon = entityFactory.createWeapon(weaponId);
+        if (weapon) {
+          this.player.equipWeapon(weapon);
+        }
+      });
+
+      eventBus.on('gold:changed', (gold: number) => {
+        this.player.gold = gold;
+      });
+    });
+  }
+
+  private handleWeaponSwitching(): void {
+    // Switch weapons with number keys 1-9
+    for (let i = 1; i <= 9; i++) {
+      if (this.input.isKeyJustPressed(i.toString())) {
+        const weapons = gameState.getState().inventory
+          .map(id => entityFactory.getTemplate(id))
+          .filter(item => item?.type === 'weapon') as Weapon[];
+
+        if (weapons[i - 1]) {
+          const weapon = weapons[i - 1];
+          this.player.equipWeapon(weapon);
+          gameState.equipWeapon(weapon.id);
+        }
+        break;
+      }
+    }
+  }
+
+  private openShop(): void {
+    this.shopOpen = true;
+    this.availableWeapons = entityFactory.getAllOfType('weapon') as Weapon[];
+  }
+
+  private closeShop(): void {
+    this.shopOpen = false;
+  }
+
+  private handleShopInput(): void {
+    // Close shop with ESC or E
+    if (this.input.isKeyJustPressed('escape') || this.input.isKeyJustPressed('e')) {
+      this.closeShop();
+      return;
+    }
+
+    // Buy weapon with number keys
+    for (let i = 1; i <= 9; i++) {
+      if (this.input.isKeyJustPressed(i.toString())) {
+        const weapon = this.availableWeapons[i - 1];
+        if (weapon && this.player.gold >= weapon.cost) {
+          import('../systems/ShopSystem').then(({ shopSystem }) => {
+            shopSystem.buyWeapon(weapon.id);
+          });
+        }
+        break;
+      }
+    }
   }
 
   private async preloadSVGAssets(): Promise<void> {
@@ -166,6 +234,15 @@ export class GameScreen {
   }
 
   update(deltaTime: number): void {
+    // Handle shop input
+    if (this.shopOpen) {
+      this.handleShopInput();
+      return; // Don't update game when shop is open
+    }
+
+    // Handle weapon switching with number keys
+    this.handleWeaponSwitching();
+
     // Update player
     this.handlePlayerMovement(deltaTime);
     this.handlePlayerAttack(deltaTime);
@@ -284,21 +361,29 @@ export class GameScreen {
     this.corpses = this.corpses.filter(c => !c.isExpired());
   }
 
-  private spawnPlayerProjectile(angle: number, spread: number = 0): void {
+  private spawnPlayerProjectile(angle: number, spread: number = 0, isDashShot: boolean = false): void {
     const spawn = this.player.getProjectileSpawn();
     const actualAngle = angle + spread;
+
+    // Dash shot bonuses
+    const damageMultiplier = isDashShot ? 2.0 : 1.0;
+    const speedMultiplier = isDashShot ? 1.5 : 1.0;
+    const color = isDashShot ? '#00FFFF' : '#FFD700'; // Cyan for dash shots
+    const size = isDashShot ? 6 : 4;
 
     const projectile = new Projectile(
       spawn.x,
       spawn.y,
       actualAngle,
-      this.player.getProjectileSpeed(),
-      this.player.getAttackDamage(),
+      this.player.getProjectileSpeed() * speedMultiplier,
+      this.player.getAttackDamage() * damageMultiplier,
       this.player.id,
       'player',
-      this.player.getAttackRange(),
-      '#FFD700'
+      this.player.getAttackRange() * (isDashShot ? 1.3 : 1.0),
+      color
     );
+
+    projectile.size = size;
 
     this.projectiles.push(projectile);
   }
@@ -337,8 +422,8 @@ export class GameScreen {
     const movement = this.input.getMovementVector();
 
     // Handle dash input (Shift key)
-    if ((this.input.isKeyPressed('Shift') || this.input.isKeyPressed('ShiftLeft') || this.input.isKeyPressed('ShiftRight')) &&
-        movement.x !== 0 || movement.y !== 0) {
+    if ((this.input.isKeyPressed('shift') || this.input.isKeyPressed('shiftleft') || this.input.isKeyPressed('shiftright')) &&
+        (movement.x !== 0 || movement.y !== 0)) {
       if (this.player.canDash()) {
         this.player.dash(movement.x, movement.y);
       }
@@ -382,10 +467,21 @@ export class GameScreen {
       if (this.player.canAttack()) {
         this.player.attack();
 
+        const isDashShot = this.player.isDashing;
+
         if (this.player.isRangedWeapon()) {
           // Spawn projectile(s)
-          const pelletCount = this.player.getPelletCount();
+          let pelletCount = this.player.getPelletCount();
           const spreadAngle = this.player.getSpread();
+
+          // Dash shot bonus: +2 extra pellets for shotguns, or triple shot for single-shot weapons
+          if (isDashShot) {
+            if (pelletCount > 1) {
+              pelletCount += 2; // Shotguns get 2 more pellets
+            } else {
+              pelletCount = 3; // Single-shot weapons fire 3 projectiles
+            }
+          }
 
           for (let i = 0; i < pelletCount; i++) {
             let spread = 0;
@@ -393,11 +489,12 @@ export class GameScreen {
               // Spread pellets in a cone
               spread = (Math.random() - 0.5) * spreadAngle;
             }
-            this.spawnPlayerProjectile(this.player.facingAngle, spread);
+            this.spawnPlayerProjectile(this.player.facingAngle, spread, isDashShot);
           }
         } else {
           // Melee attack - check if attack hits any enemies
           const hitbox = this.player.getAttackHitbox();
+          const damageMultiplier = isDashShot ? 2.5 : 1.0; // Dash melee bonus
 
           for (const enemy of this.enemies) {
             if (!enemy.alive) continue;
@@ -407,7 +504,7 @@ export class GameScreen {
             const distance = Math.sqrt(dx * dx + dy * dy);
 
             if (distance <= hitbox.radius + enemy.size / 2) {
-              enemy.takeDamage(this.player.getAttackDamage());
+              enemy.takeDamage(this.player.getAttackDamage() * damageMultiplier);
             }
           }
         }
@@ -455,8 +552,7 @@ export class GameScreen {
       this.interactionPromptText = 'Press E to Shop';
 
       if (this.input.isKeyJustPressed('e')) {
-        // TODO: Open shop menu
-        console.log('Opening shop menu...');
+        this.openShop();
       }
     } else if (tile === TileType.EXPEDITION_PORTAL) {
       this.showInteractionPrompt = true;
@@ -498,6 +594,12 @@ export class GameScreen {
 
     // Render map
     this.renderMap();
+
+    // Render shop if open
+    if (this.shopOpen) {
+      this.renderShop();
+      return;
+    }
 
     // Render corpses
     for (const corpse of this.corpses) {
@@ -726,13 +828,15 @@ export class GameScreen {
     this.renderer.drawUIText(this.mode === 'base' ? 'BASE CAMP' : 'EXPEDITION', canvas.width / 2, 30, '#fff', 24, 'center');
 
     // Draw controls (bottom-left)
-    this.renderer.drawUIRectWithBorder(10, canvas.height - 155, 320, 145, 'rgba(0, 0, 0, 0.7)', '#fff', 2);
-    this.renderer.drawUIText('WASD/Arrows: Move', 20, canvas.height - 130, '#fff', 14);
-    this.renderer.drawUIText('Shift: Dash (dodge)', 20, canvas.height - 110, '#4CAF50', 14);
-    this.renderer.drawUIText('Space/Click: Attack', 20, canvas.height - 90, '#fff', 14);
-    this.renderer.drawUIText('E: Interact | F: Loot', 20, canvas.height - 70, '#fff', 14);
-    this.renderer.drawUIText('ESC: Menu', 20, canvas.height - 50, '#fff', 14);
-    this.renderer.drawUIText('🎯 Aim: Mouse/Movement', 20, canvas.height - 30, '#fff', 14);
+    this.renderer.drawUIRectWithBorder(10, canvas.height - 195, 380, 185, 'rgba(0, 0, 0, 0.7)', '#fff', 2);
+    this.renderer.drawUIText('WASD/Arrows: Move', 20, canvas.height - 170, '#fff', 14);
+    this.renderer.drawUIText('Shift: Dash (dodge)', 20, canvas.height - 150, '#4CAF50', 14);
+    this.renderer.drawUIText('Space/Click: Attack', 20, canvas.height - 130, '#fff', 14);
+    this.renderer.drawUIText('Dash + Shoot: SUPER SHOT! 💥', 20, canvas.height - 110, '#00FFFF', 14);
+    this.renderer.drawUIText('  (2x DMG, 3x bullets, faster!)', 20, canvas.height - 95, '#00FFFF', 12);
+    this.renderer.drawUIText('1-9: Switch weapons', 20, canvas.height - 75, '#FFD700', 14);
+    this.renderer.drawUIText('E: Interact | F: Loot', 20, canvas.height - 55, '#fff', 14);
+    this.renderer.drawUIText('🎯 Aim: Mouse/Movement', 20, canvas.height - 35, '#fff', 14);
 
     // Draw interaction prompt
     if (this.showInteractionPrompt) {
@@ -772,5 +876,72 @@ export class GameScreen {
     // Border
     this.renderer.drawLine(x - barWidth / 2, y, x + barWidth / 2, y, '#000', 1);
     this.renderer.drawLine(x - barWidth / 2, y + barHeight, x + barWidth / 2, y + barHeight, '#000', 1);
+  }
+
+  private renderShop(): void {
+    const canvas = this.renderer.getCanvas();
+
+    // Darken background
+    this.renderer.drawUIRect(0, 0, canvas.width, canvas.height, 'rgba(0, 0, 0, 0.7)');
+
+    // Shop panel
+    const panelWidth = 700;
+    const panelHeight = 600;
+    const panelX = (canvas.width - panelWidth) / 2;
+    const panelY = (canvas.height - panelHeight) / 2;
+
+    this.renderer.drawUIRectWithBorder(panelX, panelY, panelWidth, panelHeight, 'rgba(20, 20, 20, 0.95)', '#4CAF50', 3);
+
+    // Title
+    this.renderer.drawUIText('WEAPON SHOP', canvas.width / 2, panelY + 40, '#4CAF50', 32, 'center');
+
+    // Gold
+    this.renderer.drawUIText(`Gold: ${this.player.gold}`, canvas.width / 2, panelY + 75, '#FFD700', 20, 'center');
+
+    // Weapons list
+    let yPos = panelY + 110;
+    this.availableWeapons.slice(0, 8).forEach((weapon, i) => {
+      const type = weapon.weaponType === 'ranged' ? '🔫' : '⚔️';
+      const canAfford = this.player.gold >= weapon.cost;
+      const color = canAfford ? '#fff' : '#666';
+      const rarityColor = weapon.rarity === 'legendary' ? '#FF6B00' :
+                         weapon.rarity === 'rare' ? '#9C27B0' :
+                         weapon.rarity === 'uncommon' ? '#2196F3' : '#888';
+
+      // Weapon box
+      this.renderer.drawUIRectWithBorder(
+        panelX + 20,
+        yPos,
+        panelWidth - 40,
+        55,
+        canAfford ? 'rgba(50, 50, 50, 0.8)' : 'rgba(30, 30, 30, 0.5)',
+        rarityColor,
+        2
+      );
+
+      // Number key
+      this.renderer.drawUIText(`[${i + 1}]`, panelX + 40, yPos + 20, '#FFD700', 18);
+
+      // Weapon name and type
+      this.renderer.drawUIText(`${type} ${weapon.name}`, panelX + 80, yPos + 20, color, 18);
+
+      // Stats
+      const stats = `DMG: ${weapon.damage} | SPD: ${weapon.attackSpeed.toFixed(1)}s | RNG: ${weapon.range}`;
+      this.renderer.drawUIText(stats, panelX + 80, yPos + 40, color, 14);
+
+      // Price
+      this.renderer.drawUIText(`${weapon.cost}g`, panelX + panelWidth - 80, yPos + 30, canAfford ? '#FFD700' : '#666', 20, 'right');
+
+      yPos += 60;
+    });
+
+    // Instructions
+    this.renderer.drawUIText('Press number key to buy weapon | ESC to close', canvas.width / 2, panelY + panelHeight - 30, '#aaa', 16, 'center');
+
+    // Current weapon
+    const currentWeapon = this.player.weapon;
+    if (currentWeapon) {
+      this.renderer.drawUIText(`Equipped: ${currentWeapon.name}`, canvas.width / 2, panelY + panelHeight - 60, '#4CAF50', 16, 'center');
+    }
   }
 }

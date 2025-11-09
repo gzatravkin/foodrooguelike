@@ -7,7 +7,7 @@ import { gameState } from '../core/GameState';
 import { shopSystem } from '../systems/ShopSystem';
 import { entityFactory } from '../entities/EntityFactory';
 import type { SVGRenderer } from '../rendering/SVGRenderer';
-import type { Dish } from '../entities/types';
+import type { Dish, Weapon } from '../entities/types';
 
 export class ShopScreen extends Screen {
     private message: string = '';
@@ -31,11 +31,14 @@ export class ShopScreen extends Screen {
         const gold = this.renderer.createText(vb.width - 150, 60, `Gold: ${gameState.getState().gold}`, 20, '#FFD700');
         this.renderer.append(gold);
 
+        // Weapons for sale
+        this.renderWeapons(50, 120);
+
         // Equipment for sale
-        this.renderEquipment(50, 120);
+        this.renderEquipment(350, 120);
 
         // Player's dishes
-        this.renderDishes(550, 120);
+        this.renderDishes(650, 120);
 
         // Message
         if (this.message) {
@@ -49,6 +52,43 @@ export class ShopScreen extends Screen {
             gameState.setScreen('base');
         });
         this.renderer.append(backBtn);
+    }
+
+    private renderWeapons(x: number, y: number): void {
+        const weapons = shopSystem.getWeaponInventory();
+
+        const label = this.renderer.createText(x, y, 'Weapons:', 20, '#FFD700');
+        this.renderer.append(label);
+
+        weapons.slice(0, 8).forEach((weapon, i) => {
+            const type = weapon.weaponType === 'ranged' ? '🔫' : '⚔️';
+            const rarity = weapon.rarity;
+            const rarityColor = rarity === 'legendary' ? '#FF6B00' :
+                               rarity === 'rare' ? '#9C27B0' :
+                               rarity === 'uncommon' ? '#2196F3' : '#888';
+
+            const btn = this.renderer.createButton(
+                x,
+                y + 40 + i * 50,
+                280,
+                45,
+                `${type} ${weapon.name} - ${weapon.cost}g`,
+                () => this.buyWeapon(weapon.id)
+            );
+            btn.style.borderColor = rarityColor;
+            btn.style.borderWidth = '2px';
+            this.renderer.append(btn);
+
+            // Weapon stats
+            const stats = this.renderer.createText(
+                x + 10,
+                y + 75 + i * 50,
+                `DMG: ${weapon.damage} | SPD: ${weapon.attackSpeed.toFixed(1)}s`,
+                12,
+                '#aaa'
+            );
+            this.renderer.append(stats);
+        });
     }
 
     private renderEquipment(x: number, y: number): void {
@@ -97,6 +137,16 @@ export class ShopScreen extends Screen {
             });
             this.renderer.append(eatBtn);
         });
+    }
+
+    private buyWeapon(id: string): void {
+        const success = shopSystem.buyWeapon(id);
+        if (success) {
+            this.message = 'Weapon purchased! Equip it from your inventory.';
+        } else {
+            this.message = 'Not enough gold!';
+        }
+        this.render();
     }
 
     private buyEquipment(id: string): void {

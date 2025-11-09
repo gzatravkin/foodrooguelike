@@ -94,6 +94,16 @@ class GameState {
         eventBus.emit('screen:changed', screen);
     }
 
+    equipWeapon(weaponId: string): void {
+        this.state.equipment.weapon = weaponId;
+        eventBus.emit('weapon:equipped', weaponId);
+    }
+
+    equipArmor(armorId: string): void {
+        this.state.equipment.armor = armorId;
+        eventBus.emit('armor:equipped', armorId);
+    }
+
     addBuff(buff: GameData['activeBuffs'][0]): void {
         this.state.activeBuffs.push(buff);
         eventBus.emit('buff:added', buff);

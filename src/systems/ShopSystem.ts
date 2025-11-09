@@ -5,7 +5,7 @@
 import { eventBus } from '../core/EventBus';
 import { gameState } from '../core/GameState';
 import { entityFactory } from '../entities/EntityFactory';
-import type { Dish, Equipment } from '../entities/types';
+import type { Dish, Equipment, Weapon } from '../entities/types';
 
 export class ShopSystem {
     buyEquipment(equipmentId: string): boolean {
@@ -22,6 +22,24 @@ export class ShopSystem {
         gameState.addToInventory(equipmentId);
 
         eventBus.emit('shop:purchase', equipment);
+        return true;
+    }
+
+    buyWeapon(weaponId: string): boolean {
+        const weapon = entityFactory.createWeapon(weaponId);
+        if (!weapon) return false;
+
+        const state = gameState.getState();
+        if (state.gold < weapon.cost) {
+            eventBus.emit('shop:insufficient_funds');
+            return false;
+        }
+
+        gameState.addGold(-weapon.cost);
+        gameState.addToInventory(weaponId);
+        gameState.equipWeapon(weaponId);
+
+        eventBus.emit('shop:weapon_purchase', weapon);
         return true;
     }
 
@@ -62,6 +80,10 @@ export class ShopSystem {
 
     getShopInventory(): Equipment[] {
         return entityFactory.getAllOfType('equipment') as Equipment[];
+    }
+
+    getWeaponInventory(): Weapon[] {
+        return entityFactory.getAllOfType('weapon') as Weapon[];
     }
 }
 

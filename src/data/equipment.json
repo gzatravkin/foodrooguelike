@@ -1,0 +1,47 @@
+{
+  "iron_sword": {
+    "id": "iron_sword",
+    "type": "equipment",
+    "name": "Iron Sword",
+    "description": "A basic iron sword",
+    "slot": "weapon",
+    "stats": {
+      "attack": 5
+    },
+    "cost": 50
+  },
+  "steel_sword": {
+    "id": "steel_sword",
+    "type": "equipment",
+    "name": "Steel Sword",
+    "description": "A sturdy steel sword",
+    "slot": "weapon",
+    "stats": {
+      "attack": 10
+    },
+    "cost": 150
+  },
+  "leather_armor": {
+    "id": "leather_armor",
+    "type": "equipment",
+    "name": "Leather Armor",
+    "description": "Basic leather protection",
+    "slot": "armor",
+    "stats": {
+      "defense": 5
+    },
+    "cost": 60
+  },
+  "chain_mail": {
+    "id": "chain_mail",
+    "type": "equipment",
+    "name": "Chain Mail",
+    "description": "Strong metal armor",
+    "slot": "armor",
+    "stats": {
+      "defense": 10,
+      "health": 20
+    },
+    "cost": 200
+  }
+}

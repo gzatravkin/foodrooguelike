@@ -1,0 +1,38 @@
+{
+  "boil": {
+    "id": "boil",
+    "type": "cookingMethod",
+    "name": "Boil",
+    "description": "Cook in boiling water",
+    "unlocked": true,
+    "cost": 0,
+    "qualityModifier": 1.0
+  },
+  "fry": {
+    "id": "fry",
+    "type": "cookingMethod",
+    "name": "Fry",
+    "description": "Cook in hot oil",
+    "unlocked": true,
+    "cost": 0,
+    "qualityModifier": 1.1
+  },
+  "grill": {
+    "id": "grill",
+    "type": "cookingMethod",
+    "name": "Grill",
+    "description": "Cook over open flame",
+    "unlocked": true,
+    "cost": 50,
+    "qualityModifier": 1.2
+  },
+  "bake": {
+    "id": "bake",
+    "type": "cookingMethod",
+    "name": "Bake",
+    "description": "Cook in an oven",
+    "unlocked": true,
+    "cost": 100,
+    "qualityModifier": 1.3
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "slime": {
+    "id": "slime",
+    "type": "enemy",
+    "name": "Slime",
+    "description": "A wobbly creature made of jelly",
+    "health": 30,
+    "attack": 5,
+    "defense": 2,
+    "goldReward": 10,
+    "lootTable": [
+      { "itemId": "jelly", "chance": 0.8 },
+      { "itemId": "sugar", "chance": 0.3 }
+    ]
+  },
+  "goblin": {
+    "id": "goblin",
+    "type": "enemy",
+    "name": "Goblin",
+    "description": "A mischievous creature",
+    "health": 50,
+    "attack": 8,
+    "defense": 3,
+    "goldReward": 20,
+    "lootTable": [
+      { "itemId": "mushroom", "chance": 0.7 },
+      { "itemId": "herb", "chance": 0.5 },
+      { "itemId": "meat", "chance": 0.4 }
+    ]
+  },
+  "dragon": {
+    "id": "dragon",
+    "type": "enemy",
+    "name": "Dragon",
+    "description": "A mighty fire-breathing beast",
+    "health": 100,
+    "attack": 15,
+    "defense": 8,
+    "goldReward": 100,
+    "lootTable": [
+      { "itemId": "dragon_fruit", "chance": 0.9 },
+      { "itemId": "fire_pepper", "chance": 0.6 },
+      { "itemId": "premium_meat", "chance": 0.8 }
+    ]
+  }
+}

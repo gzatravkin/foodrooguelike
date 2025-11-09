@@ -1,0 +1,66 @@
+{
+  "jelly": {
+    "id": "jelly",
+    "type": "ingredient",
+    "name": "Jelly",
+    "description": "Wobbly gelatin from slimes",
+    "rarity": "common",
+    "baseValue": 5
+  },
+  "sugar": {
+    "id": "sugar",
+    "type": "ingredient",
+    "name": "Sugar",
+    "description": "Sweet crystalline substance",
+    "rarity": "common",
+    "baseValue": 3
+  },
+  "mushroom": {
+    "id": "mushroom",
+    "type": "ingredient",
+    "name": "Mushroom",
+    "description": "Earthy forest fungus",
+    "rarity": "common",
+    "baseValue": 8
+  },
+  "herb": {
+    "id": "herb",
+    "type": "ingredient",
+    "name": "Herb",
+    "description": "Aromatic herbs",
+    "rarity": "common",
+    "baseValue": 6
+  },
+  "meat": {
+    "id": "meat",
+    "type": "ingredient",
+    "name": "Meat",
+    "description": "Basic protein source",
+    "rarity": "uncommon",
+    "baseValue": 12
+  },
+  "dragon_fruit": {
+    "id": "dragon_fruit",
+    "type": "ingredient",
+    "name": "Dragon Fruit",
+    "description": "Exotic fruit with magical properties",
+    "rarity": "rare",
+    "baseValue": 50
+  },
+  "fire_pepper": {
+    "id": "fire_pepper",
+    "type": "ingredient",
+    "name": "Fire Pepper",
+    "description": "Extremely spicy pepper",
+    "rarity": "rare",
+    "baseValue": 40
+  },
+  "premium_meat": {
+    "id": "premium_meat",
+    "type": "ingredient",
+    "name": "Premium Meat",
+    "description": "High quality dragon meat",
+    "rarity": "rare",
+    "baseValue": 60
+  }
+}

@@ -11,8 +11,8 @@ export class CookingSystem {
     cook(ingredientIds: string[], cookingMethodId: string): Dish {
         // Calculate quality based on randomness and method
         const method = entityFactory.getTemplate(cookingMethodId);
-        const baseQuality = 0.5 + Math.random() * 0.5; // 50-100%
-        const quality = Math.min(1, baseQuality * (method?.qualityModifier || 1));
+        const baseQuality = 0.6 + Math.random() * 0.4; // 60-100% (less punishing RNG)
+        const quality = Math.min(1, baseQuality);
 
         // Check if this is a known recipe
         const recipeId = this.getRecipeId(ingredientIds, cookingMethodId);

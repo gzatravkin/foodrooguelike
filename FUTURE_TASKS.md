@@ -135,9 +135,9 @@
 
 ## Game Balance & Economy
 
-- [WIP] 🔥 **Combat balance pass** - Adjust all enemy stats, player base stats, and equipment values. Test difficulty curve. Document in `BALANCE_NOTES.md`. (~Testing + documentation)
+- [x] 🔥 **Combat balance pass** - Adjust all enemy stats, player base stats, and equipment values. Test difficulty curve. Document in `BALANCE_NOTES.md`. (~Testing + documentation)
 
-- [WIP] 🔥 **Economy balance** - Adjust gold rewards, equipment costs, dish values. Ensure progression feels rewarding. Test and document. (~Testing + documentation)
+- [x] 🔥 **Economy balance** - Adjust gold rewards, equipment costs, dish values. Ensure progression feels rewarding. Test and document. (~Testing + documentation)
 
 - [ ] ⭐ **Dynamic pricing** - Shop prices fluctuate based on supply/demand. Create `src/systems/MarketSystem.ts`. (~160 lines)
 
@@ -157,7 +157,7 @@
 
 ## Quality of Life
 
-- [WIP] ⭐ **Settings screen** - Volume controls, reset game, enable/disable animations. Create `SettingsScreen.ts` and `src/core/SettingsManager.ts`. (~180 lines)
+- [x] ⭐ **Settings screen** - Volume controls, reset game, enable/disable animations. Create `SettingsScreen.ts` and `src/core/SettingsManager.ts`. (~180 lines)
 
 - [ ] 💡 **Inventory management** - Sort/filter inventory. Add categories (ingredients/dishes/equipment). Update UI in all screens. (~150 lines)
 
@@ -219,9 +219,9 @@ Total Tasks: 65
 - Medium Priority (💡): 28
 - Polish (🎨): 12
 
-Completed: 2
+Completed: 5
 In Progress: 0
-Not Started: 63
+Not Started: 60
 
 ---
 

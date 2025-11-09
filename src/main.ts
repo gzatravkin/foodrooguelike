@@ -12,6 +12,7 @@ import { BaseScreen } from './screens/BaseScreen';
 import { ExpeditionScreen } from './screens/ExpeditionScreen';
 import { CookingScreen } from './screens/CookingScreen';
 import { ShopScreen } from './screens/ShopScreen';
+import { SettingsScreen } from './screens/SettingsScreen';
 
 class Game {
     private renderer: SVGRenderer;
@@ -40,6 +41,7 @@ class Game {
         this.screenManager.registerScreen('expedition', new ExpeditionScreen(this.renderer));
         this.screenManager.registerScreen('cooking', new CookingScreen(this.renderer));
         this.screenManager.registerScreen('shop', new ShopScreen(this.renderer));
+        this.screenManager.registerScreen('settings', new SettingsScreen(this.renderer));
 
         console.log('Game initialized successfully!');
     }

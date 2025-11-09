@@ -17,7 +17,7 @@ export interface GameData {
     gold: number;
     inventory: string[];
     discoveredRecipes: string[];
-    currentScreen: 'base' | 'expedition' | 'shop' | 'cooking';
+    currentScreen: 'base' | 'expedition' | 'shop' | 'cooking' | 'settings';
     equipment: {
         weapon?: string;
         armor?: string;

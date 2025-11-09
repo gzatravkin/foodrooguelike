@@ -10,13 +10,20 @@ import { gameState } from '../core/GameState';
 import { entityFactory } from '../entities/EntityFactory';
 import { Weapon } from '../entities/types';
 import { CombatSystem } from './CombatSystem';
+import { ParticleSystem } from '../entities/Particle';
 
 export class InputHandler {
+  private particleSystem: ParticleSystem | null = null;
+
   constructor(
     private input: InputManager,
     private mapSystem: MapSystem,
     private combatSystem: CombatSystem
   ) {}
+
+  setParticleSystem(particleSystem: ParticleSystem): void {
+    this.particleSystem = particleSystem;
+  }
 
   handleWeaponSwitching(player: Player): void {
     for (let i = 1; i <= 9; i++) {
@@ -101,6 +108,14 @@ export class InputHandler {
       }
     }
 
+    // Create muzzle flash effect
+    if (this.particleSystem) {
+      const gunLength = 18;
+      const muzzleX = player.x + Math.cos(player.facingAngle) * gunLength;
+      const muzzleY = player.y + Math.sin(player.facingAngle) * gunLength;
+      this.particleSystem.createMuzzleFlash(muzzleX, muzzleY, player.facingAngle);
+    }
+
     for (let i = 0; i < pelletCount; i++) {
       let spread = 0;
       if (pelletCount > 1) {
@@ -114,6 +129,13 @@ export class InputHandler {
     const hitbox = player.getAttackHitbox();
     const damageMultiplier = isDashShot ? 2.5 : 1.0;
 
+    // Create slash effect
+    if (this.particleSystem) {
+      this.particleSystem.createSlash(hitbox.x, hitbox.y, player.facingAngle, '#E8E8E8');
+    }
+
+    let hitSomething = false;
+
     for (const enemy of enemies) {
       if (!enemy.alive) continue;
 
@@ -122,7 +144,15 @@ export class InputHandler {
       const distance = Math.sqrt(dx * dx + dy * dy);
 
       if (distance <= hitbox.radius + enemy.size / 2) {
+        const prevHealth = enemy.stats.health;
         enemy.takeDamage(player.getAttackDamage() * damageMultiplier);
+
+        // Create hit particles
+        if (this.particleSystem && enemy.stats.health < prevHealth) {
+          this.particleSystem.createImpact(enemy.x, enemy.y, '#FFD700', 6);
+          this.particleSystem.createBlood(enemy.x, enemy.y, dx, dy);
+          hitSomething = true;
+        }
       }
     }
   }

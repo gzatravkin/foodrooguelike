@@ -22,6 +22,7 @@ import { SpawnManager } from './SpawnManager';
 import { GameScreenUpdater } from './GameScreenUpdater';
 import { CheatPanel } from '../ui/CheatPanel';
 import { ParticleSystem } from '../entities/Particle';
+import { MobileControls } from '../ui/MobileControls';
 
 export type GameMode = 'base' | 'expedition';
 
@@ -39,6 +40,7 @@ export class GameScreen {
   private updater: GameScreenUpdater;
   private cheatPanel: CheatPanel;
   private particleSystem: ParticleSystem;
+  private mobileControls: MobileControls | null = null;
   private mode: GameMode = 'base';
   private showInteractionPrompt: boolean = false;
   private interactionPromptText: string = '';
@@ -68,6 +70,12 @@ export class GameScreen {
 
     const startingWeapon = entityFactory.createWeapon('pistol');
     this.player = new Player(320, 240, startingWeapon || undefined);
+
+    // Initialize mobile controls if on mobile device
+    if (this.input.isMobileDevice()) {
+      const canvas = renderer.getCanvas();
+      this.mobileControls = new MobileControls(canvas);
+    }
 
     this.loadBaseCamp();
     this.setupEventListeners();
@@ -210,6 +218,16 @@ export class GameScreen {
 
 
   update(deltaTime: number): void {
+    // Update mobile controls state
+    if (this.mobileControls) {
+      const controlState = this.mobileControls.getState();
+      this.input.setVirtualJoystick(controlState.joystick.x, controlState.joystick.y);
+      this.input.setVirtualButton('attack', controlState.buttons.attack);
+      this.input.setVirtualButton('dash', controlState.buttons.dash);
+      this.input.setVirtualButton('interact', controlState.buttons.interact);
+      this.input.setVirtualButton('loot', controlState.buttons.loot);
+    }
+
     if (this.shopManager.isShopOpen()) {
       this.shopManager.handleShopInput(this.player);
       return;
@@ -218,6 +236,17 @@ export class GameScreen {
     this.inputHandler.handleWeaponSwitching(this.player);
     this.inputHandler.handlePlayerMovement(this.player, deltaTime);
     this.inputHandler.handlePlayerAttack(this.player, this.enemies, deltaTime);
+
+    // Handle loot action
+    if (this.inputHandler.handleLoot() && this.nearbyCorpse && !this.nearbyCorpse.looted) {
+      const loot = this.nearbyCorpse.lootCorpse();
+      if (loot) {
+        gameState.addGold(loot.gold);
+        // Note: ingredients system not fully implemented yet
+        // loot.ingredients.forEach(ing => gameState.addIngredient(ing));
+      }
+    }
+
     this.player.update(deltaTime);
 
     this.updater.updateEnemies(this.enemies, this.player, deltaTime);
@@ -293,5 +322,10 @@ export class GameScreen {
     const canvasRenderer = (this.renderer as any).renderer as CanvasRenderer;
     const canvas = canvasRenderer.getCanvas();
     this.cheatPanel.render(canvasRenderer.getContext(), canvas.width, canvas.height);
+
+    // Render mobile controls on top of everything (if mobile)
+    if (this.mobileControls) {
+      this.mobileControls.render(canvasRenderer.getContext());
+    }
   }
 }

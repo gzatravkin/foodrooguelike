@@ -103,6 +103,3 @@ export function createStaffSVG(): string {
     </g>
   `;
 }
-
-// Projectile SVGs - Enhanced with better visual effects
-export function createBulletSVG(color: string = '#FFD700'): string {

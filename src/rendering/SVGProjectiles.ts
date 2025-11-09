@@ -104,6 +104,3 @@ export function createPlasmaBoltSVG(): string {
     </g>
   `;
 }
-
-// Corpse SVG
-export function createCorpseSVG(enemyType: string): string {

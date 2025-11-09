@@ -3,17 +3,16 @@
  */
 
 import { Entity, EntityType, EntityStats } from './Entity';
-import { Equipment } from './types';
+import { Equipment, Weapon } from './types';
 
 export class Player extends Entity {
-  public weapon: Equipment | null = null;
+  public weapon: Weapon | null = null;
   public armor: Equipment | null = null;
   public gold: number = 100;
   public attackCooldown: number = 0;
-  public attackRange: number = 40;
   public facingAngle: number = 0; // Direction player is facing
 
-  constructor(x: number, y: number) {
+  constructor(x: number, y: number, initialWeapon?: Weapon) {
     const stats: EntityStats = {
       maxHealth: 100,
       health: 100,
@@ -23,6 +22,7 @@ export class Player extends Entity {
     };
 
     super(EntityType.PLAYER, x, y, 24, stats, '#4CAF50');
+    this.weapon = initialWeapon || null;
   }
 
   update(deltaTime: number): void {
@@ -50,16 +50,39 @@ export class Player extends Entity {
   attack(): void {
     if (!this.canAttack()) return;
 
-    // Set attack cooldown (attacks per second based on weapon)
-    this.attackCooldown = 0.5; // 2 attacks per second
+    // Set attack cooldown based on weapon
+    if (this.weapon) {
+      this.attackCooldown = this.weapon.attackSpeed;
+    } else {
+      this.attackCooldown = 0.5; // Default cooldown
+    }
   }
 
   getAttackDamage(): number {
-    let damage = this.stats.attack;
-    if (this.weapon && this.weapon.stats.attack) {
-      damage += this.weapon.stats.attack;
+    if (this.weapon) {
+      return this.stats.attack + this.weapon.damage;
     }
-    return damage;
+    return this.stats.attack;
+  }
+
+  getAttackRange(): number {
+    return this.weapon?.range || 40;
+  }
+
+  isRangedWeapon(): boolean {
+    return this.weapon?.weaponType === 'ranged';
+  }
+
+  getProjectileSpeed(): number {
+    return this.weapon?.projectileSpeed || 0;
+  }
+
+  getPelletCount(): number {
+    return this.weapon?.pelletCount || 1;
+  }
+
+  getSpread(): number {
+    return this.weapon?.spread || 0;
   }
 
   getTotalDefense(): number {
@@ -70,7 +93,7 @@ export class Player extends Entity {
     return defense;
   }
 
-  equipWeapon(weapon: Equipment): void {
+  equipWeapon(weapon: Weapon): void {
     this.weapon = weapon;
   }
 
@@ -83,15 +106,25 @@ export class Player extends Entity {
     }
   }
 
-  // Get attack hitbox based on facing direction
+  // Get attack hitbox based on facing direction (for melee weapons)
   getAttackHitbox(): { x: number; y: number; radius: number } {
-    const offsetX = Math.cos(this.facingAngle) * this.attackRange;
-    const offsetY = Math.sin(this.facingAngle) * this.attackRange;
+    const range = this.getAttackRange();
+    const offsetX = Math.cos(this.facingAngle) * range;
+    const offsetY = Math.sin(this.facingAngle) * range;
 
     return {
       x: this.x + offsetX,
       y: this.y + offsetY,
       radius: 20,
+    };
+  }
+
+  // Get projectile spawn position
+  getProjectileSpawn(): { x: number; y: number } {
+    const offsetDistance = this.size / 2 + 10;
+    return {
+      x: this.x + Math.cos(this.facingAngle) * offsetDistance,
+      y: this.y + Math.sin(this.facingAngle) * offsetDistance,
     };
   }
 }

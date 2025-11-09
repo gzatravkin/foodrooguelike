@@ -3,7 +3,7 @@
  * This is the main way to instantiate entities in the game
  */
 
-import type { GameEntity, Enemy, Ingredient, Dish, Equipment, CookingMethod } from './types';
+import type { GameEntity, Enemy, Ingredient, Dish, Equipment, CookingMethod, Weapon } from './types';
 
 export class EntityFactory {
     private templates: Map<string, any> = new Map();
@@ -34,6 +34,10 @@ export class EntityFactory {
 
     createIngredient(id: string): Ingredient | null {
         return this.create(id) as Ingredient;
+    }
+
+    createWeapon(id: string): Weapon | null {
+        return this.create(id) as Weapon;
     }
 
     createDish(recipeId: string, ingredients: string[], cookingMethod: string, quality: number): Dish {

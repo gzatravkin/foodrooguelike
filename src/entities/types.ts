@@ -14,6 +14,7 @@ export interface Enemy extends BaseEntity {
     health: number;
     attack: number;
     defense: number;
+    weaponId?: string; // Optional weapon ID
     lootTable: Array<{
         itemId: string;
         chance: number;
@@ -67,4 +68,17 @@ export interface Equipment extends BaseEntity {
     cost: number;
 }
 
-export type GameEntity = Enemy | Ingredient | CookingMethod | Dish | Equipment;
+export interface Weapon extends BaseEntity {
+    type: 'weapon';
+    weaponType: 'melee' | 'ranged';
+    damage: number;
+    attackSpeed: number; // Cooldown in seconds
+    range: number;
+    projectileSpeed: number; // 0 for melee
+    pelletCount?: number; // For shotgun-style weapons
+    spread?: number; // Angle spread for multi-projectile weapons
+    rarity: 'common' | 'uncommon' | 'rare' | 'legendary';
+    cost: number;
+}
+
+export type GameEntity = Enemy | Ingredient | CookingMethod | Dish | Equipment | Weapon;

@@ -13,7 +13,9 @@
    - Follow the task description
    - Use existing architecture patterns
    - Keep files under 200 lines
+   - **MANDATORY: Write unit and integration tests** - All code changes must include tests that confirm functionality works
    - Test your changes: `npm run dev`
+   - **MANDATORY: Take a screenshot** - After testing, capture a screenshot of the working game and save to `/screenshots/` folder with descriptive name
    - Ensure build works: `npm run build`
 
 3. **Mark as Done**
@@ -91,7 +93,7 @@
 
 ### Content Expansion
 
-- [ ] 🔥 **Add 10 more enemies** - Create varied enemies in `src/data/enemies.json` with unique stats and loot tables. Include boss variants. Test balance. (~50 lines JSON)
+- [x] 🔥 **Add 10 more enemies** - Create varied enemies in `src/data/enemies.json` with unique stats and loot tables. Include boss variants. Test balance. (~50 lines JSON)
 
 - [ ] 🔥 **Add 20 more ingredients** - Expand ingredient variety in `src/data/ingredients.json`. Include legendary/exotic types. Organize by rarity tiers. (~100 lines JSON)
 
@@ -217,9 +219,9 @@ Total Tasks: 65
 - Medium Priority (💡): 28
 - Polish (🎨): 12
 
-Completed: 0
+Completed: 1
 In Progress: 0
-Not Started: 65
+Not Started: 64
 
 ---
 
@@ -233,6 +235,8 @@ Not Started: 65
 - Follow existing code style and architecture patterns
 - Document complex logic with comments
 - Emit events for state changes (use EventBus)
+- **MANDATORY: Write tests** - Create unit and integration tests in `src/**/*.test.ts` files for all code changes
+- **MANDATORY: Screenshot verification** - Save game screenshots to `/screenshots/` folder to confirm features work correctly
 
 ## Example Task Workflow
 

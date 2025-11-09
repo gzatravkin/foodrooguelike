@@ -9,7 +9,10 @@ import ingredientsData from '../data/ingredients.json';
 import cookingMethodsData from '../data/cookingMethods.json';
 import equipmentData from '../data/equipment.json';
 import weaponsData from '../data/weapons.json';
-import recipesData from '../data/recipes.json';
+import recipesCommon from '../data/recipes-common.json';
+import recipesUncommon from '../data/recipes-uncommon.json';
+import recipesRare from '../data/recipes-rare.json';
+import recipesLegendary from '../data/recipes-legendary.json';
 import upgradesData from '../data/upgrades.json';
 
 export class DataLoader {
@@ -21,7 +24,13 @@ export class DataLoader {
             entityFactory.registerTemplates(cookingMethodsData);
             entityFactory.registerTemplates(equipmentData);
             entityFactory.registerTemplates(weaponsData);
-            entityFactory.registerTemplates(recipesData);
+
+            // Load recipes from split files
+            entityFactory.registerTemplates(recipesCommon);
+            entityFactory.registerTemplates(recipesUncommon);
+            entityFactory.registerTemplates(recipesRare);
+            entityFactory.registerTemplates(recipesLegendary);
+
             entityFactory.registerTemplates(upgradesData);
 
             console.log('All game data loaded successfully');

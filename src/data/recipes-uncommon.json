@@ -1,0 +1,200 @@
+{
+  "honey_glazed_jelly": {
+    "id": "honey_glazed_jelly",
+    "type": "recipe",
+    "name": "Honey Glazed Jelly",
+    "description": "Sweet jelly with a golden honey coating",
+    "ingredients": [
+      "jelly",
+      "honey",
+      "sugar"
+    ],
+    "cookingMethod": "fry",
+    "cookingTime": 35,
+    "cookingTimeRange": {
+      "min": 30,
+      "max": 40
+    },
+    "buffType": "health",
+    "rarity": "uncommon"
+  },
+  "fish_and_chips": {
+    "id": "fish_and_chips",
+    "type": "recipe",
+    "name": "Fish and Chips",
+    "description": "Crispy fried fish with golden potato wedges",
+    "ingredients": [
+      "fish",
+      "flour",
+      "salt"
+    ],
+    "cookingMethod": "fry",
+    "cookingTime": 50,
+    "cookingTimeRange": {
+      "min": 45,
+      "max": 55
+    },
+    "buffType": "health",
+    "rarity": "uncommon"
+  },
+  "cheese_omelette": {
+    "id": "cheese_omelette",
+    "type": "recipe",
+    "name": "Cheese Omelette",
+    "description": "Fluffy eggs with melted cheese",
+    "ingredients": [
+      "egg",
+      "cheese",
+      "butter"
+    ],
+    "cookingMethod": "fry",
+    "cookingTime": 25,
+    "cookingTimeRange": {
+      "min": 20,
+      "max": 30
+    },
+    "buffType": "health",
+    "rarity": "uncommon"
+  },
+  "garlic_butter_mushrooms": {
+    "id": "garlic_butter_mushrooms",
+    "type": "recipe",
+    "name": "Garlic Butter Mushrooms",
+    "description": "Savory mushrooms saut\u00e9ed in garlic butter",
+    "ingredients": [
+      "mushroom",
+      "garlic",
+      "butter",
+      "herb"
+    ],
+    "cookingMethod": "fry",
+    "cookingTime": 30,
+    "cookingTimeRange": {
+      "min": 25,
+      "max": 35
+    },
+    "buffType": "defense",
+    "rarity": "uncommon"
+  },
+  "spicy_pepper_stir_fry": {
+    "id": "spicy_pepper_stir_fry",
+    "type": "recipe",
+    "name": "Spicy Pepper Stir Fry",
+    "description": "A blazing hot stir fry that packs a punch",
+    "ingredients": [
+      "fire_pepper",
+      "meat",
+      "onion",
+      "garlic",
+      "rice"
+    ],
+    "cookingMethod": "fry",
+    "cookingTime": 45,
+    "cookingTimeRange": {
+      "min": 40,
+      "max": 50
+    },
+    "buffType": "attack",
+    "rarity": "uncommon"
+  },
+  "herbed_fish_fillet": {
+    "id": "herbed_fish_fillet",
+    "type": "recipe",
+    "name": "Herbed Fish Fillet",
+    "description": "Delicate fish with fresh herbs and lemon",
+    "ingredients": [
+      "fish",
+      "herb",
+      "butter",
+      "salt"
+    ],
+    "cookingMethod": "grill",
+    "cookingTime": 55,
+    "cookingTimeRange": {
+      "min": 50,
+      "max": 60
+    },
+    "buffType": "defense",
+    "rarity": "uncommon"
+  },
+  "tomato_herb_pasta": {
+    "id": "tomato_herb_pasta",
+    "type": "recipe",
+    "name": "Tomato Herb Pasta",
+    "description": "Fresh pasta in a tangy tomato herb sauce",
+    "ingredients": [
+      "flour",
+      "tomato",
+      "herb",
+      "garlic"
+    ],
+    "cookingMethod": "boil",
+    "cookingTime": 40,
+    "cookingTimeRange": {
+      "min": 35,
+      "max": 45
+    },
+    "buffType": "health",
+    "rarity": "uncommon"
+  },
+  "mushroom_pie": {
+    "id": "mushroom_pie",
+    "type": "recipe",
+    "name": "Mushroom Pie",
+    "description": "Savory pie filled with forest mushrooms",
+    "ingredients": [
+      "mushroom",
+      "flour",
+      "butter",
+      "onion"
+    ],
+    "cookingMethod": "bake",
+    "cookingTime": 110,
+    "cookingTimeRange": {
+      "min": 100,
+      "max": 120
+    },
+    "buffType": "defense",
+    "rarity": "uncommon"
+  },
+  "honey_cake": {
+    "id": "honey_cake",
+    "type": "recipe",
+    "name": "Honey Cake",
+    "description": "Sweet cake dripping with golden honey",
+    "ingredients": [
+      "flour",
+      "honey",
+      "egg",
+      "sugar"
+    ],
+    "cookingMethod": "bake",
+    "cookingTime": 95,
+    "cookingTimeRange": {
+      "min": 90,
+      "max": 105
+    },
+    "buffType": "health",
+    "rarity": "uncommon"
+  },
+  "seafood_platter": {
+    "id": "seafood_platter",
+    "type": "recipe",
+    "name": "Seafood Platter",
+    "description": "Fresh seafood with butter and herbs",
+    "ingredients": [
+      "fish",
+      "butter",
+      "garlic",
+      "herb"
+    ],
+    "cookingMethod": "grill",
+    "cookingTime": 65,
+    "cookingTimeRange": {
+      "min": 60,
+      "max": 75
+    },
+    "buffType": "defense",
+    "rarity": "uncommon"
+  }
+}

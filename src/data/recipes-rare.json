@@ -1,0 +1,240 @@
+{
+  "spicy_dragon_steak": {
+    "id": "spicy_dragon_steak",
+    "type": "recipe",
+    "name": "Spicy Dragon Steak",
+    "description": "Premium dragon meat with a fiery kick",
+    "ingredients": [
+      "premium_meat",
+      "fire_pepper",
+      "spice_blend",
+      "garlic"
+    ],
+    "cookingMethod": "grill",
+    "cookingTime": 75,
+    "cookingTimeRange": {
+      "min": 70,
+      "max": 85
+    },
+    "buffType": "attack",
+    "rarity": "rare"
+  },
+  "dragon_fruit_tart": {
+    "id": "dragon_fruit_tart",
+    "type": "recipe",
+    "name": "Dragon Fruit Tart",
+    "description": "A magical dessert with exotic dragon fruit",
+    "ingredients": [
+      "dragon_fruit",
+      "flour",
+      "sugar",
+      "egg"
+    ],
+    "cookingMethod": "bake",
+    "cookingTime": 100,
+    "cookingTimeRange": {
+      "min": 95,
+      "max": 110
+    },
+    "buffType": "defense",
+    "rarity": "rare"
+  },
+  "mana_infused_stew": {
+    "id": "mana_infused_stew",
+    "type": "recipe",
+    "name": "Mana-Infused Stew",
+    "description": "A magical stew that radiates mystical energy",
+    "ingredients": [
+      "mana_herb",
+      "mushroom",
+      "meat",
+      "onion"
+    ],
+    "cookingMethod": "boil",
+    "cookingTime": 60,
+    "cookingTimeRange": {
+      "min": 55,
+      "max": 70
+    },
+    "buffType": "attack",
+    "rarity": "rare"
+  },
+  "phoenix_omelette": {
+    "id": "phoenix_omelette",
+    "type": "recipe",
+    "name": "Phoenix Omelette",
+    "description": "A legendary dish made from phoenix eggs",
+    "ingredients": [
+      "phoenix_egg",
+      "cheese",
+      "butter",
+      "fire_pepper"
+    ],
+    "cookingMethod": "fry",
+    "cookingTime": 40,
+    "cookingTimeRange": {
+      "min": 35,
+      "max": 45
+    },
+    "buffType": "attack",
+    "rarity": "rare"
+  },
+  "truffle_risotto": {
+    "id": "truffle_risotto",
+    "type": "recipe",
+    "name": "Truffle Risotto",
+    "description": "Luxurious rice dish with rare truffles",
+    "ingredients": [
+      "truffle",
+      "rice",
+      "butter",
+      "cheese"
+    ],
+    "cookingMethod": "boil",
+    "cookingTime": 70,
+    "cookingTimeRange": {
+      "min": 65,
+      "max": 80
+    },
+    "buffType": "defense",
+    "rarity": "rare"
+  },
+  "ancient_grain_bread": {
+    "id": "ancient_grain_bread",
+    "type": "recipe",
+    "name": "Ancient Grain Bread",
+    "description": "Bread made from prehistoric grains of power",
+    "ingredients": [
+      "ancient_grain",
+      "salt",
+      "honey"
+    ],
+    "cookingMethod": "bake",
+    "cookingTime": 120,
+    "cookingTimeRange": {
+      "min": 110,
+      "max": 130
+    },
+    "buffType": "health",
+    "rarity": "rare"
+  },
+  "saffron_rice_pilaf": {
+    "id": "saffron_rice_pilaf",
+    "type": "recipe",
+    "name": "Saffron Rice Pilaf",
+    "description": "Golden rice infused with the world's most precious spice",
+    "ingredients": [
+      "rice",
+      "saffron",
+      "butter",
+      "onion"
+    ],
+    "cookingMethod": "boil",
+    "cookingTime": 50,
+    "cookingTimeRange": {
+      "min": 45,
+      "max": 55
+    },
+    "buffType": "defense",
+    "rarity": "rare"
+  },
+  "crystal_salt_crusted_meat": {
+    "id": "crystal_salt_crusted_meat",
+    "type": "recipe",
+    "name": "Crystal Salt-Crusted Meat",
+    "description": "Premium meat encased in magical salt crystals",
+    "ingredients": [
+      "premium_meat",
+      "crystal_salt",
+      "herb"
+    ],
+    "cookingMethod": "bake",
+    "cookingTime": 80,
+    "cookingTimeRange": {
+      "min": 75,
+      "max": 90
+    },
+    "buffType": "attack",
+    "rarity": "rare"
+  },
+  "meat_lovers_feast": {
+    "id": "meat_lovers_feast",
+    "type": "recipe",
+    "name": "Meat Lover's Feast",
+    "description": "A carnivore's dream with multiple types of meat",
+    "ingredients": [
+      "meat",
+      "premium_meat",
+      "fish",
+      "spice_blend"
+    ],
+    "cookingMethod": "grill",
+    "cookingTime": 90,
+    "cookingTimeRange": {
+      "min": 85,
+      "max": 100
+    },
+    "buffType": "attack",
+    "rarity": "rare"
+  },
+  "dragon_flame_curry": {
+    "id": "dragon_flame_curry",
+    "type": "recipe",
+    "name": "Dragon Flame Curry",
+    "description": "A curry so spicy it breathes fire",
+    "ingredients": [
+      "fire_pepper",
+      "dragon_fruit",
+      "rice",
+      "spice_blend"
+    ],
+    "cookingMethod": "boil",
+    "cookingTime": 55,
+    "cookingTimeRange": {
+      "min": 50,
+      "max": 65
+    },
+    "buffType": "attack",
+    "rarity": "rare"
+  },
+  "warrior_steak": {
+    "id": "warrior_steak",
+    "type": "recipe",
+    "name": "Warrior's Steak",
+    "description": "A hearty steak fit for a champion",
+    "ingredients": [
+      "premium_meat",
+      "crystal_salt",
+      "garlic",
+      "butter"
+    ],
+    "cookingMethod": "grill",
+    "cookingTime": 70,
+    "cookingTimeRange": {
+      "min": 65,
+      "max": 80
+    },
+    "buffType": "attack",
+    "rarity": "rare"
+  },
+  "mystical_mushroom_medley": {
+    "id": "mystical_mushroom_medley",
+    "type": "recipe",
+    "name": "Mystical Mushroom Medley",
+    "description": "A mix of magical and mundane mushrooms",
+    "ingredients": [
+      "mushroom",
+      "mana_herb",
+      "truffle",
+      "butter"
+    ],
+    "cookingMethod": "fry",
+    "cookingTime": 45,
+    "cookingTimeRange": {
+      "min": 40,
+      "max": 50
+    },
+    "buffType": "defense",
+    "rarity": "rare"
+  }
+}

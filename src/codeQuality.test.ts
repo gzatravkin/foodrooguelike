@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
 
-const MAX_LINES = 350;
+const MAX_LINES = 300;
 
 function getAllSourceFiles(dir: string, fileList: string[] = []): string[] {
   const files = fs.readdirSync(dir);
@@ -10,8 +10,9 @@ function getAllSourceFiles(dir: string, fileList: string[] = []): string[] {
   files.forEach(file => {
     const filePath = path.join(dir, file);
 
-    // Skip node_modules, dist, and hidden directories
-    if (file === 'node_modules' || file === 'dist' || file.startsWith('.')) {
+    // Skip node_modules, dist, hidden directories, and package files
+    if (file === 'node_modules' || file === 'dist' || file.startsWith('.') ||
+        file === 'package-lock.json' || file === 'package.json') {
       return;
     }
 
@@ -21,7 +22,8 @@ function getAllSourceFiles(dir: string, fileList: string[] = []): string[] {
       file.endsWith('.ts') ||
       file.endsWith('.js') ||
       file.endsWith('.tsx') ||
-      file.endsWith('.jsx')
+      file.endsWith('.jsx') ||
+      file.endsWith('.json')
     ) {
       fileList.push(filePath);
     }
@@ -36,7 +38,7 @@ function countLines(filePath: string): number {
 }
 
 describe('Code Quality - File Size', () => {
-  it('should have all source files under 350 lines', () => {
+  it('should have all source files under 300 lines', () => {
     const srcDir = path.join(__dirname, '..');
     const sourceFiles = getAllSourceFiles(srcDir);
 
@@ -55,7 +57,9 @@ describe('Code Quality - File Size', () => {
         .map(({ file, lines }) => `  - ${file}: ${lines} lines (exceeds ${MAX_LINES})`)
         .join('\n');
 
-      expect(oversizedFiles.length).toBe(0);
+      console.log('Oversized files found:');
+      console.log(errorMessage);
+      expect(oversizedFiles.length, errorMessage).toBe(0);
     }
 
     expect(oversizedFiles.length).toBe(0);

@@ -1,0 +1,115 @@
+{
+  "slime_pudding": {
+    "id": "slime_pudding",
+    "type": "recipe",
+    "name": "Slime Pudding",
+    "description": "A wobbly dessert that jiggles with delight",
+    "ingredients": [
+      "jelly",
+      "sugar"
+    ],
+    "cookingMethod": "boil",
+    "cookingTime": 30,
+    "cookingTimeRange": {
+      "min": 25,
+      "max": 35
+    },
+    "buffType": "health",
+    "rarity": "common"
+  },
+  "mushroom_soup": {
+    "id": "mushroom_soup",
+    "type": "recipe",
+    "name": "Mushroom Soup",
+    "description": "A hearty soup with earthy forest flavors",
+    "ingredients": [
+      "mushroom",
+      "herb",
+      "salt"
+    ],
+    "cookingMethod": "boil",
+    "cookingTime": 45,
+    "cookingTimeRange": {
+      "min": 40,
+      "max": 50
+    },
+    "buffType": "defense",
+    "rarity": "common"
+  },
+  "grilled_meat": {
+    "id": "grilled_meat",
+    "type": "recipe",
+    "name": "Grilled Meat",
+    "description": "Perfectly charred meat with smoky flavors",
+    "ingredients": [
+      "meat",
+      "salt",
+      "herb"
+    ],
+    "cookingMethod": "grill",
+    "cookingTime": 60,
+    "cookingTimeRange": {
+      "min": 55,
+      "max": 70
+    },
+    "buffType": "attack",
+    "rarity": "common"
+  },
+  "fried_rice": {
+    "id": "fried_rice",
+    "type": "recipe",
+    "name": "Fried Rice",
+    "description": "Classic fried rice with aromatic seasonings",
+    "ingredients": [
+      "rice",
+      "egg",
+      "onion",
+      "garlic"
+    ],
+    "cookingMethod": "fry",
+    "cookingTime": 40,
+    "cookingTimeRange": {
+      "min": 35,
+      "max": 45
+    },
+    "buffType": "health",
+    "rarity": "common"
+  },
+  "herb_bread": {
+    "id": "herb_bread",
+    "type": "recipe",
+    "name": "Herb Bread",
+    "description": "Warm bread infused with aromatic herbs",
+    "ingredients": [
+      "flour",
+      "herb",
+      "salt"
+    ],
+    "cookingMethod": "bake",
+    "cookingTime": 90,
+    "cookingTimeRange": {
+      "min": 85,
+      "max": 100
+    },
+    "buffType": "health",
+    "rarity": "common"
+  },
+  "sweet_jelly_candy": {
+    "id": "sweet_jelly_candy",
+    "type": "recipe",
+    "name": "Sweet Jelly Candy",
+    "description": "Simple but delightful candy treats",
+    "ingredients": [
+      "jelly",
+      "sugar"
+    ],
+    "cookingMethod": "fry",
+    "cookingTime": 20,
+    "cookingTimeRange": {
+      "min": 15,
+      "max": 25
+    },
+    "buffType": "health",
+    "rarity": "common"
+  }
+}

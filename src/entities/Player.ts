@@ -15,6 +15,8 @@ export class Player extends Entity {
   public dashDuration: number = 0;
   public dashDirection: { x: number; y: number } = { x: 0, y: 0 };
   public isDashing: boolean = false;
+  public slowedDuration: number = 0; // Duration of slow effect after dash
+  public slowMultiplier: number = 0.3; // Move at 30% speed when slowed
 
   constructor(x: number, y: number, initialWeapon?: Weapon) {
     const stats: EntityStats = {
@@ -44,8 +46,19 @@ export class Player extends Entity {
     if (this.dashDuration > 0) {
       this.dashDuration -= deltaTime;
       this.isDashing = true;
+
+      // When dash ends, apply slow effect
+      if (this.dashDuration <= 0) {
+        this.isDashing = false;
+        this.slowedDuration = 2.0; // Slow for 2 seconds after dash
+      }
     } else {
       this.isDashing = false;
+    }
+
+    // Update slow effect duration
+    if (this.slowedDuration > 0) {
+      this.slowedDuration -= deltaTime;
     }
   }
 
@@ -63,9 +76,15 @@ export class Player extends Entity {
       this.facingAngle = Math.atan2(dy, dx);
     }
 
+    // Apply slow effect if active
+    let moveSpeed = this.stats.speed;
+    if (this.slowedDuration > 0) {
+      moveSpeed *= this.slowMultiplier;
+    }
+
     // Move based on speed
-    this.x += dx * this.stats.speed * deltaTime;
-    this.y += dy * this.stats.speed * deltaTime;
+    this.x += dx * moveSpeed * deltaTime;
+    this.y += dy * moveSpeed * deltaTime;
   }
 
   canDash(): boolean {

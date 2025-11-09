@@ -8,6 +8,7 @@ import { Player } from '../entities/Player';
 import { Enemy } from '../entities/Enemy';
 import { Projectile } from '../entities/Projectile';
 import { Corpse } from '../entities/Corpse';
+import { Trap } from '../entities/Trap';
 import { GameMode } from './GameScreen';
 import { Weapon } from '../entities/types';
 import { Particle } from '../entities/Particle';
@@ -194,6 +195,36 @@ export class GameScreenRenderer {
     const g = parseInt(hex.slice(3, 5), 16);
     const b = parseInt(hex.slice(5, 7), 16);
     return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  }
+
+  renderTraps(traps: Trap[]): void {
+    for (const trap of traps) {
+      if (trap.active || trap.activationTimer > 0) {
+        // Activated trap - more visible with orange glow
+        const glowIntensity = trap.activationTimer / trap.activationDelay;
+        const glowAlpha = 0.4 + glowIntensity * 0.3;
+        this.renderer.drawCircle(trap.x, trap.y, trap.size * 0.8, `rgba(255, 136, 0, ${glowAlpha})`);
+        this.renderer.drawCircle(trap.x, trap.y, trap.size * 0.5, `rgba(255, 100, 0, ${glowAlpha + 0.2})`);
+      } else {
+        // Barely visible trap - very subtle dark circle with hints of red
+        const seed = Math.floor(trap.x + trap.y);
+        const opacity = 0.08 + (seed % 5) * 0.01; // Very low opacity (8-12%)
+
+        // Draw subtle trap outline
+        this.renderer.drawCircle(trap.x, trap.y, trap.size * 0.6, `rgba(80, 20, 20, ${opacity})`);
+
+        // Add tiny darker center
+        this.renderer.drawCircle(trap.x, trap.y, trap.size * 0.3, `rgba(60, 10, 10, ${opacity + 0.05})`);
+
+        // Add very faint spikes/indicators
+        for (let i = 0; i < 4; i++) {
+          const angle = (i * Math.PI) / 2;
+          const spikeX = trap.x + Math.cos(angle) * trap.size * 0.4;
+          const spikeY = trap.y + Math.sin(angle) * trap.size * 0.4;
+          this.renderer.drawCircle(spikeX, spikeY, 1.5, `rgba(100, 30, 30, ${opacity + 0.03})`);
+        }
+      }
+    }
   }
 
   renderCorpses(corpses: Corpse[]): void {

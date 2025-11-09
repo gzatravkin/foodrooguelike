@@ -9,6 +9,7 @@ import { MapSystem, TileType } from '../systems/MapSystem';
 import { Player } from '../entities/Player';
 import { Enemy } from '../entities/Enemy';
 import { Corpse } from '../entities/Corpse';
+import { Trap } from '../entities/Trap';
 import { gameState } from '../core/GameState';
 import { entityFactory } from '../entities/EntityFactory';
 import { Enemy as EnemyData } from '../entities/types';
@@ -28,6 +29,7 @@ export class GameScreen {
   private mapSystem: MapSystem;
   private player: Player;
   private enemies: Enemy[] = [];
+  private traps: Trap[] = [];
   private combatSystem: CombatSystem;
   private inputHandler: InputHandler;
   private shopManager: ShopManager;
@@ -38,6 +40,7 @@ export class GameScreen {
   private interactionPromptText: string = '';
   private nearbyCorpse: Corpse | null = null;
   private svgsLoaded: boolean = false;
+  private baseHealTimer: number = 0; // Timer for HP recovery at base
 
   constructor(
     renderer: CanvasRenderer,
@@ -178,8 +181,10 @@ export class GameScreen {
     this.player.y = 240;
 
     this.enemies = [];
+    this.traps = [];
     this.combatSystem.clearProjectiles();
     this.combatSystem.clearCorpses();
+    this.baseHealTimer = 0;
   }
 
   loadExpedition(level: number = 1): void {
@@ -194,6 +199,7 @@ export class GameScreen {
     this.combatSystem.clearCorpses();
 
     this.spawnEnemies(level);
+    this.spawnTraps();
   }
 
   private spawnEnemies(level: number): void {
@@ -240,6 +246,51 @@ export class GameScreen {
     return null;
   }
 
+  private spawnTraps(): void {
+    this.traps = [];
+    const map = this.mapSystem.getCurrentMap();
+    if (!map) return;
+
+    // Spawn 8-15 traps randomly on the map
+    const numTraps = 8 + Math.floor(Math.random() * 8);
+
+    for (let i = 0; i < numTraps; i++) {
+      const position = this.findValidTrapPosition();
+      if (position) {
+        this.traps.push(new Trap(position.x, position.y));
+      }
+    }
+  }
+
+  private findValidTrapPosition(): { x: number; y: number } | null {
+    const map = this.mapSystem.getCurrentMap();
+    if (!map) return null;
+
+    for (let attempts = 0; attempts < 100; attempts++) {
+      const x = (2 + Math.floor(Math.random() * (map.width - 4))) * map.tileSize + map.tileSize / 2;
+      const y = (2 + Math.floor(Math.random() * (map.height - 4))) * map.tileSize + map.tileSize / 2;
+
+      const distFromPlayer = Math.sqrt((x - this.player.x) ** 2 + (y - this.player.y) ** 2);
+
+      // Make sure trap is not too close to player or other traps
+      if (this.mapSystem.canMoveTo(x, y) && distFromPlayer > 100) {
+        let tooClose = false;
+        for (const trap of this.traps) {
+          const distToTrap = Math.sqrt((x - trap.x) ** 2 + (y - trap.y) ** 2);
+          if (distToTrap < 64) { // Minimum 64 pixels apart
+            tooClose = true;
+            break;
+          }
+        }
+        if (!tooClose) {
+          return { x, y };
+        }
+      }
+    }
+
+    return null;
+  }
+
   update(deltaTime: number): void {
     if (this.shopManager.isShopOpen()) {
       this.shopManager.handleShopInput(this.player);
@@ -252,12 +303,14 @@ export class GameScreen {
     this.player.update(deltaTime);
 
     this.updateEnemies(deltaTime);
+    this.updateTraps(deltaTime);
     this.combatSystem.updateProjectiles(deltaTime, this.enemies, this.player);
     this.combatSystem.updateCorpses(deltaTime);
     this.particleSystem.update(deltaTime);
     this.handleDeadEnemies();
     this.checkInteractions();
     this.updateCamera();
+    this.handleBaseHealing(deltaTime);
 
     if (!this.player.alive) {
       this.handlePlayerDeath();
@@ -311,6 +364,55 @@ export class GameScreen {
           }
         }
       }
+    }
+  }
+
+  private updateTraps(deltaTime: number): void {
+    for (const trap of this.traps) {
+      trap.update(deltaTime);
+
+      if (trap.isPlayerNear(this.player.x, this.player.y)) {
+        if (this.player.isDashing) {
+          // Dashing through trap - activate it (safe)
+          if (!trap.active) {
+            trap.activate();
+            // Create visual effect for trap activation
+            this.particleSystem.createImpact(trap.x, trap.y, '#FF8800', 8);
+          }
+        } else if (trap.canDamage()) {
+          // Walking into trap - take damage
+          this.player.takeDamage(trap.damage);
+          trap.activate(); // Activate after damaging
+
+          // Create damage particles
+          this.particleSystem.createBlood(this.player.x, this.player.y,
+            this.player.x - trap.x, this.player.y - trap.y);
+          this.particleSystem.createImpact(this.player.x, this.player.y, '#FF0000', 12);
+        }
+      }
+    }
+  }
+
+  private handleBaseHealing(deltaTime: number): void {
+    if (this.mode !== 'base') return;
+
+    // Heal player slowly when at base
+    if (this.player.stats.health < this.player.stats.maxHealth) {
+      this.baseHealTimer += deltaTime;
+
+      // Heal 1 HP every 0.5 seconds
+      if (this.baseHealTimer >= 0.5) {
+        this.baseHealTimer = 0;
+        this.player.stats.health = Math.min(
+          this.player.stats.health + 1,
+          this.player.stats.maxHealth
+        );
+
+        // Create healing particle effect
+        this.particleSystem.createImpact(this.player.x, this.player.y, '#00FF00', 5);
+      }
+    } else {
+      this.baseHealTimer = 0;
     }
   }
 
@@ -432,6 +534,7 @@ export class GameScreen {
       return;
     }
 
+    this.renderer.renderTraps(this.traps);
     this.renderer.renderCorpses(this.combatSystem.getCorpses());
     this.renderer.renderEnemies(this.enemies);
     this.renderer.renderProjectiles(this.combatSystem.getProjectiles());

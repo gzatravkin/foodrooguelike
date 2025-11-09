@@ -5,6 +5,7 @@
 import { InputManager } from '../core/InputManager';
 import { Player } from '../entities/Player';
 import { entityFactory } from '../entities/EntityFactory';
+import { shopSystem } from '../systems/ShopSystem';
 import { Weapon } from '../entities/types';
 
 export class ShopManager {
@@ -40,9 +41,7 @@ export class ShopManager {
       if (this.input.isKeyJustPressed(i.toString())) {
         const weapon = this.availableWeapons[i - 1];
         if (weapon && player.gold >= weapon.cost) {
-          import('../systems/ShopSystem').then(({ shopSystem }) => {
-            shopSystem.buyWeapon(weapon.id);
-          });
+          shopSystem.buyWeapon(weapon.id);
         }
         break;
       }

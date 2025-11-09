@@ -1,32 +1,31 @@
 /**
- * Main entry point - Initializes and starts the game
+ * Main entry point - Initializes and starts the game (2D Top-View Roguelike)
  */
 
 import { GameLoop } from './core/GameLoop';
 import { gameState } from './core/GameState';
 import { eventBus } from './core/EventBus';
 import { dataLoader } from './core/DataLoader';
-import { SVGRenderer } from './rendering/SVGRenderer';
-import { ScreenManager } from './rendering/ScreenManager';
-import { BaseScreen } from './screens/BaseScreen';
-import { ExpeditionScreen } from './screens/ExpeditionScreen';
-import { CookingScreen } from './screens/CookingScreen';
-import { ShopScreen } from './screens/ShopScreen';
-import { SettingsScreen } from './screens/SettingsScreen';
+import { CanvasRenderer } from './rendering/CanvasRenderer';
+import { InputManager } from './core/InputManager';
+import { GameScreen } from './screens/GameScreen';
 
 class Game {
-    private renderer: SVGRenderer;
-    private screenManager: ScreenManager;
+    private renderer: CanvasRenderer;
+    private input: InputManager;
+    private gameScreen: GameScreen;
     private gameLoop: GameLoop;
+    private lastTime: number = 0;
 
     constructor() {
-        const svgElement = document.getElementById('game-svg') as unknown as SVGSVGElement;
-        if (!svgElement) {
-            throw new Error('SVG element not found');
+        const canvasElement = document.getElementById('game-canvas') as HTMLCanvasElement;
+        if (!canvasElement) {
+            throw new Error('Canvas element not found');
         }
 
-        this.renderer = new SVGRenderer(svgElement);
-        this.screenManager = new ScreenManager();
+        this.renderer = new CanvasRenderer(canvasElement);
+        this.input = new InputManager();
+        this.gameScreen = new GameScreen(this.renderer, this.input);
         this.gameLoop = new GameLoop();
 
         this.setupEventListeners();
@@ -36,45 +35,38 @@ class Game {
         console.log('Loading game data...');
         await dataLoader.loadAll();
 
-        console.log('Initializing screens...');
-        this.screenManager.registerScreen('base', new BaseScreen(this.renderer));
-        this.screenManager.registerScreen('expedition', new ExpeditionScreen(this.renderer));
-        this.screenManager.registerScreen('cooking', new CookingScreen(this.renderer));
-        this.screenManager.registerScreen('shop', new ShopScreen(this.renderer));
-        this.screenManager.registerScreen('settings', new SettingsScreen(this.renderer));
-
+        console.log('Initializing 2D top-view roguelike...');
         console.log('Game initialized successfully!');
     }
 
     start(): void {
-        this.screenManager.switchTo('base');
         this.gameLoop.start();
+        this.lastTime = performance.now();
+        this.gameLoop.loop(this.update.bind(this));
         console.log('Game started!');
     }
 
+    private update(currentTime: number): void {
+        const deltaTime = (currentTime - this.lastTime) / 1000;
+        this.lastTime = currentTime;
+
+        // Update game logic
+        this.gameScreen.update(deltaTime);
+
+        // Render
+        this.gameScreen.render();
+    }
+
     private setupEventListeners(): void {
-        // Screen change listener
-        eventBus.on('screen:changed', (screen) => {
-            this.screenManager.switchTo(screen);
+        // Handle window focus/blur for pausing
+        window.addEventListener('blur', () => {
+            console.log('Game paused (window lost focus)');
         });
 
-        // Render listener
-        eventBus.on('game:render', () => {
-            this.screenManager.render();
+        window.addEventListener('focus', () => {
+            console.log('Game resumed (window gained focus)');
+            this.lastTime = performance.now();
         });
-
-        // Handle input events
-        const svg = document.getElementById('game-svg');
-        if (svg) {
-            svg.addEventListener('click', (e) => {
-                this.screenManager.handleInput(e);
-            });
-
-            svg.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                this.screenManager.handleInput(e);
-            });
-        }
     }
 }
 

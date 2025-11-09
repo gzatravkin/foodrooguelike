@@ -1,24 +1,34 @@
 # Food Roguelike
 
-A TypeScript-based roguelike game with cooking mechanics, designed for mobile browsers with an expandable architecture.
+A **2D top-view action roguelike** with cooking mechanics! Explore your base camp, venture into dangerous dungeons, fight enemies in real-time combat, and cook delicious dishes from the ingredients you collect.
 
 ## Game Overview
 
+### Gameplay
+
+This is a **real-time action roguelike** where you:
+- **Move freely** around a tile-based world using WASD or arrow keys
+- **Explore your base camp** and interact with cooking stations, shops, and expedition portals
+- **Battle enemies** in real-time using hit-and-run tactics
+- **Collect ingredients** from defeated monsters
+- **Cook dishes** to sell for profit or eat for combat buffs
+
 ### Locations
 
-- **Base Camp**: Your restaurant hub where you manage recipes and upgrades
-- **Expedition**: Hunt monsters for ingredients
-- **Cooking**: Combine ingredients with different methods to create dishes
-- **Shop**: Buy equipment, sell dishes, or eat them for buffs
+- **Base Camp**: Your safe haven with cooking station, shop, and expedition portal
+- **Expeditions**: Procedurally generated dungeons filled with enemies and loot
+- **Cooking Station**: Interact to combine ingredients and create dishes
+- **Shop**: Buy better weapons and armor to survive tougher dungeons
 
 ### Core Mechanics
 
-1. **Expedition**: Fight enemies to gather ingredients
-2. **Cooking**: Experiment with ingredient combinations and cooking methods
-3. **Recipe Discovery**: Find optimal combinations through experimentation
-4. **Quality System**: Dishes have quality percentages affecting their value
-5. **Economy**: Sell dishes for gold or eat them for combat bonuses
-6. **Progression**: Buy better equipment and unlock cooking methods
+1. **Real-Time Movement**: Walk around freely, dodge enemy attacks, position for strikes
+2. **Action Combat**: Attack enemies with your equipped weapon, manage cooldowns
+3. **Hit-and-Run Tactics**: Fight smart - enemies chase and attack you in real-time
+4. **Enemy AI**: Monsters patrol, chase when you get close, and attack when in range
+5. **Ingredient Gathering**: Defeat enemies to collect cooking ingredients
+6. **Cooking System**: Experiment with ingredient combinations and methods
+7. **Progression**: Upgrade your weapons and armor to tackle harder dungeons
 
 ## Quick Start
 
@@ -37,6 +47,13 @@ npm run preview
 ```
 
 Open your browser to `http://localhost:5173`
+
+## Controls
+
+- **WASD / Arrow Keys**: Move your character
+- **Space / Left Click**: Attack with equipped weapon
+- **E**: Interact with objects (cooking station, shop, expedition portal, stairs)
+- **ESC**: Pause menu (coming soon)
 
 ## Deployment
 
@@ -63,27 +80,27 @@ git push origin main
 
 ## Architecture Overview
 
-The game is built with **extreme modularity** in mind. Adding new content requires NO modification of existing code.
+The game is built with **extreme modularity** and a **2D game engine** architecture.
 
 ### Project Structure
 
 ```
 src/
-├── core/           # Game engine (state, events, data loading)
-├── entities/       # Entity types and factory system
-├── systems/        # Game logic (combat, cooking, shop)
-├── screens/        # UI screens (base, expedition, cooking, shop)
-├── rendering/      # SVG rendering system
-└── data/           # JSON data files (entities, items, etc.)
+├── core/           # Game engine (state, events, input, game loop)
+├── entities/       # Player, enemies, and entity base classes
+├── systems/        # Game systems (map, combat, cooking, shop)
+├── screens/        # Game screen with rendering and logic
+├── rendering/      # HTML5 Canvas rendering system
+└── data/           # JSON data files (enemies, items, equipment)
 ```
 
 ### Key Design Principles
 
-1. **Data-Driven**: All content is in JSON files
-2. **Factory Pattern**: Entities created through factory
-3. **Event-Driven**: Systems communicate via EventBus
-4. **No God Objects**: Each file under 200 lines
-5. **Plugin Architecture**: Add features without touching existing code
+1. **Canvas-Based Rendering**: HTML5 Canvas for smooth 2D graphics
+2. **Entity-Component System**: Modular entity design with stats and behaviors
+3. **Real-Time Game Loop**: Smooth 60 FPS rendering and updates
+4. **Tile-Based Maps**: Collision detection and interactive tiles
+5. **Data-Driven Content**: All enemies, items, and equipment in JSON files
 
 ## How to Expand
 
@@ -138,19 +155,13 @@ export class YourSystem {
 export const yourSystem = new YourSystem();
 ```
 
-## Mobile Support
-
-- Fully responsive SVG rendering
-- Touch-optimized controls
-- No hover effects (all tap-based)
-- Viewport scaling handled automatically
-
 ## Technology Stack
 
-- **TypeScript**: Type-safe development
-- **Vite**: Fast build tool and dev server
-- **SVG**: Vector graphics for all rendering
-- **JSON**: Data-driven content
+- **TypeScript**: Type-safe development with strict mode
+- **Vite**: Lightning-fast build tool and dev server
+- **HTML5 Canvas**: Hardware-accelerated 2D rendering
+- **JSON**: Data-driven content (enemies, items, equipment)
+- **No external game engines**: Pure TypeScript implementation
 
 ## Code Guidelines
 
@@ -163,20 +174,47 @@ export const yourSystem = new YourSystem();
 
 ## Game Systems
 
+### Movement & Input System
+- Real-time keyboard and mouse input handling
+- Smooth character movement with collision detection
+- 8-directional movement with diagonal normalization
+- Input buffering and state management
+
 ### Combat System
-Turn-based combat with attack/defense calculations. Defeated enemies drop ingredients and gold.
+- Real-time action combat with attack cooldowns
+- Attack hitboxes based on player facing direction
+- Enemy AI with chase and attack states
+- Hit-and-run tactics: dodge attacks, strike when safe
+- Damage calculation: `max(1, attack - defense)`
+
+### Map System
+- Tile-based world with collision detection
+- Base camp with interactive zones (cooking station, shop, portal)
+- Procedurally generated dungeon layouts
+- Interactive tiles: doors, stairs, special objects
+
+### Enemy AI System
+- State machine: idle, chase, attack
+- Pathfinding around obstacles
+- Attack range and cooldown management
+- Loot drops on defeat (gold + ingredients)
 
 ### Cooking System
-Combine multiple ingredients with a cooking method. Quality is randomized with method modifiers. Discover recipes through experimentation.
+- Combine multiple ingredients with cooking methods
+- Quality randomization with method modifiers
+- Recipe discovery through experimentation
+- Dishes can be sold or eaten for buffs
 
 ### Shop System
-Buy equipment to improve stats. Sell dishes for gold or eat them for temporary buffs.
+- Buy weapons and armor to boost stats
+- Equipment directly affects combat performance
+- Progressive gear unlocks as you earn gold
 
-### Entity Factory
-Central system for creating all game objects from JSON templates. Supports runtime object creation (like dishes).
-
-### Event System
-Decoupled communication between systems. Any system can emit events that others can listen to.
+### Canvas Rendering
+- Smooth 60 FPS rendering
+- Camera system that follows the player
+- UI overlay for stats and controls
+- Visual feedback for attacks and damage
 
 ## Extending the Game
 
@@ -216,11 +254,11 @@ No existing files modified! That's the power of this architecture.
 
 ## Performance
 
-- Minimal DOM manipulation
-- Event-driven updates
-- Efficient SVG rendering
-- No unnecessary re-renders
-- Mobile-optimized
+- Hardware-accelerated Canvas rendering
+- 60 FPS game loop with delta time
+- Efficient collision detection
+- Optimized entity updates
+- Minimal memory allocation per frame
 
 ## Future Expansion Ideas
 

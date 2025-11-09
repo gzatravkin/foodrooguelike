@@ -6,6 +6,7 @@ export class CanvasRenderer {
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
   private camera = { x: 0, y: 0 };
+  private svgImageCache: Map<string, HTMLImageElement> = new Map();
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
@@ -184,5 +185,86 @@ export class CanvasRenderer {
       x: screenX + this.camera.x,
       y: screenY + this.camera.y,
     };
+  }
+
+  // Create an image from SVG string (with caching)
+  private createSVGImage(svgString: string, cacheKey: string): Promise<HTMLImageElement> {
+    return new Promise((resolve, reject) => {
+      // Check cache first
+      if (this.svgImageCache.has(cacheKey)) {
+        resolve(this.svgImageCache.get(cacheKey)!);
+        return;
+      }
+
+      const img = new Image();
+      const blob = new Blob([svgString], { type: 'image/svg+xml' });
+      const url = URL.createObjectURL(blob);
+
+      img.onload = () => {
+        this.svgImageCache.set(cacheKey, img);
+        URL.revokeObjectURL(url);
+        resolve(img);
+      };
+
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        reject(new Error('Failed to load SVG image'));
+      };
+
+      img.src = url;
+    });
+  }
+
+  // Draw SVG sprite (world coordinates, affected by camera)
+  async drawSVG(
+    svgString: string,
+    cacheKey: string,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    rotation: number = 0
+  ): Promise<void> {
+    try {
+      const img = await this.createSVGImage(svgString, cacheKey);
+
+      const screenX = x - this.camera.x;
+      const screenY = y - this.camera.y;
+
+      this.ctx.save();
+      this.ctx.translate(screenX, screenY);
+      this.ctx.rotate(rotation);
+      this.ctx.drawImage(img, -width / 2, -height / 2, width, height);
+      this.ctx.restore();
+    } catch (error) {
+      console.error('Error drawing SVG:', error);
+    }
+  }
+
+  // Synchronous version - assumes SVG is already cached
+  drawCachedSVG(
+    cacheKey: string,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    rotation: number = 0
+  ): void {
+    const img = this.svgImageCache.get(cacheKey);
+    if (!img) return;
+
+    const screenX = x - this.camera.x;
+    const screenY = y - this.camera.y;
+
+    this.ctx.save();
+    this.ctx.translate(screenX, screenY);
+    this.ctx.rotate(rotation);
+    this.ctx.drawImage(img, -width / 2, -height / 2, width, height);
+    this.ctx.restore();
+  }
+
+  // Preload SVG into cache
+  async preloadSVG(svgString: string, cacheKey: string): Promise<void> {
+    await this.createSVGImage(svgString, cacheKey);
   }
 }

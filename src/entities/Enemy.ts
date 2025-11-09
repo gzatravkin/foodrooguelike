@@ -88,14 +88,9 @@ export class Enemy extends Entity {
   }
 
   private attackPlayer(): void {
-    if (this.attackCooldown > 0) return;
-
-    // Set cooldown based on weapon
-    if (this.weapon) {
-      this.attackCooldown = this.weapon.attackSpeed;
-    } else {
-      this.attackCooldown = 1.0;
-    }
+    // This method is called when enemy is in attack range
+    // The actual attack execution and cooldown setting happens in GameScreen
+    // Just maintain attack state here
   }
 
   canAttack(): boolean {

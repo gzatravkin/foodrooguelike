@@ -13,6 +13,7 @@ import { Corpse } from '../entities/Corpse';
 import { gameState } from '../core/GameState';
 import { entityFactory } from '../entities/EntityFactory';
 import { Enemy as EnemyData, Weapon } from '../entities/types';
+import * as SVGArt from '../rendering/SVGArt';
 
 export type GameMode = 'base' | 'expedition';
 
@@ -28,6 +29,7 @@ export class GameScreen {
   private showInteractionPrompt: boolean = false;
   private interactionPromptText: string = '';
   private nearbyCorpse: Corpse | null = null;
+  private svgsLoaded: boolean = false;
 
   constructor(
     renderer: CanvasRenderer,
@@ -43,6 +45,40 @@ export class GameScreen {
 
     // Load base camp map
     this.loadBaseCamp();
+
+    // Preload SVG assets
+    this.preloadSVGAssets();
+  }
+
+  private async preloadSVGAssets(): Promise<void> {
+    // Wrap SVG content in proper SVG tags
+    const wrapSVG = (content: string, viewBox: string = "0 0 24 30") =>
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}">${content}</svg>`;
+
+    try {
+      // Preload player
+      await this.renderer.preloadSVG(wrapSVG(SVGArt.createPlayerSVG()), 'player');
+
+      // Preload all enemy types
+      await this.renderer.preloadSVG(wrapSVG(SVGArt.createSlimeSVG()), 'slime');
+      await this.renderer.preloadSVG(wrapSVG(SVGArt.createGoblinSVG()), 'goblin');
+      await this.renderer.preloadSVG(wrapSVG(SVGArt.createSkeletonSVG()), 'skeleton');
+      await this.renderer.preloadSVG(wrapSVG(SVGArt.createOrcSVG()), 'orc');
+      await this.renderer.preloadSVG(wrapSVG(SVGArt.createDragonSVG()), 'dragon');
+      await this.renderer.preloadSVG(wrapSVG(SVGArt.createWolfSVG()), 'wolf');
+      await this.renderer.preloadSVG(wrapSVG(SVGArt.createRatSVG()), 'rat');
+
+      // Preload projectiles
+      await this.renderer.preloadSVG(wrapSVG(SVGArt.createBulletSVG(), "0 0 6 6"), 'bullet');
+      await this.renderer.preloadSVG(wrapSVG(SVGArt.createMagicBoltSVG(), "0 0 8 8"), 'magic-bolt');
+      await this.renderer.preloadSVG(wrapSVG(SVGArt.createFireBallSVG(), "0 0 10 10"), 'fireball');
+      await this.renderer.preloadSVG(wrapSVG(SVGArt.createPlasmaBoltSVG(), "0 0 10 10"), 'plasma');
+
+      this.svgsLoaded = true;
+    } catch (error) {
+      console.error('Failed to preload SVG assets:', error);
+      this.svgsLoaded = true; // Continue anyway, will fall back to shapes
+    }
   }
 
   loadBaseCamp(): void {
@@ -444,36 +480,45 @@ export class GameScreen {
 
     // Render corpses
     for (const corpse of this.corpses) {
-      const opacity = corpse.looted ? 0.3 : 0.7;
+      const opacity = corpse.looted ? 0.3 : 0.6;
       const size = corpse.size;
+
+      // Draw dark puddle
       this.renderer.drawCircle(corpse.x, corpse.y, size / 2, `rgba(60, 40, 30, ${opacity})`);
-      // Draw a simple cross or skull indicator
-      this.renderer.drawLine(
-        corpse.x - size / 4, corpse.y,
-        corpse.x + size / 4, corpse.y,
-        '#888', 2
-      );
-      this.renderer.drawLine(
-        corpse.x, corpse.y - size / 4,
-        corpse.x, corpse.y + size / 4,
-        '#888', 2
-      );
+
+      // Draw skull symbol
+      const skullColor = corpse.looted ? '#555' : '#999';
+      this.renderer.drawText('💀', corpse.x, corpse.y + 4, skullColor, 16, 'center');
     }
 
     // Render enemies
     for (const enemy of this.enemies) {
       if (!enemy.alive) continue;
 
-      // Simple colored circle for now
-      this.renderer.drawCircleWithBorder(enemy.x, enemy.y, enemy.size / 2, enemy.color, '#000', 2);
+      // Use SVG art if loaded, otherwise fall back to circles
+      if (this.svgsLoaded) {
+        const spriteKey = enemy.enemyData.id;
+        const spriteSize = enemy.size * 1.5; // Make sprites slightly larger than hitbox
+        this.renderer.drawCachedSVG(spriteKey, enemy.x, enemy.y, spriteSize, spriteSize, enemy.facingAngle);
 
-      // Draw weapon indicator
-      if (enemy.isRangedWeapon()) {
-        // Draw a small gun icon
-        const gunLength = 8;
-        const endX = enemy.x + Math.cos(enemy.facingAngle) * gunLength;
-        const endY = enemy.y + Math.sin(enemy.facingAngle) * gunLength;
-        this.renderer.drawLine(enemy.x, enemy.y, endX, endY, '#333', 3);
+        // Draw weapon indicator for ranged enemies
+        if (enemy.isRangedWeapon()) {
+          const gunLength = 10;
+          const endX = enemy.x + Math.cos(enemy.facingAngle) * gunLength;
+          const endY = enemy.y + Math.sin(enemy.facingAngle) * gunLength;
+          this.renderer.drawLine(enemy.x, enemy.y, endX, endY, '#333', 2);
+        }
+      } else {
+        // Fallback to simple circle
+        this.renderer.drawCircleWithBorder(enemy.x, enemy.y, enemy.size / 2, enemy.color, '#000', 2);
+
+        // Draw weapon indicator
+        if (enemy.isRangedWeapon()) {
+          const gunLength = 8;
+          const endX = enemy.x + Math.cos(enemy.facingAngle) * gunLength;
+          const endY = enemy.y + Math.sin(enemy.facingAngle) * gunLength;
+          this.renderer.drawLine(enemy.x, enemy.y, endX, endY, '#333', 3);
+        }
       }
 
       // Draw health bar
@@ -482,32 +527,59 @@ export class GameScreen {
 
     // Render projectiles
     for (const proj of this.projectiles) {
-      this.renderer.drawCircle(proj.x, proj.y, proj.size, proj.color);
+      if (this.svgsLoaded) {
+        // Use bullet SVG for all projectiles (can be enhanced later)
+        const projSize = proj.size * 2;
+        const angle = Math.atan2(proj.vy, proj.vx);
+        this.renderer.drawCachedSVG('bullet', proj.x, proj.y, projSize, projSize, angle);
+      } else {
+        // Fallback to circle
+        this.renderer.drawCircle(proj.x, proj.y, proj.size, proj.color);
 
-      // Draw trail effect
-      const trailLength = 10;
-      const trailX = proj.x - (proj.vx / Math.abs(proj.vx + proj.vy)) * trailLength;
-      const trailY = proj.y - (proj.vy / Math.abs(proj.vx + proj.vy)) * trailLength;
-      this.renderer.drawLine(trailX, trailY, proj.x, proj.y, proj.color, 2);
+        // Draw trail effect
+        const trailLength = 10;
+        const trailX = proj.x - (proj.vx / Math.abs(proj.vx + proj.vy)) * trailLength;
+        const trailY = proj.y - (proj.vy / Math.abs(proj.vx + proj.vy)) * trailLength;
+        this.renderer.drawLine(trailX, trailY, proj.x, proj.y, proj.color, 2);
+      }
     }
 
     // Render player
-    this.renderer.drawCircleWithBorder(this.player.x, this.player.y, this.player.size / 2, this.player.color, '#000', 2);
+    if (this.svgsLoaded) {
+      const playerSize = this.player.size * 1.5;
+      this.renderer.drawCachedSVG('player', this.player.x, this.player.y, playerSize, playerSize, this.player.facingAngle);
 
-    // Draw player facing indicator / weapon
-    if (this.player.isRangedWeapon()) {
-      // Draw gun
-      const gunLength = 12;
-      const endX = this.player.x + Math.cos(this.player.facingAngle) * gunLength;
-      const endY = this.player.y + Math.sin(this.player.facingAngle) * gunLength;
-      this.renderer.drawLine(this.player.x, this.player.y, endX, endY, '#FFD700', 3);
+      // Draw weapon indicator
+      if (this.player.isRangedWeapon()) {
+        const gunLength = 15;
+        const endX = this.player.x + Math.cos(this.player.facingAngle) * gunLength;
+        const endY = this.player.y + Math.sin(this.player.facingAngle) * gunLength;
+        this.renderer.drawLine(this.player.x, this.player.y, endX, endY, '#FFD700', 3);
+      } else {
+        // Draw melee weapon indicator
+        const angle = this.player.facingAngle;
+        const indicatorLength = this.player.size / 2 + 8;
+        const endX = this.player.x + Math.cos(angle) * indicatorLength;
+        const endY = this.player.y + Math.sin(angle) * indicatorLength;
+        this.renderer.drawLine(this.player.x, this.player.y, endX, endY, '#fff', 3);
+      }
     } else {
-      // Draw melee weapon indicator
-      const angle = this.player.facingAngle;
-      const indicatorLength = this.player.size / 2 + 5;
-      const endX = this.player.x + Math.cos(angle) * indicatorLength;
-      const endY = this.player.y + Math.sin(angle) * indicatorLength;
-      this.renderer.drawLine(this.player.x, this.player.y, endX, endY, '#fff', 2);
+      // Fallback to circle
+      this.renderer.drawCircleWithBorder(this.player.x, this.player.y, this.player.size / 2, this.player.color, '#000', 2);
+
+      // Draw player facing indicator / weapon
+      if (this.player.isRangedWeapon()) {
+        const gunLength = 12;
+        const endX = this.player.x + Math.cos(this.player.facingAngle) * gunLength;
+        const endY = this.player.y + Math.sin(this.player.facingAngle) * gunLength;
+        this.renderer.drawLine(this.player.x, this.player.y, endX, endY, '#FFD700', 3);
+      } else {
+        const angle = this.player.facingAngle;
+        const indicatorLength = this.player.size / 2 + 5;
+        const endX = this.player.x + Math.cos(angle) * indicatorLength;
+        const endY = this.player.y + Math.sin(angle) * indicatorLength;
+        this.renderer.drawLine(this.player.x, this.player.y, endX, endY, '#fff', 2);
+      }
     }
 
     // Draw player attack visualization

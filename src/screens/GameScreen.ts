@@ -17,6 +17,7 @@ import { GameScreenRenderer } from './GameScreenRenderer';
 import { CombatSystem } from './CombatSystem';
 import { InputHandler } from './InputHandler';
 import { ShopManager } from './ShopManager';
+import { CheatPanel } from '../ui/CheatPanel';
 
 export type GameMode = 'base' | 'expedition';
 
@@ -29,6 +30,7 @@ export class GameScreen {
   private combatSystem: CombatSystem;
   private inputHandler: InputHandler;
   private shopManager: ShopManager;
+  private cheatPanel: CheatPanel;
   private mode: GameMode = 'base';
   private showInteractionPrompt: boolean = false;
   private interactionPromptText: string = '';
@@ -45,6 +47,10 @@ export class GameScreen {
     this.combatSystem = new CombatSystem(this.mapSystem);
     this.inputHandler = new InputHandler(input, this.mapSystem, this.combatSystem);
     this.shopManager = new ShopManager(input);
+    this.cheatPanel = new CheatPanel({
+      onRestartGame: () => this.restartGame(),
+      onAddGold: (amount: number) => this.addGold(amount)
+    });
 
     const startingWeapon = entityFactory.createWeapon('pistol');
     this.player = new Player(320, 240, startingWeapon || undefined);
@@ -52,6 +58,7 @@ export class GameScreen {
     this.loadBaseCamp();
     this.preloadSVGAssets();
     this.setupEventListeners();
+    this.setupCheatPanelInput();
   }
 
   private setupEventListeners(): void {
@@ -69,13 +76,60 @@ export class GameScreen {
     });
   }
 
+  private setupCheatPanelInput(): void {
+    // Toggle cheat panel with backtick key
+    window.addEventListener('keydown', (e) => {
+      if (e.key === '`' || e.key === 'Dead') {
+        e.preventDefault();
+        this.cheatPanel.toggle();
+      }
+      // Also allow ESC to close
+      if (e.key === 'Escape' && this.cheatPanel.isVisible()) {
+        e.preventDefault();
+        this.cheatPanel.close();
+      }
+    });
+
+    // Handle mouse clicks on cheat panel
+    window.addEventListener('click', (e) => {
+      if (this.cheatPanel.isVisible()) {
+        const canvasRenderer = (this.renderer as any).renderer as CanvasRenderer;
+        const canvas = canvasRenderer.getCanvas();
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+
+        this.cheatPanel.handleClick(mouseX, mouseY, canvas.width, canvas.height);
+      }
+    });
+  }
+
+  private restartGame(): void {
+    // Reset player stats
+    this.player.stats.health = this.player.stats.maxHealth;
+    this.player.alive = true;
+
+    // Return to base camp
+    this.loadBaseCamp();
+
+    console.log('Game restarted!');
+  }
+
+  private addGold(amount: number): void {
+    this.player.gold += amount;
+    console.log(`Added ${amount} gold. Total: ${this.player.gold}`);
+  }
+
   private async preloadSVGAssets(): Promise<void> {
     const wrapSVG = (content: string, viewBox: string = "0 0 24 30") =>
       `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}">${content}</svg>`;
     const canvasRenderer = (this.renderer as any).renderer as CanvasRenderer;
 
     try {
+      // Player
       await canvasRenderer.preloadSVG(wrapSVG(SVGArt.createPlayerSVG()), 'player');
+
+      // All unique enemy sprites
       await canvasRenderer.preloadSVG(wrapSVG(SVGArt.createSlimeSVG()), 'slime');
       await canvasRenderer.preloadSVG(wrapSVG(SVGArt.createGoblinSVG()), 'goblin');
       await canvasRenderer.preloadSVG(wrapSVG(SVGArt.createSkeletonSVG()), 'skeleton');
@@ -83,11 +137,24 @@ export class GameScreen {
       await canvasRenderer.preloadSVG(wrapSVG(SVGArt.createDragonSVG()), 'dragon');
       await canvasRenderer.preloadSVG(wrapSVG(SVGArt.createWolfSVG()), 'wolf');
       await canvasRenderer.preloadSVG(wrapSVG(SVGArt.createRatSVG()), 'rat');
+
+      // Missing enemies - using appropriate sprites (some reuse existing)
+      await canvasRenderer.preloadSVG(wrapSVG(SVGArt.createRatSVG()), 'bat'); // bat reuses rat
+      await canvasRenderer.preloadSVG(wrapSVG(SVGArt.createOrcSVG()), 'troll'); // troll reuses orc
+      await canvasRenderer.preloadSVG(wrapSVG(SVGArt.createSlimeSVG()), 'spider'); // spider reuses slime
+      await canvasRenderer.preloadSVG(wrapSVG(SVGArt.createSkeletonSVG()), 'ice_golem'); // ice_golem reuses skeleton
+      await canvasRenderer.preloadSVG(wrapSVG(SVGArt.createDragonSVG()), 'fire_elemental'); // fire_elemental reuses dragon
+      await canvasRenderer.preloadSVG(wrapSVG(SVGArt.createOrcSVG()), 'giant_crab'); // giant_crab reuses orc
+      await canvasRenderer.preloadSVG(wrapSVG(SVGArt.createDragonSVG()), 'demon_lord'); // demon_lord reuses dragon
+
+      // Projectile sprites
       await canvasRenderer.preloadSVG(wrapSVG(SVGArt.createBulletSVG(), "0 0 6 6"), 'bullet');
       await canvasRenderer.preloadSVG(wrapSVG(SVGArt.createMagicBoltSVG(), "0 0 8 8"), 'magic-bolt');
       await canvasRenderer.preloadSVG(wrapSVG(SVGArt.createFireBallSVG(), "0 0 10 10"), 'fireball');
       await canvasRenderer.preloadSVG(wrapSVG(SVGArt.createPlasmaBoltSVG(), "0 0 10 10"), 'plasma');
+
       this.svgsLoaded = true;
+      console.log('All SVG assets preloaded successfully');
     } catch (error) {
       console.error('Failed to preload SVG assets:', error);
       throw error;
@@ -322,6 +389,11 @@ export class GameScreen {
         this.player.gold,
         this.player.weapon
       );
+
+      // Render cheat panel on top of everything
+      const canvasRenderer = (this.renderer as any).renderer as CanvasRenderer;
+      const canvas = canvasRenderer.getCanvas();
+      this.cheatPanel.render(canvasRenderer.getContext(), canvas.width, canvas.height);
       return;
     }
 
@@ -337,5 +409,10 @@ export class GameScreen {
       this.showInteractionPrompt,
       this.interactionPromptText
     );
+
+    // Render cheat panel on top of everything
+    const canvasRenderer = (this.renderer as any).renderer as CanvasRenderer;
+    const canvas = canvasRenderer.getCanvas();
+    this.cheatPanel.render(canvasRenderer.getContext(), canvas.width, canvas.height);
   }
 }

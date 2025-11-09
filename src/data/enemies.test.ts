@@ -170,7 +170,11 @@ describe('Enemies Data', () => {
       // These are the ingredients we know exist
       const validIngredients = [
         'jelly', 'sugar', 'mushroom', 'herb', 'meat',
-        'dragon_fruit', 'fire_pepper', 'premium_meat'
+        'dragon_fruit', 'fire_pepper', 'premium_meat',
+        'flour', 'salt', 'egg', 'onion', 'garlic', 'rice',
+        'fish', 'cheese', 'honey', 'spice_blend', 'butter', 'tomato',
+        'truffle', 'saffron', 'crystal_salt', 'phoenix_egg', 'mana_herb', 'ancient_grain',
+        'void_essence', 'celestial_nectar'
       ];
 
       enemyIds.forEach(enemyId => {

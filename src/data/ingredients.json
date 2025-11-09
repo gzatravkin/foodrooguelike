@@ -62,5 +62,165 @@
     "description": "High quality dragon meat",
     "rarity": "rare",
     "baseValue": 60
+  },
+  "flour": {
+    "id": "flour",
+    "type": "ingredient",
+    "name": "Flour",
+    "description": "Ground wheat for baking",
+    "rarity": "common",
+    "baseValue": 4
+  },
+  "salt": {
+    "id": "salt",
+    "type": "ingredient",
+    "name": "Salt",
+    "description": "Essential seasoning mineral",
+    "rarity": "common",
+    "baseValue": 3
+  },
+  "egg": {
+    "id": "egg",
+    "type": "ingredient",
+    "name": "Egg",
+    "description": "Fresh protein-rich egg",
+    "rarity": "common",
+    "baseValue": 7
+  },
+  "onion": {
+    "id": "onion",
+    "type": "ingredient",
+    "name": "Onion",
+    "description": "Pungent aromatic bulb",
+    "rarity": "common",
+    "baseValue": 5
+  },
+  "garlic": {
+    "id": "garlic",
+    "type": "ingredient",
+    "name": "Garlic",
+    "description": "Flavorful clove with healing properties",
+    "rarity": "common",
+    "baseValue": 6
+  },
+  "rice": {
+    "id": "rice",
+    "type": "ingredient",
+    "name": "Rice",
+    "description": "Versatile grain staple",
+    "rarity": "common",
+    "baseValue": 5
+  },
+  "fish": {
+    "id": "fish",
+    "type": "ingredient",
+    "name": "Fish",
+    "description": "Fresh catch from mountain streams",
+    "rarity": "uncommon",
+    "baseValue": 15
+  },
+  "cheese": {
+    "id": "cheese",
+    "type": "ingredient",
+    "name": "Cheese",
+    "description": "Aged dairy delight",
+    "rarity": "uncommon",
+    "baseValue": 18
+  },
+  "honey": {
+    "id": "honey",
+    "type": "ingredient",
+    "name": "Honey",
+    "description": "Sweet golden nectar from giant bees",
+    "rarity": "uncommon",
+    "baseValue": 20
+  },
+  "spice_blend": {
+    "id": "spice_blend",
+    "type": "ingredient",
+    "name": "Spice Blend",
+    "description": "Exotic mixed seasonings",
+    "rarity": "uncommon",
+    "baseValue": 14
+  },
+  "butter": {
+    "id": "butter",
+    "type": "ingredient",
+    "name": "Butter",
+    "description": "Rich creamy fat for cooking",
+    "rarity": "uncommon",
+    "baseValue": 16
+  },
+  "tomato": {
+    "id": "tomato",
+    "type": "ingredient",
+    "name": "Tomato",
+    "description": "Juicy red fruit with tangy flavor",
+    "rarity": "uncommon",
+    "baseValue": 13
+  },
+  "truffle": {
+    "id": "truffle",
+    "type": "ingredient",
+    "name": "Truffle",
+    "description": "Rare underground fungus delicacy",
+    "rarity": "rare",
+    "baseValue": 55
+  },
+  "saffron": {
+    "id": "saffron",
+    "type": "ingredient",
+    "name": "Saffron",
+    "description": "World's most expensive spice",
+    "rarity": "rare",
+    "baseValue": 45
+  },
+  "crystal_salt": {
+    "id": "crystal_salt",
+    "type": "ingredient",
+    "name": "Crystal Salt",
+    "description": "Magically-infused crystalline salt",
+    "rarity": "rare",
+    "baseValue": 38
+  },
+  "phoenix_egg": {
+    "id": "phoenix_egg",
+    "type": "ingredient",
+    "name": "Phoenix Egg",
+    "description": "Egg from a mythical firebird",
+    "rarity": "rare",
+    "baseValue": 65
+  },
+  "mana_herb": {
+    "id": "mana_herb",
+    "type": "ingredient",
+    "name": "Mana Herb",
+    "description": "Magical plant brimming with energy",
+    "rarity": "rare",
+    "baseValue": 42
+  },
+  "ancient_grain": {
+    "id": "ancient_grain",
+    "type": "ingredient",
+    "name": "Ancient Grain",
+    "description": "Prehistoric wheat with powerful nutrients",
+    "rarity": "rare",
+    "baseValue": 48
+  },
+  "void_essence": {
+    "id": "void_essence",
+    "type": "ingredient",
+    "name": "Void Essence",
+    "description": "Condensed essence from the void between worlds",
+    "rarity": "legendary",
+    "baseValue": 150
+  },
+  "celestial_nectar": {
+    "id": "celestial_nectar",
+    "type": "ingredient",
+    "name": "Celestial Nectar",
+    "description": "Divine liquid from the heavens above",
+    "rarity": "legendary",
+    "baseValue": 200
   }
 }

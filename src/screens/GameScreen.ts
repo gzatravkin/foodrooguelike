@@ -124,8 +124,8 @@ export class GameScreen {
   }
 
   private addGold(amount: number): void {
-    this.player.gold += amount;
-    console.log(`Added ${amount} gold. Total: ${this.player.gold}`);
+    gameState.addGold(amount);
+    console.log(`Added ${amount} gold. Total: ${gameState.getState().gold}`);
   }
 
   private async preloadSVGAssets(): Promise<void> {
@@ -349,7 +349,7 @@ export class GameScreen {
       if (this.input.isKeyJustPressed('f')) {
         const loot = this.nearbyCorpse.lootCorpse();
         if (loot) {
-          this.player.gold += loot.gold;
+          gameState.addGold(loot.gold);
           for (const ingredient of loot.ingredients) {
             gameState.addToInventory(ingredient);
           }
@@ -408,7 +408,9 @@ export class GameScreen {
   private handlePlayerDeath(): void {
     this.player.alive = true;
     this.player.stats.health = this.player.stats.maxHealth;
-    this.player.gold = Math.floor(this.player.gold * 0.5);
+    const currentGold = gameState.getState().gold;
+    const goldLoss = Math.floor(currentGold * 0.5);
+    gameState.addGold(-goldLoss);
     this.loadBaseCamp();
   }
 

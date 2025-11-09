@@ -10,6 +10,7 @@ import { Projectile } from '../entities/Projectile';
 import { Corpse } from '../entities/Corpse';
 import { GameMode } from './GameScreen';
 import { Weapon } from '../entities/types';
+import { Particle } from '../entities/Particle';
 
 export class GameScreenRenderer {
   constructor(private renderer: CanvasRenderer) {}
@@ -39,21 +40,53 @@ export class GameScreenRenderer {
 
   private renderTile(tileType: TileType, worldX: number, worldY: number, size: number, x: number, y: number): void {
     if (tileType === TileType.FLOOR) {
-      this.renderer.drawRect(worldX, worldY, size, size, '#1a1a1a');
-
+      // More varied floor colors based on position
       const seed = x * 7 + y * 13;
-      if (seed % 5 === 0) {
-        this.renderer.drawCircle(worldX + size * 0.3, worldY + size * 0.3, 1, 'rgba(255, 255, 255, 0.05)');
-      }
-      if (seed % 7 === 0) {
-        this.renderer.drawCircle(worldX + size * 0.7, worldY + size * 0.6, 1.5, 'rgba(0, 0, 0, 0.1)');
+      const baseShade = 26 + (seed % 3) * 2; // Varies between #1a1a1a and #1e1e1e
+      const floorColor = `rgb(${baseShade}, ${baseShade}, ${baseShade})`;
+      this.renderer.drawRect(worldX, worldY, size, size, floorColor);
+
+      // Add varied decorative elements with more randomization
+      const hash1 = (x * 127 + y * 311) % 100;
+      const hash2 = (x * 197 + y * 419) % 100;
+      const hash3 = (x * 263 + y * 509) % 100;
+
+      // Stone cracks and weathering
+      if (hash1 < 15) {
+        const crackX = worldX + (hash2 / 100) * size;
+        const crackY = worldY + (hash3 / 100) * size;
+        this.renderer.drawLine(crackX, crackY, crackX + size * 0.3, crackY + size * 0.2, 'rgba(0, 0, 0, 0.2)', 0.5);
       }
 
-      this.renderer.drawLine(worldX, worldY, worldX + size, worldY, '#0a0a0a', 1);
-      this.renderer.drawLine(worldX, worldY, worldX, worldY + size, '#0a0a0a', 1);
+      // Small pebbles and debris
+      if (hash2 < 20) {
+        const pebbleX = worldX + ((hash1 * 13) % 100 / 100) * size;
+        const pebbleY = worldY + ((hash3 * 17) % 100 / 100) * size;
+        const pebbleSize = 0.5 + (hash1 % 3) * 0.3;
+        this.renderer.drawCircle(pebbleX, pebbleY, pebbleSize, 'rgba(60, 60, 60, 0.3)');
+      }
+
+      // Darker spots (wear marks)
+      if (hash3 < 12) {
+        const spotX = worldX + ((hash2 * 19) % 100 / 100) * size;
+        const spotY = worldY + ((hash1 * 23) % 100 / 100) * size;
+        this.renderer.drawCircle(spotX, spotY, 2 + (hash3 % 3), 'rgba(0, 0, 0, 0.15)');
+      }
+
+      // Lighter highlights
+      if (hash1 % 8 === 0) {
+        const highlightX = worldX + ((hash3 * 29) % 100 / 100) * size;
+        const highlightY = worldY + ((hash2 * 31) % 100 / 100) * size;
+        this.renderer.drawCircle(highlightX, highlightY, 1, 'rgba(255, 255, 255, 0.08)');
+      }
+
+      // Subtle grid pattern with variation
+      const gridOpacity = 0.15 + (seed % 3) * 0.05;
+      this.renderer.drawLine(worldX, worldY, worldX + size, worldY, `rgba(10, 10, 10, ${gridOpacity})`, 1);
+      this.renderer.drawLine(worldX, worldY, worldX, worldY + size, `rgba(10, 10, 10, ${gridOpacity})`, 1);
 
     } else if (tileType === TileType.WALL) {
-      this.renderWall(worldX, worldY, size, y);
+      this.renderWall(worldX, worldY, size, x, y);
     } else if (tileType === TileType.DOOR) {
       this.renderDoor(worldX, worldY, size);
     } else if (tileType === TileType.COOKING_STATION) {
@@ -65,11 +98,18 @@ export class GameScreenRenderer {
     }
   }
 
-  private renderWall(worldX: number, worldY: number, size: number, y: number): void {
-    this.renderer.drawRect(worldX, worldY, size, size, '#3a3a3a');
-    this.renderer.drawRect(worldX, worldY, size, size * 0.2, 'rgba(70, 70, 70, 0.8)');
-    this.renderer.drawRect(worldX, worldY + size * 0.8, size, size * 0.2, 'rgba(20, 20, 20, 0.8)');
+  private renderWall(worldX: number, worldY: number, size: number, x: number, y: number): void {
+    // Varied wall base colors for more interesting look
+    const seed = x * 11 + y * 17;
+    const baseShade = 58 + (seed % 5) * 2;
+    const wallColor = `rgb(${baseShade}, ${baseShade}, ${baseShade})`;
+    this.renderer.drawRect(worldX, worldY, size, size, wallColor);
 
+    // Enhanced lighting - top highlight and bottom shadow
+    this.renderer.drawRect(worldX, worldY, size, size * 0.2, 'rgba(90, 90, 90, 0.7)');
+    this.renderer.drawRect(worldX, worldY + size * 0.8, size, size * 0.2, 'rgba(20, 20, 20, 0.9)');
+
+    // Brick pattern with offset
     const brickWidth = size / 2;
     const brickHeight = size / 3;
     const offsetX = y % 2 === 0 ? 0 : brickWidth / 2;
@@ -80,14 +120,37 @@ export class GameScreenRenderer {
         const brickY = worldY + by * brickHeight;
 
         if (brickX >= worldX && brickX + brickWidth <= worldX + size) {
-          this.renderer.drawLine(brickX, brickY, brickX + brickWidth, brickY, '#2a2a2a', 0.5);
-          this.renderer.drawLine(brickX, brickY, brickX, brickY + brickHeight, '#2a2a2a', 0.5);
+          // Mortar lines
+          this.renderer.drawLine(brickX, brickY, brickX + brickWidth, brickY, '#2a2a2a', 1);
+          this.renderer.drawLine(brickX, brickY, brickX, brickY + brickHeight, '#2a2a2a', 1);
+
+          // Random brick damage/cracks
+          const brickHash = (brickX * 13 + brickY * 19) % 100;
+          if (brickHash < 8) {
+            const crackStartX = brickX + brickWidth * 0.3;
+            const crackStartY = brickY + brickHeight * 0.2;
+            this.renderer.drawLine(crackStartX, crackStartY, crackStartX + brickWidth * 0.4, crackStartY + brickHeight * 0.6, 'rgba(0, 0, 0, 0.4)', 0.8);
+          }
+
+          // Brick texture variation
+          if (brickHash % 7 === 0) {
+            this.renderer.drawCircle(brickX + brickWidth * 0.5, brickY + brickHeight * 0.5, 1, 'rgba(0, 0, 0, 0.15)');
+          }
         }
       }
     }
 
-    this.renderer.drawLine(worldX + size, worldY, worldX + size, worldY + size, '#1a1a1a', 2);
-    this.renderer.drawLine(worldX, worldY + size, worldX + size, worldY + size, '#1a1a1a', 2);
+    // Stronger edge shadows for depth
+    this.renderer.drawLine(worldX + size, worldY, worldX + size, worldY + size, '#1a1a1a', 2.5);
+    this.renderer.drawLine(worldX, worldY + size, worldX + size, worldY + size, '#1a1a1a', 2.5);
+
+    // Moss or weathering on some walls
+    const wallHash = (x * 23 + y * 29) % 100;
+    if (wallHash < 10) {
+      const mossX = worldX + size * 0.7;
+      const mossY = worldY + size * 0.6;
+      this.renderer.drawCircle(mossX, mossY, 3, 'rgba(76, 175, 80, 0.15)');
+    }
   }
 
   private renderDoor(worldX: number, worldY: number, size: number): void {
@@ -115,6 +178,24 @@ export class GameScreenRenderer {
     this.renderer.drawCircle(worldX + size / 2, worldY + size / 2, size * 0.1, '#e0aaff');
   }
 
+  renderParticles(particles: Particle[]): void {
+    for (const particle of particles) {
+      const alpha = particle.alpha;
+      const color = particle.color.startsWith('#')
+        ? this.hexToRgba(particle.color, alpha)
+        : particle.color.replace(/[\d.]+\)$/g, `${alpha})`);
+
+      this.renderer.drawCircle(particle.x, particle.y, particle.size, color);
+    }
+  }
+
+  private hexToRgba(hex: string, alpha: number): string {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  }
+
   renderCorpses(corpses: Corpse[]): void {
     for (const corpse of corpses) {
       const opacity = corpse.looted ? 0.3 : 0.6;
@@ -131,16 +212,50 @@ export class GameScreenRenderer {
     for (const enemy of enemies) {
       if (!enemy.alive) continue;
 
+      // Show attack indicator when enemy is attacking
+      if (enemy.aiState === 'attack' && enemy.attackCooldown > 0.3) {
+        // Attack warning flash
+        const flashSize = enemy.size * 2;
+        const flashAlpha = Math.sin(enemy.attackCooldown * 20) * 0.3 + 0.3;
+        this.renderer.drawCircle(enemy.x, enemy.y, flashSize, `rgba(255, 69, 0, ${flashAlpha})`);
+
+        // Attack arc visualization for melee
+        if (!enemy.isRangedWeapon()) {
+          const arcRadius = enemy.getAttackRange();
+          const arcStartAngle = enemy.facingAngle - 0.5;
+          const arcEndAngle = enemy.facingAngle + 0.5;
+
+          // Draw attack arc
+          for (let i = 0; i < 8; i++) {
+            const t = i / 7;
+            const angle = arcStartAngle + (arcEndAngle - arcStartAngle) * t;
+            const x = enemy.x + Math.cos(angle) * arcRadius;
+            const y = enemy.y + Math.sin(angle) * arcRadius;
+            this.renderer.drawCircle(x, y, 2, `rgba(255, 69, 0, ${0.6 - t * 0.4})`);
+          }
+        }
+      }
+
       const spriteKey = enemy.enemyData.id;
       const spriteSize = enemy.size * 1.5;
       this.renderer.drawCachedSVG(spriteKey, enemy.x, enemy.y, spriteSize, spriteSize, 0);
 
+      // Render enemy weapon
       if (enemy.isRangedWeapon()) {
         const gunLength = 15;
         const endX = enemy.x + Math.cos(enemy.facingAngle) * gunLength;
         const endY = enemy.y + Math.sin(enemy.facingAngle) * gunLength;
         this.renderer.drawLine(enemy.x, enemy.y, endX, endY, '#FF5722', 3);
         this.renderer.drawCircle(endX, endY, 2, '#FFD700');
+      } else if (enemy.weapon) {
+        // Show melee weapon for enemies too
+        const weaponDist = 12;
+        const weaponX = enemy.x + Math.cos(enemy.facingAngle) * weaponDist;
+        const weaponY = enemy.y + Math.sin(enemy.facingAngle) * weaponDist;
+        const weaponLen = 15;
+        const endX = weaponX + Math.cos(enemy.facingAngle) * weaponLen;
+        const endY = weaponY + Math.sin(enemy.facingAngle) * weaponLen;
+        this.renderer.drawLine(weaponX, weaponY, endX, endY, '#8B4513', 3);
       }
 
       this.drawHealthBar(enemy.x, enemy.y - enemy.size, enemy.stats.health, enemy.stats.maxHealth);
@@ -183,26 +298,73 @@ export class GameScreenRenderer {
       this.renderer.drawCircle(player.x, player.y, playerSize * 0.8, 'rgba(76, 175, 80, 0.4)');
     }
 
-    // Weapon indicator
-    if (player.isRangedWeapon()) {
-      const gunLength = 18;
-      const endX = player.x + Math.cos(player.facingAngle) * gunLength;
-      const endY = player.y + Math.sin(player.facingAngle) * gunLength;
-      this.renderer.drawLine(player.x, player.y, endX, endY, '#FFD700', 4);
-      this.renderer.drawCircle(endX, endY, 2.5, '#FF5722');
-    } else {
-      const angle = player.facingAngle;
-      const indicatorLength = player.size / 2 + 10;
-      const endX = player.x + Math.cos(angle) * indicatorLength;
-      const endY = player.y + Math.sin(angle) * indicatorLength;
-      this.renderer.drawLine(player.x, player.y, endX, endY, '#E0E0E0', 4);
-      this.renderer.drawCircle(endX, endY, 3, '#FFF');
-    }
+    // Render equipped weapon
+    this.renderPlayerWeapon(player);
 
     // Attack visualization
     if (player.attackCooldown > 0.3 && !player.isRangedWeapon()) {
       const hitbox = player.getAttackHitbox();
       this.renderer.drawCircle(hitbox.x, hitbox.y, hitbox.radius, 'rgba(255, 255, 255, 0.3)');
+    }
+  }
+
+  private renderPlayerWeapon(player: Player): void {
+    if (!player.weapon) {
+      // No weapon - show fists
+      const fistDist = 12;
+      const fistX = player.x + Math.cos(player.facingAngle) * fistDist;
+      const fistY = player.y + Math.sin(player.facingAngle) * fistDist;
+      this.renderer.drawCircle(fistX, fistY, 3, '#FFE0B2');
+      return;
+    }
+
+    const weaponDistance = 14;
+    const weaponX = player.x + Math.cos(player.facingAngle) * weaponDistance;
+    const weaponY = player.y + Math.sin(player.facingAngle) * weaponDistance;
+
+    if (player.isRangedWeapon()) {
+      // Render gun
+      const gunLength = 16;
+      const gunWidth = 4;
+      const endX = weaponX + Math.cos(player.facingAngle) * gunLength;
+      const endY = weaponY + Math.sin(player.facingAngle) * gunLength;
+
+      // Gun body
+      this.renderer.drawLine(weaponX, weaponY, endX, endY, '#333', gunWidth);
+      // Gun barrel
+      this.renderer.drawLine(endX - Math.cos(player.facingAngle) * 4, endY - Math.sin(player.facingAngle) * 4, endX, endY, '#555', 2);
+      // Gun highlight
+      const highlightX = weaponX + Math.cos(player.facingAngle) * (gunLength * 0.3);
+      const highlightY = weaponY + Math.sin(player.facingAngle) * (gunLength * 0.3);
+      this.renderer.drawCircle(highlightX, highlightY, 1.5, 'rgba(255, 255, 255, 0.6)');
+      // Muzzle
+      this.renderer.drawCircle(endX, endY, 2, '#FFD700');
+    } else {
+      // Render melee weapon
+      const swordLength = 20;
+      const endX = weaponX + Math.cos(player.facingAngle) * swordLength;
+      const endY = weaponY + Math.sin(player.facingAngle) * swordLength;
+
+      // Blade
+      this.renderer.drawLine(weaponX, weaponY, endX, endY, '#C0C0C0', 3);
+      // Blade edge highlight
+      this.renderer.drawLine(weaponX, weaponY, endX, endY, '#E8E8E8', 1);
+      // Handle
+      const handleLen = 6;
+      const handleX = weaponX - Math.cos(player.facingAngle) * handleLen;
+      const handleY = weaponY - Math.sin(player.facingAngle) * handleLen;
+      this.renderer.drawLine(handleX, handleY, weaponX, weaponY, '#654321', 4);
+      // Guard
+      const guardAngle = player.facingAngle + Math.PI / 2;
+      const guardSize = 6;
+      this.renderer.drawLine(
+        weaponX - Math.cos(guardAngle) * guardSize,
+        weaponY - Math.sin(guardAngle) * guardSize,
+        weaponX + Math.cos(guardAngle) * guardSize,
+        weaponY + Math.sin(guardAngle) * guardSize,
+        '#8B7355',
+        3
+      );
     }
   }
 

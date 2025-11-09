@@ -18,6 +18,7 @@ import { CombatSystem } from './CombatSystem';
 import { InputHandler } from './InputHandler';
 import { ShopManager } from './ShopManager';
 import { CheatPanel } from '../ui/CheatPanel';
+import { ParticleSystem } from '../entities/Particle';
 
 export type GameMode = 'base' | 'expedition';
 
@@ -31,6 +32,7 @@ export class GameScreen {
   private inputHandler: InputHandler;
   private shopManager: ShopManager;
   private cheatPanel: CheatPanel;
+  private particleSystem: ParticleSystem;
   private mode: GameMode = 'base';
   private showInteractionPrompt: boolean = false;
   private interactionPromptText: string = '';
@@ -47,6 +49,9 @@ export class GameScreen {
     this.combatSystem = new CombatSystem(this.mapSystem);
     this.inputHandler = new InputHandler(input, this.mapSystem, this.combatSystem);
     this.shopManager = new ShopManager(input);
+    this.particleSystem = new ParticleSystem();
+    this.inputHandler.setParticleSystem(this.particleSystem);
+    this.combatSystem.setParticleSystem(this.particleSystem);
     this.cheatPanel = new CheatPanel({
       onRestartGame: () => this.restartGame(),
       onAddGold: (amount: number) => this.addGold(amount)
@@ -249,6 +254,7 @@ export class GameScreen {
     this.updateEnemies(deltaTime);
     this.combatSystem.updateProjectiles(deltaTime, this.enemies, this.player);
     this.combatSystem.updateCorpses(deltaTime);
+    this.particleSystem.update(deltaTime);
     this.handleDeadEnemies();
     this.checkInteractions();
     this.updateCamera();
@@ -276,10 +282,31 @@ export class GameScreen {
         if (enemy.isRangedWeapon()) {
           this.combatSystem.spawnEnemyProjectile(enemy);
           enemy.attackCooldown = enemy.weapon!.attackSpeed;
+          // Muzzle flash for enemy shooting
+          const spawn = enemy.getProjectileSpawn();
+          this.particleSystem.createMuzzleFlash(spawn.x, spawn.y, enemy.facingAngle);
         } else {
           const distance = enemy.getDistanceTo(this.player);
           if (distance <= enemy.getAttackRange()) {
+            const prevHealth = this.player.stats.health;
             this.player.takeDamage(enemy.getAttackDamage());
+
+            // Create impact particles when enemy hits player
+            if (this.player.stats.health < prevHealth) {
+              const dx = this.player.x - enemy.x;
+              const dy = this.player.y - enemy.y;
+              this.particleSystem.createBlood(this.player.x, this.player.y, dx, dy);
+              this.particleSystem.createImpact(this.player.x, this.player.y, '#FF4444', 10);
+            }
+
+            // Slash effect for melee attacks
+            this.particleSystem.createSlash(
+              enemy.x + Math.cos(enemy.facingAngle) * enemy.getAttackRange() * 0.7,
+              enemy.y + Math.sin(enemy.facingAngle) * enemy.getAttackRange() * 0.7,
+              enemy.facingAngle,
+              '#FF6347'
+            );
+
             enemy.attackCooldown = enemy.weapon?.attackSpeed || 1.0;
           }
         }
@@ -290,6 +317,9 @@ export class GameScreen {
   private handleDeadEnemies(): void {
     this.enemies = this.enemies.filter(enemy => {
       if (!enemy.alive) {
+        // Create death particles
+        this.particleSystem.createDeath(enemy.x, enemy.y, enemy.color);
+
         const loot = enemy.getLoot();
         this.combatSystem.addCorpse(new Corpse(
           enemy.x,
@@ -403,6 +433,7 @@ export class GameScreen {
     this.renderer.renderCorpses(this.combatSystem.getCorpses());
     this.renderer.renderEnemies(this.enemies);
     this.renderer.renderProjectiles(this.combatSystem.getProjectiles());
+    this.renderer.renderParticles(this.particleSystem.getParticles());
     this.renderer.renderPlayer(this.player);
     this.renderer.renderUI(
       this.player,

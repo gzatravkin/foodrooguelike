@@ -18,6 +18,8 @@ import { GameScreenRenderer } from './GameScreenRenderer';
 import { CombatSystem } from './CombatSystem';
 import { InputHandler } from './InputHandler';
 import { ShopManager } from './ShopManager';
+import { SpawnManager } from './SpawnManager';
+import { GameScreenUpdater } from './GameScreenUpdater';
 import { CheatPanel } from '../ui/CheatPanel';
 import { ParticleSystem } from '../entities/Particle';
 
@@ -32,7 +34,9 @@ export class GameScreen {
   private traps: Trap[] = [];
   private combatSystem: CombatSystem;
   private inputHandler: InputHandler;
+  private spawnManager: SpawnManager;
   private shopManager: ShopManager;
+  private updater: GameScreenUpdater;
   private cheatPanel: CheatPanel;
   private particleSystem: ParticleSystem;
   private mode: GameMode = 'base';
@@ -50,9 +54,11 @@ export class GameScreen {
     this.input = input;
     this.mapSystem = new MapSystem();
     this.combatSystem = new CombatSystem(this.mapSystem);
+    this.spawnManager = new SpawnManager(this.mapSystem);
     this.inputHandler = new InputHandler(input, this.mapSystem, this.combatSystem);
     this.shopManager = new ShopManager(input);
     this.particleSystem = new ParticleSystem();
+    this.updater = new GameScreenUpdater(this.mapSystem, this.combatSystem, this.particleSystem);
     this.inputHandler.setParticleSystem(this.particleSystem);
     this.combatSystem.setParticleSystem(this.particleSystem);
     this.cheatPanel = new CheatPanel({
@@ -198,98 +204,10 @@ export class GameScreen {
     this.combatSystem.clearProjectiles();
     this.combatSystem.clearCorpses();
 
-    this.spawnEnemies(level);
-    this.spawnTraps();
+    this.enemies = this.spawnManager.spawnEnemies(level, this.player);
+    this.traps = this.spawnManager.spawnTraps(this.player);
   }
 
-  private spawnEnemies(level: number): void {
-    this.enemies = [];
-
-    const allEnemies = entityFactory.getAllOfType('enemy') as EnemyData[];
-    const levelEnemies = allEnemies.filter((e: EnemyData) => {
-      if (level === 1) return e.goldReward <= 15;
-      if (level === 2) return e.goldReward > 15 && e.goldReward <= 40;
-      if (level === 3) return e.goldReward > 40 && e.goldReward <= 100;
-      return e.goldReward > 100;
-    });
-
-    if (levelEnemies.length === 0) return;
-
-    const numEnemies = 5 + Math.floor(Math.random() * 6);
-
-    for (let i = 0; i < numEnemies; i++) {
-      const enemyData = levelEnemies[Math.floor(Math.random() * levelEnemies.length)];
-      const position = this.findValidEnemyPosition();
-
-      if (position) {
-        const weaponId = enemyData.weaponId;
-        const weapon = weaponId ? entityFactory.createWeapon(weaponId) : null;
-        this.enemies.push(new Enemy(position.x, position.y, enemyData, weapon));
-      }
-    }
-  }
-
-  private findValidEnemyPosition(): { x: number; y: number } | null {
-    const map = this.mapSystem.getCurrentMap();
-    if (!map) return null;
-
-    for (let attempts = 0; attempts < 100; attempts++) {
-      const x = (2 + Math.floor(Math.random() * (map.width - 4))) * map.tileSize + map.tileSize / 2;
-      const y = (2 + Math.floor(Math.random() * (map.height - 4))) * map.tileSize + map.tileSize / 2;
-
-      const distFromPlayer = Math.sqrt((x - this.player.x) ** 2 + (y - this.player.y) ** 2);
-      if (this.mapSystem.canMoveTo(x, y) && distFromPlayer > 150) {
-        return { x, y };
-      }
-    }
-
-    return null;
-  }
-
-  private spawnTraps(): void {
-    this.traps = [];
-    const map = this.mapSystem.getCurrentMap();
-    if (!map) return;
-
-    // Spawn 8-15 traps randomly on the map
-    const numTraps = 8 + Math.floor(Math.random() * 8);
-
-    for (let i = 0; i < numTraps; i++) {
-      const position = this.findValidTrapPosition();
-      if (position) {
-        this.traps.push(new Trap(position.x, position.y));
-      }
-    }
-  }
-
-  private findValidTrapPosition(): { x: number; y: number } | null {
-    const map = this.mapSystem.getCurrentMap();
-    if (!map) return null;
-
-    for (let attempts = 0; attempts < 100; attempts++) {
-      const x = (2 + Math.floor(Math.random() * (map.width - 4))) * map.tileSize + map.tileSize / 2;
-      const y = (2 + Math.floor(Math.random() * (map.height - 4))) * map.tileSize + map.tileSize / 2;
-
-      const distFromPlayer = Math.sqrt((x - this.player.x) ** 2 + (y - this.player.y) ** 2);
-
-      // Make sure trap is not too close to player or other traps
-      if (this.mapSystem.canMoveTo(x, y) && distFromPlayer > 100) {
-        let tooClose = false;
-        for (const trap of this.traps) {
-          const distToTrap = Math.sqrt((x - trap.x) ** 2 + (y - trap.y) ** 2);
-          if (distToTrap < 64) { // Minimum 64 pixels apart
-            tooClose = true;
-            break;
-          }
-        }
-        if (!tooClose) {
-          return { x, y };
-        }
-      }
-    }
-
-    return null;
-  }
 
   update(deltaTime: number): void {
     if (this.shopManager.isShopOpen()) {
@@ -302,15 +220,18 @@ export class GameScreen {
     this.inputHandler.handlePlayerAttack(this.player, this.enemies, deltaTime);
     this.player.update(deltaTime);
 
-    this.updateEnemies(deltaTime);
-    this.updateTraps(deltaTime);
+    this.updater.updateEnemies(this.enemies, this.player, deltaTime);
+    this.updater.updateTraps(this.traps, this.player, deltaTime);
     this.combatSystem.updateProjectiles(deltaTime, this.enemies, this.player);
     this.combatSystem.updateCorpses(deltaTime);
     this.particleSystem.update(deltaTime);
-    this.handleDeadEnemies();
-    this.checkInteractions();
-    this.updateCamera();
-    this.handleBaseHealing(deltaTime);
+    this.enemies = this.updater.handleDeadEnemies(this.enemies);
+    const interactionResult = this.updater.checkInteractions(this.player, this.mode, this.combatSystem.getCorpses());
+    this.showInteractionPrompt = interactionResult.showPrompt;
+    this.interactionPromptText = interactionResult.promptText;
+    this.nearbyCorpse = interactionResult.nearbyCorpse;
+    this.updater.updateCamera(this.player, this.renderer);
+    this.baseHealTimer = this.updater.handleBaseHealing(this.player, this.mode, this.baseHealTimer, deltaTime);
 
     if (!this.player.alive) {
       this.handlePlayerDeath();
@@ -319,193 +240,12 @@ export class GameScreen {
     this.inputHandler.update();
   }
 
-  private updateEnemies(deltaTime: number): void {
-    for (const enemy of this.enemies) {
-      if (!enemy.alive) continue;
 
-      enemy.updateAI(
-        this.player.x,
-        this.player.y,
-        deltaTime,
-        (x, y) => this.mapSystem.canMoveTo(x, y, enemy.size)
-      );
-      enemy.update(deltaTime);
 
-      if (enemy.canAttack() && !this.player.isDashing) {
-        if (enemy.isRangedWeapon()) {
-          this.combatSystem.spawnEnemyProjectile(enemy);
-          enemy.attackCooldown = enemy.weapon!.attackSpeed;
-          // Muzzle flash for enemy shooting
-          const spawn = enemy.getProjectileSpawn();
-          this.particleSystem.createMuzzleFlash(spawn.x, spawn.y, enemy.facingAngle);
-        } else {
-          const distance = enemy.getDistanceTo(this.player);
-          if (distance <= enemy.getAttackRange()) {
-            const prevHealth = this.player.stats.health;
-            this.player.takeDamage(enemy.getAttackDamage());
 
-            // Create impact particles when enemy hits player
-            if (this.player.stats.health < prevHealth) {
-              const dx = this.player.x - enemy.x;
-              const dy = this.player.y - enemy.y;
-              this.particleSystem.createBlood(this.player.x, this.player.y, dx, dy);
-              this.particleSystem.createImpact(this.player.x, this.player.y, '#FF4444', 10);
-            }
 
-            // Slash effect for melee attacks
-            this.particleSystem.createSlash(
-              enemy.x + Math.cos(enemy.facingAngle) * enemy.getAttackRange() * 0.7,
-              enemy.y + Math.sin(enemy.facingAngle) * enemy.getAttackRange() * 0.7,
-              enemy.facingAngle,
-              '#FF6347'
-            );
 
-            enemy.attackCooldown = enemy.weapon?.attackSpeed || 1.0;
-          }
-        }
-      }
-    }
-  }
 
-  private updateTraps(deltaTime: number): void {
-    for (const trap of this.traps) {
-      trap.update(deltaTime);
-
-      if (trap.isPlayerNear(this.player.x, this.player.y)) {
-        if (this.player.isDashing) {
-          // Dashing through trap - activate it (safe)
-          if (!trap.active) {
-            trap.activate();
-            // Create visual effect for trap activation
-            this.particleSystem.createImpact(trap.x, trap.y, '#FF8800', 8);
-          }
-        } else if (trap.canDamage()) {
-          // Walking into trap - take damage
-          this.player.takeDamage(trap.damage);
-          trap.activate(); // Activate after damaging
-
-          // Create damage particles
-          this.particleSystem.createBlood(this.player.x, this.player.y,
-            this.player.x - trap.x, this.player.y - trap.y);
-          this.particleSystem.createImpact(this.player.x, this.player.y, '#FF0000', 12);
-        }
-      }
-    }
-  }
-
-  private handleBaseHealing(deltaTime: number): void {
-    if (this.mode !== 'base') return;
-
-    // Heal player slowly when at base
-    if (this.player.stats.health < this.player.stats.maxHealth) {
-      this.baseHealTimer += deltaTime;
-
-      // Heal 1 HP every 0.5 seconds
-      if (this.baseHealTimer >= 0.5) {
-        this.baseHealTimer = 0;
-        this.player.stats.health = Math.min(
-          this.player.stats.health + 1,
-          this.player.stats.maxHealth
-        );
-
-        // Create healing particle effect
-        this.particleSystem.createImpact(this.player.x, this.player.y, '#00FF00', 5);
-      }
-    } else {
-      this.baseHealTimer = 0;
-    }
-  }
-
-  private handleDeadEnemies(): void {
-    this.enemies = this.enemies.filter(enemy => {
-      if (!enemy.alive) {
-        // Create death particles
-        this.particleSystem.createDeath(enemy.x, enemy.y, enemy.color);
-
-        const loot = enemy.getLoot();
-        this.combatSystem.addCorpse(new Corpse(
-          enemy.x,
-          enemy.y,
-          enemy.enemyData.name,
-          enemy.enemyData.id,
-          {
-            gold: loot.gold,
-            ingredients: loot.items
-          }
-        ));
-        return false;
-      }
-      return true;
-    });
-  }
-
-  private checkInteractions(): void {
-    this.showInteractionPrompt = false;
-    this.nearbyCorpse = null;
-
-    this.nearbyCorpse = this.combatSystem.findNearbyCorpse(this.player.x, this.player.y);
-    if (this.nearbyCorpse) {
-      this.showInteractionPrompt = true;
-      this.interactionPromptText = `Press F to loot ${this.nearbyCorpse.enemyName}`;
-
-      if (this.input.isKeyJustPressed('f')) {
-        const loot = this.nearbyCorpse.lootCorpse();
-        if (loot) {
-          gameState.addGold(loot.gold);
-          for (const ingredient of loot.ingredients) {
-            gameState.addToInventory(ingredient);
-          }
-        }
-      }
-      return;
-    }
-
-    this.checkTileInteractions();
-  }
-
-  private checkTileInteractions(): void {
-    const tile = this.mapSystem.getTileAt(this.player.x, this.player.y);
-
-    if (tile === TileType.COOKING_STATION) {
-      this.showInteractionPrompt = true;
-      this.interactionPromptText = 'Press E to Cook';
-
-      if (this.input.isKeyJustPressed('e')) {
-        console.log('Opening cooking menu...');
-      }
-    } else if (tile === TileType.SHOP) {
-      this.showInteractionPrompt = true;
-      this.interactionPromptText = 'Press E to Shop';
-
-      if (this.input.isKeyJustPressed('e')) {
-        this.shopManager.openShop();
-      }
-    } else if (tile === TileType.EXPEDITION_PORTAL) {
-      this.showInteractionPrompt = true;
-      this.interactionPromptText = 'Press E to Start Expedition';
-
-      if (this.input.isKeyJustPressed('e')) {
-        this.loadExpedition(1);
-      }
-    } else if (tile === TileType.STAIRS_UP && this.mode === 'expedition') {
-      this.showInteractionPrompt = true;
-      this.interactionPromptText = 'Press E to Return to Base';
-
-      if (this.input.isKeyJustPressed('e')) {
-        this.loadBaseCamp();
-      }
-    }
-  }
-
-  private updateCamera(): void {
-    const canvasRenderer = (this.renderer as any).renderer as CanvasRenderer;
-    const canvas = canvasRenderer.getCanvas();
-
-    const cameraX = this.player.x - canvas.width / 2;
-    const cameraY = this.player.y - canvas.height / 2;
-
-    this.renderer.setCamera(cameraX, cameraY);
-  }
 
   private handlePlayerDeath(): void {
     this.player.alive = true;

@@ -1,0 +1,62 @@
+{
+  "void_essence_soup": {
+    "id": "void_essence_soup",
+    "type": "recipe",
+    "name": "Void Essence Soup",
+    "description": "A mysterious soup from beyond reality",
+    "ingredients": [
+      "void_essence",
+      "mana_herb",
+      "mushroom"
+    ],
+    "cookingMethod": "boil",
+    "cookingTime": 66,
+    "cookingTimeRange": {
+      "min": 60,
+      "max": 75
+    },
+    "buffType": "attack",
+    "rarity": "legendary"
+  },
+  "celestial_nectar_cake": {
+    "id": "celestial_nectar_cake",
+    "type": "recipe",
+    "name": "Celestial Nectar Cake",
+    "description": "A divine dessert blessed by the heavens",
+    "ingredients": [
+      "celestial_nectar",
+      "flour",
+      "phoenix_egg",
+      "honey"
+    ],
+    "cookingMethod": "bake",
+    "cookingTime": 150,
+    "cookingTimeRange": {
+      "min": 140,
+      "max": 165
+    },
+    "buffType": "defense",
+    "rarity": "legendary"
+  },
+  "ultimate_feast": {
+    "id": "ultimate_feast",
+    "type": "recipe",
+    "name": "Ultimate Feast",
+    "description": "The pinnacle of culinary achievement",
+    "ingredients": [
+      "premium_meat",
+      "dragon_fruit",
+      "truffle",
+      "phoenix_egg",
+      "saffron"
+    ],
+    "cookingMethod": "bake",
+    "cookingTime": 180,
+    "cookingTimeRange": {
+      "min": 170,
+      "max": 195
+    },
+    "buffType": "attack",
+    "rarity": "legendary"
+  }
+}

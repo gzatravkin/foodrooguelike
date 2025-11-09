@@ -2,391 +2,472 @@
 
 ## Design Philosophy
 
-This game is built on **extreme modularity** and **data-driven design**. The core principle: **adding features should never require modifying existing code**.
+This is a **2D top-view action roguelike** built on **modular architecture** and **real-time game systems**. The core principle: **clean separation between game logic, rendering, and data**.
 
-## Core Patterns
+## Core Architecture
 
-### 1. Data-Driven Content
+### Game Loop
 
-All game content lives in JSON files. Want a new enemy? Edit a JSON file. That's it.
-
-```
-src/data/
-├── enemies.json        # Enemy definitions
-├── ingredients.json    # Ingredient definitions
-├── cookingMethods.json # Cooking method definitions
-└── equipment.json      # Equipment definitions
-```
-
-### 2. Factory Pattern
-
-The `EntityFactory` creates all game objects from templates:
+Real-time game loop running at 60 FPS:
 
 ```typescript
-// Load templates from JSON
-entityFactory.registerTemplates(enemiesData);
+// main.ts
+const update = (currentTime: number) => {
+  const deltaTime = (currentTime - lastTime) / 1000;
 
-// Create instances
-const goblin = entityFactory.create('goblin');
+  // Update game logic
+  gameScreen.update(deltaTime);
+
+  // Render frame
+  gameScreen.render();
+};
+
+gameLoop.loop(update);
 ```
 
-### 3. Event-Driven Architecture
+### Layer Structure
 
-Systems communicate through events, not direct coupling:
-
-```typescript
-// System A emits
-eventBus.emit('enemy:defeated', { id: 'goblin' });
-
-// System B reacts
-eventBus.on('enemy:defeated', (data) => {
-  // Handle event
-});
+```
+┌─────────────────────────────────────┐
+│         Rendering Layer             │
+│  (CanvasRenderer, Camera, Drawing)  │
+└─────────────────────────────────────┘
+                 ↕
+┌─────────────────────────────────────┐
+│          Game Screen Layer          │
+│  (GameScreen - main game logic)     │
+└─────────────────────────────────────┘
+                 ↕
+┌─────────────────────────────────────┐
+│         Systems Layer               │
+│  (MapSystem, AI, Collision)         │
+└─────────────────────────────────────┘
+                 ↕
+┌─────────────────────────────────────┐
+│         Entity Layer                │
+│  (Player, Enemy, base Entity)       │
+└─────────────────────────────────────┘
+                 ↕
+┌─────────────────────────────────────┐
+│         Input Layer                 │
+│  (InputManager - keyboard/mouse)    │
+└─────────────────────────────────────┘
+                 ↕
+┌─────────────────────────────────────┐
+│         Data Layer                  │
+│  (GameState, EntityFactory, JSON)   │
+└─────────────────────────────────────┘
 ```
 
-### 4. Single Responsibility
+## Core Systems
 
-Each file has ONE job and is under 200 lines:
+### 1. Canvas Rendering System
 
-- `CombatSystem.ts` - Only combat
-- `CookingSystem.ts` - Only cooking
-- `ShopSystem.ts` - Only shop transactions
-
-### 5. Screen-Based UI
-
-Each screen is independent and self-contained:
+HTML5 Canvas-based rendering with camera support:
 
 ```typescript
-class YourScreen extends Screen {
-  render() { /* Draw UI */ }
-  handleInput() { /* Handle clicks */ }
-  cleanup() { /* Clean up */ }
+// rendering/CanvasRenderer.ts
+class CanvasRenderer {
+  - camera: { x, y }          // Camera position for scrolling
+  - canvas: HTMLCanvasElement
+  - ctx: CanvasRenderingContext2D
+
+  + drawTile()       // Draw map tiles
+  + drawCircle()     // Draw entities (player, enemies)
+  + drawText()       // Draw text
+  + setCamera()      // Update camera position
+  + worldToScreen()  // Convert world coordinates to screen
 }
 ```
 
-## System Interaction Flow
+**Features:**
+- Camera follows player
+- World space vs Screen space coordinates
+- Optimized rendering (only visible tiles)
+- UI overlay (stats, health bars, prompts)
 
-```
-User Action
-    ↓
-Screen (UI Layer)
-    ↓
-System (Logic Layer)
-    ↓
-GameState (Data Layer)
-    ↓
-EventBus (Communication)
-    ↓
-Other Systems (React to changes)
-    ↓
-Screen Re-renders
-```
+### 2. Input Management System
 
-## Example: Player Defeats Enemy
+Real-time input handling:
 
 ```typescript
-// 1. User clicks "Attack" on ExpeditionScreen
-ExpeditionScreen.performAttack()
+// core/InputManager.ts
+class InputManager {
+  - keys: Map<string, KeyState>
+  - mousePos: { x, y }
 
-// 2. Screen calls CombatSystem
-combatSystem.fight(enemy)
+  + isKeyPressed(key)      // Check if key is currently held
+  + isKeyJustPressed(key)  // Check if key was just pressed this frame
+  + getMovementVector()    // Get normalized WASD/Arrow input
+  + update()               // Reset per-frame input states
+}
+```
 
-// 3. CombatSystem updates GameState
-gameState.updatePlayer({ health: newHealth })
-gameState.addGold(reward)
+**Features:**
+- Key state tracking (pressed, justPressed, justReleased)
+- Movement vector normalization (diagonal = same speed)
+- Mouse position and button tracking
+- Input buffering and debouncing
 
-// 4. GameState emits events
-eventBus.emit('player:updated', playerData)
-eventBus.emit('gold:changed', gold)
+### 3. Map System
 
-// 5. CombatSystem emits combat result
-eventBus.emit('combat:finished', result)
+Tile-based world with collision:
 
-// 6. CombatSystem returns result
-return result
+```typescript
+// systems/MapSystem.ts
+class MapSystem {
+  - currentMap: GameMap
+  - tileColors: Map<TileType, string>
 
-// 7. Screen re-renders with new data
-this.render()
+  + loadMap(map)                // Load a new map
+  + getTileAt(x, y)             // Get tile at world position
+  + canMoveTo(x, y)             // Check if position is walkable
+  + isTileWalkable(tileType)    // Check tile walkability
+}
+```
 
-// 8. Other systems can react to events
-achievementSystem.on('enemy:defeated', checkAchievements)
+**Tile Types:**
+- `FLOOR` - Walkable ground
+- `WALL` - Blocking walls
+- `COOKING_STATION` - Interactive cooking area
+- `SHOP` - Interactive shop area
+- `EXPEDITION_PORTAL` - Start expeditions
+- `STAIRS_UP` / `STAIRS_DOWN` - Level transitions
+
+**Collision Detection:**
+- Checks all corners of entity bounding box
+- Prevents walking through walls
+- Allows sliding along walls
+
+### 4. Entity System
+
+Object-oriented entity hierarchy:
+
+```typescript
+// entities/Entity.ts (abstract base)
+abstract class Entity {
+  + id: string
+  + type: EntityType
+  + x, y: number              // World position
+  + size: number              // Collision size
+  + stats: EntityStats        // Health, attack, defense, speed
+  + alive: boolean
+
+  + update(deltaTime)         // Update entity logic
+  + takeDamage(amount)        // Apply damage
+  + getBounds()               // Get bounding box
+  + intersects(other)         // Check collision
+}
+
+// entities/Player.ts
+class Player extends Entity {
+  + weapon: Equipment
+  + armor: Equipment
+  + gold: number
+  + attackCooldown: number
+  + facingAngle: number       // Direction player faces
+
+  + move(dx, dy, deltaTime)   // Move with speed
+  + attack()                  // Initiate attack
+  + getAttackHitbox()         // Get attack range/position
+  + equipWeapon(weapon)       // Change equipment
+}
+
+// entities/Enemy.ts
+class Enemy extends Entity {
+  + enemyData: EnemyData      // JSON template data
+  + aiState: 'idle' | 'chase' | 'attack'
+  + chaseRange: number
+  + attackRange: number
+
+  + updateAI(playerPos, deltaTime)  // Run AI behavior
+  + chasePlayer()                   // Move towards player
+  + getLoot()                       // Get drops on death
+}
+```
+
+### 5. Combat System
+
+Real-time action combat:
+
+**Player Attack Flow:**
+```
+1. Player presses Space/Click
+2. Check attackCooldown (can attack?)
+3. Set cooldown timer
+4. Calculate attack hitbox (direction + range)
+5. Check all enemies vs hitbox
+6. Apply damage = max(1, player.attack - enemy.defense)
+7. Visual feedback (attack animation)
+```
+
+**Enemy Attack Flow:**
+```
+1. Enemy AI updates each frame
+2. Check distance to player
+3. If in attackRange: transition to 'attack' state
+4. If attackCooldown ready: deal damage
+5. Apply damage = max(1, enemy.attack - player.defense)
+6. Set cooldown timer
+```
+
+**Key Features:**
+- Hit-and-run tactics (dodge, strike, retreat)
+- Attack cooldowns prevent spamming
+- Facing direction matters (can't attack behind you)
+- Visual attack indicators
+
+### 6. AI System
+
+Enemy state machine:
+
+```
+┌──────┐   distance > chaseRange
+│ IDLE │ ◄─────────────────────────┐
+└──────┘                            │
+   │ distance ≤ chaseRange          │
+   ▼                                │
+┌───────┐  distance > attackRange   │
+│ CHASE │ ────────────────────────►─┘
+└───────┘
+   │ distance ≤ attackRange
+   ▼
+┌────────┐
+│ ATTACK │
+└────────┘
+```
+
+**Behaviors:**
+- **IDLE**: Stand still, wait for player
+- **CHASE**: Move towards player, navigate around walls
+- **ATTACK**: Stop and attack when in range
+
+**Pathfinding:**
+- Simple direct movement towards player
+- Obstacle avoidance (try X, try Y if blocked)
+- Future: A* pathfinding for smarter navigation
+
+### 7. Game Mode System
+
+Two main modes:
+
+**Base Camp Mode:**
+- Safe area, no enemies
+- Interactive tiles:
+  - Cooking Station → (E to cook)
+  - Shop → (E to buy/sell)
+  - Expedition Portal → (E to start dungeon)
+
+**Expedition Mode:**
+- Dungeon with enemies
+- Procedurally generated layout
+- Interactive tiles:
+  - Stairs Up → (E to return to base)
+  - Stairs Down → (E to next level)
+- Enemy spawning based on level difficulty
+
+## Data Flow Examples
+
+### Example 1: Player Movement
+
+```
+User presses W
+  ↓
+InputManager.getMovementVector() → { x: 0, y: -1 }
+  ↓
+GameScreen.handlePlayerMovement(deltaTime)
+  ↓
+Calculate newX, newY based on speed * deltaTime
+  ↓
+MapSystem.canMoveTo(newX, newY)?
+  ↓ YES
+Player.move(dx, dy, deltaTime)
+  ↓
+Camera.setCamera(player.x - width/2, player.y - height/2)
+  ↓
+Render updated frame
+```
+
+### Example 2: Combat
+
+```
+User presses Space
+  ↓
+Player.canAttack()? (check cooldown)
+  ↓ YES
+Player.attack() → set cooldown
+  ↓
+Calculate hitbox = player.pos + facing * range
+  ↓
+For each enemy:
+  if distance(enemy, hitbox) < hitbox.radius:
+    enemy.takeDamage(player.getAttackDamage())
+      ↓
+    if enemy.health ≤ 0:
+      enemy.alive = false
+      loot = enemy.getLoot()
+      player.gold += loot.gold
+      gameState.addToInventory(loot.items)
+```
+
+### Example 3: Enemy AI
+
+```
+Every frame, for each enemy:
+  ↓
+Calculate distance to player
+  ↓
+Update state based on distance:
+  - Far away → IDLE
+  - Medium → CHASE
+  - Close → ATTACK
+  ↓
+Execute state behavior:
+  CHASE:
+    - Calculate direction to player
+    - Move towards player if path clear
+    - Avoid obstacles
+  ATTACK:
+    - If cooldown ready:
+      - Deal damage to player
+      - Reset cooldown
+```
+
+## File Structure
+
+```
+src/
+├── core/
+│   ├── GameLoop.ts          # 60 FPS game loop
+│   ├── InputManager.ts      # Keyboard/mouse input
+│   ├── GameState.ts         # Global game state
+│   ├── EventBus.ts          # Event system
+│   └── DataLoader.ts        # Load JSON data
+├── rendering/
+│   └── CanvasRenderer.ts    # Canvas drawing API
+├── entities/
+│   ├── Entity.ts            # Base entity class
+│   ├── Player.ts            # Player character
+│   ├── Enemy.ts             # Enemy with AI
+│   ├── types.ts             # Type definitions
+│   └── EntityFactory.ts     # Create entities from JSON
+├── systems/
+│   └── MapSystem.ts         # Map, tiles, collision
+├── screens/
+│   └── GameScreen.ts        # Main game screen
+├── data/
+│   ├── enemies.json         # Enemy definitions
+│   ├── ingredients.json     # Ingredient definitions
+│   ├── cookingMethods.json  # Cooking methods
+│   └── equipment.json       # Weapon/armor stats
+└── main.ts                  # Entry point
 ```
 
 ## Adding New Features
 
-### Example: Adding a Crafting System
+### Add a New Enemy Type
 
-**Step 1**: Define entity type
-```typescript
-// src/entities/types.ts
-export interface CraftingRecipe extends BaseEntity {
-  type: 'crafting';
-  materials: string[];
-  result: string;
-}
-```
-
-**Step 2**: Create data file
+1. Edit `src/data/enemies.json`:
 ```json
-// src/data/crafting.json
 {
-  "iron_sword_recipe": {
-    "id": "iron_sword_recipe",
-    "type": "crafting",
-    "materials": ["iron_ore", "iron_ore", "wood"],
-    "result": "iron_sword"
+  "zombie": {
+    "id": "zombie",
+    "type": "enemy",
+    "name": "Zombie",
+    "health": 80,
+    "attack": 12,
+    "defense": 3,
+    "goldReward": 25,
+    "lootTable": [
+      { "itemId": "rotten_meat", "chance": 0.8 }
+    ]
   }
 }
 ```
 
-**Step 3**: Create system
+2. That's it! Enemy will appear in expeditions automatically.
+
+### Add a New Map
+
 ```typescript
-// src/systems/CraftingSystem.ts
-export class CraftingSystem {
-  craft(recipeId: string): void {
-    const recipe = entityFactory.create(recipeId);
-    // Crafting logic
-    eventBus.emit('item:crafted', result);
+// In MapSystem.ts or new file
+static createCustomDungeon(): GameMap {
+  const width = 40;
+  const height = 30;
+  const tiles: TileType[][] = [];
+
+  // Create your layout
+  for (let y = 0; y < height; y++) {
+    tiles[y] = [];
+    for (let x = 0; x < width; x++) {
+      tiles[y][x] = TileType.FLOOR; // or WALL, etc.
+    }
+  }
+
+  return { width, height, tileSize: 32, tiles, name: 'Custom Dungeon' };
+}
+```
+
+### Add a New Interactive Tile
+
+1. Add tile type to `MapSystem.ts`:
+```typescript
+enum TileType {
+  // ...existing types
+  TREASURE_CHEST = 8,
+}
+```
+
+2. Handle interaction in `GameScreen.ts`:
+```typescript
+private checkInteractions(): void {
+  const tile = this.mapSystem.getTileAt(this.player.x, this.player.y);
+
+  if (tile === TileType.TREASURE_CHEST) {
+    this.showInteractionPrompt = true;
+    this.interactionPromptText = 'Press E to Open Chest';
+
+    if (this.input.isKeyJustPressed('e')) {
+      // Give loot
+      this.player.gold += 100;
+    }
   }
 }
-export const craftingSystem = new CraftingSystem();
 ```
 
-**Step 4**: Create screen
-```typescript
-// src/screens/CraftingScreen.ts
-export class CraftingScreen extends Screen {
-  render(): void {
-    // Display recipes
-    // Show craft buttons
-  }
-}
-```
+## Performance Considerations
 
-**Step 5**: Register screen
-```typescript
-// src/main.ts (only place you modify)
-screenManager.registerScreen('crafting', new CraftingScreen(renderer));
-```
+### Rendering
+- Only render visible tiles (future: frustum culling)
+- Batch similar draw calls
+- Cache frequently used calculations
+- Use requestAnimationFrame for smooth 60 FPS
 
-**Step 6**: Register data
-```typescript
-// src/core/DataLoader.ts (only other place you modify)
-const crafting = await import('../data/crafting.json');
-entityFactory.registerTemplates(crafting.default);
-```
+### Collision Detection
+- Bounding box (AABB) collision
+- Only check relevant entities (spatial partitioning future)
+- Early exit when collision found
 
-**Done!** You've added a complete crafting system by creating 3 new files and making 2 small additions.
+### Memory
+- Reuse objects when possible
+- Avoid allocations in hot paths (game loop)
+- Clean up dead entities each frame
 
-## Layer Responsibilities
+## Future Architecture Improvements
 
-### Core Layer (`src/core/`)
-- Game engine fundamentals
-- State management
-- Event system
-- Data loading
+- [ ] Spatial partitioning (quadtree) for collision
+- [ ] A* pathfinding for smarter enemy AI
+- [ ] Sprite system instead of simple shapes
+- [ ] Particle effects for combat
+- [ ] Menu system for cooking/shop (overlay UI)
+- [ ] Save/load system
+- [ ] Sound system
+- [ ] Mobile touch controls
 
-**When to add here**: Only when creating fundamental systems used by everything else.
+## Design Principles
 
-### Entity Layer (`src/entities/`)
-- Type definitions
-- Entity factory
-- Entity creation logic
-
-**When to add here**: When adding new types of game objects.
-
-### System Layer (`src/systems/`)
-- Game logic
-- Business rules
-- State transformations
-
-**When to add here**: When adding new game mechanics or features.
-
-### Screen Layer (`src/screens/`)
-- UI rendering
-- User input handling
-- Visual presentation
-
-**When to add here**: When adding new UI views.
-
-### Rendering Layer (`src/rendering/`)
-- SVG utilities
-- Rendering primitives
-- Visual components
-
-**When to add here**: When creating reusable visual components.
-
-### Data Layer (`src/data/`)
-- JSON templates
-- Game content
-
-**When to add here**: Always! This is where most additions happen.
-
-## State Management
-
-### Global State (`GameState`)
-
-Stores all game data:
-- Player stats
-- Inventory
-- Gold
-- Discovered recipes
-- Current screen
-- Active buffs
-
-Access with:
-```typescript
-const state = gameState.getState(); // Read
-gameState.addGold(50); // Modify
-```
-
-### Local State (Screen-specific)
-
-Each screen can have private state:
-```typescript
-class CookingScreen extends Screen {
-  private selectedIngredients: string[] = [];
-  private selectedMethod: string = '';
-}
-```
-
-This state is cleaned up when screen changes.
-
-## Event Catalog
-
-### Player Events
-- `player:updated` - Player stats changed
-- `player:died` - Player health reached 0
-
-### Combat Events
-- `combat:started` - Combat began
-- `combat:finished` - Combat ended
-- `enemy:defeated` - Enemy killed
-
-### Economy Events
-- `gold:changed` - Gold amount changed
-- `shop:purchase` - Item purchased
-- `shop:sold` - Item sold
-
-### Inventory Events
-- `inventory:changed` - Inventory updated
-- `item:added` - Item added
-- `item:removed` - Item removed
-
-### Cooking Events
-- `cooking:completed` - Dish created
-- `recipe:discovered` - New recipe found
-
-### System Events
-- `game:started` - Game loop started
-- `game:stopped` - Game loop stopped
-- `game:update` - Frame update (with deltaTime)
-- `game:render` - Render frame
-- `screen:changed` - Screen switched
-
-## File Size Rule
-
-**Every file must be under 200 lines.**
-
-If a file grows too large:
-1. Split into multiple files
-2. Extract reusable components
-3. Move data to JSON
-4. Create helper utilities
-
-Example:
-```
-// Too large:
-CombatSystem.ts (300 lines)
-
-// Split into:
-CombatSystem.ts (150 lines)
-DamageCalculator.ts (80 lines)
-LootSystem.ts (70 lines)
-```
-
-## Mobile Considerations
-
-### Touch Handling
-- No hover states
-- Large touch targets (50+ pixels)
-- Prevent default touch behavior
-- Support both click and touch events
-
-### Responsive SVG
-- Use viewBox for scaling
-- Relative coordinates
-- Text sizing relative to viewBox
-- Test on multiple screen sizes
-
-### Performance
-- Minimize DOM operations
-- Batch rendering updates
-- Avoid unnecessary re-renders
-- Use event delegation
-
-## Testing Strategy
-
-### Manual Testing Checklist
-- [ ] Add enemy via JSON
-- [ ] Add ingredient via JSON
-- [ ] Fight enemy, get loot
-- [ ] Cook dish with ingredients
-- [ ] Sell dish for gold
-- [ ] Buy equipment
-- [ ] Eat dish for buffs
-- [ ] Test on mobile device
-- [ ] Test screen transitions
-
-### Extension Testing
-- [ ] Add new entity type
-- [ ] Create new system
-- [ ] Add new screen
-- [ ] Verify no existing code modified
-
-## Performance Guidelines
-
-- Re-render only when state changes
-- Use event-driven updates
-- Clear SVG before re-rendering
-- Minimize entity creation in loops
-- Cache entity templates
-- Debounce rapid events
-
-## Common Pitfalls
-
-❌ **Don't**: Modify existing entity JSON files to add new content
-✅ **Do**: Add new entries to JSON files
-
-❌ **Don't**: Put game logic in screens
-✅ **Do**: Keep screens focused on rendering
-
-❌ **Don't**: Directly modify GameState internal state
-✅ **Do**: Use GameState methods
-
-❌ **Don't**: Create circular dependencies
-✅ **Do**: Use EventBus for loose coupling
-
-❌ **Don't**: Mix concerns in one file
-✅ **Do**: Keep files focused and under 200 lines
-
-## Success Metrics
-
-A well-architected addition:
-- ✅ Adds 0 lines to existing files (or minimal registration)
-- ✅ Creates focused, single-purpose files
-- ✅ Uses existing systems and patterns
-- ✅ Follows the 200-line rule
-- ✅ Works with data-driven content
-- ✅ Communicates via events
-
-## Conclusion
-
-This architecture prioritizes:
-1. **Modularity** - Small, focused files
-2. **Extensibility** - Add features without changing existing code
-3. **Simplicity** - Clear patterns, easy to understand
-4. **Maintainability** - Each file has one job
-5. **Data-Driven** - Content in JSON, not code
-
-Follow these principles and the game will scale effortlessly!
+1. **Separation of Concerns**: Rendering ≠ Logic ≠ Data
+2. **Entity-Component Pattern**: Modular, reusable entity behaviors
+3. **Data-Driven**: Content in JSON, code handles systems
+4. **Real-Time Focus**: 60 FPS, delta time, smooth movement
+5. **Modularity**: Each file < 200 lines, single responsibility

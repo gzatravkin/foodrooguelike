@@ -3,19 +3,15 @@
  */
 
 import { eventBus } from './EventBus';
-import { gameState } from './GameState';
 
 export class GameLoop {
-    private lastTime: number = 0;
     private running: boolean = false;
     private animationId: number | null = null;
+    private callback: ((currentTime: number) => void) | null = null;
 
     start(): void {
         if (this.running) return;
-
         this.running = true;
-        this.lastTime = performance.now();
-        this.loop(this.lastTime);
         eventBus.emit('game:started');
     }
 
@@ -28,29 +24,18 @@ export class GameLoop {
         eventBus.emit('game:stopped');
     }
 
-    private loop = (currentTime: number): void => {
+    loop(callback: (currentTime: number) => void): void {
+        this.callback = callback;
+        this.runLoop(performance.now());
+    }
+
+    private runLoop = (currentTime: number): void => {
         if (!this.running) return;
 
-        const deltaTime = currentTime - this.lastTime;
-        this.lastTime = currentTime;
-
-        this.update(deltaTime);
-        this.render();
-
-        this.animationId = requestAnimationFrame(this.loop);
-    };
-
-    private update(deltaTime: number): void {
-        // Update game systems
-        eventBus.emit('game:update', deltaTime);
-
-        // Tick buffs every second
-        if (Math.floor(this.lastTime / 1000) !== Math.floor((this.lastTime - deltaTime) / 1000)) {
-            gameState.tickBuffs();
+        if (this.callback) {
+            this.callback(currentTime);
         }
-    }
 
-    private render(): void {
-        eventBus.emit('game:render');
-    }
+        this.animationId = requestAnimationFrame(this.runLoop);
+    };
 }

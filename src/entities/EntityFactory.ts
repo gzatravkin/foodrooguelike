@@ -37,7 +37,19 @@ export class EntityFactory {
     }
 
     createDish(recipeId: string, ingredients: string[], cookingMethod: string, quality: number): Dish {
-        const baseValue = ingredients.length * 10 * quality;
+        // Calculate base value from ingredient worth
+        let ingredientValue = 0;
+        ingredients.forEach(ingId => {
+            const template = this.getTemplate(ingId);
+            if (template?.baseValue) {
+                ingredientValue += template.baseValue;
+            }
+        });
+
+        // Apply cooking multiplier (2.5x for profitability) and quality
+        const cookingMethodTemplate = this.getTemplate(cookingMethod);
+        const methodModifier = cookingMethodTemplate?.qualityModifier || 1.0;
+        const baseValue = ingredientValue * 2.5 * quality * methodModifier;
 
         return {
             id: `dish_${Date.now()}`,

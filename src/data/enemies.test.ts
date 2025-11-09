@@ -122,7 +122,7 @@ describe('Enemies Data', () => {
       expect(rat.health).toBe(20);
       expect(rat.attack).toBe(3);
       expect(rat.defense).toBe(1);
-      expect(rat.goldReward).toBe(5);
+      expect(rat.goldReward).toBe(8); // Balanced for better early game progression
     });
 
     it('Demon Lord should be ultimate boss', () => {

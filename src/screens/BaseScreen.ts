@@ -43,6 +43,11 @@ export class BaseScreen extends Screen {
 
         // Restaurant info
         this.renderRestaurantInfo(50, 600);
+
+        // Settings button
+        this.createNavButton(vb.width - 180, vb.height - 80, 150, 50, 'SETTINGS', () => {
+            gameState.setScreen('settings');
+        });
     }
 
     private renderStats(x: number, y: number): void {

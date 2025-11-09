@@ -251,7 +251,12 @@ export class CanvasRenderer {
     rotation: number = 0
   ): void {
     const img = this.svgImageCache.get(cacheKey);
-    if (!img) return;
+    if (!img) {
+      console.warn(`SVG sprite not found in cache: ${cacheKey}`);
+      // Draw a fallback circle so missing sprites are visible
+      this.drawCircle(x, y, width / 2, '#FF00FF');
+      return;
+    }
 
     const screenX = x - this.camera.x;
     const screenY = y - this.camera.y;

@@ -13,7 +13,7 @@ import { GameScreen } from './screens/GameScreen';
 class Game {
     private renderer: CanvasRenderer;
     private input: InputManager;
-    private gameScreen: GameScreen;
+    private gameScreen!: GameScreen;
     private gameLoop: GameLoop;
     private lastTime: number = 0;
 
@@ -25,7 +25,6 @@ class Game {
 
         this.renderer = new CanvasRenderer(canvasElement);
         this.input = new InputManager();
-        this.gameScreen = new GameScreen(this.renderer, this.input);
         this.gameLoop = new GameLoop();
 
         this.setupEventListeners();
@@ -36,6 +35,8 @@ class Game {
         await dataLoader.loadAll();
 
         console.log('Initializing 2D top-view roguelike...');
+        this.gameScreen = new GameScreen(this.renderer, this.input);
+        await this.gameScreen.init();
         console.log('Game initialized successfully!');
     }
 

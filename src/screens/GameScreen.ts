@@ -56,9 +56,12 @@ export class GameScreen {
     this.player = new Player(320, 240, startingWeapon || undefined);
 
     this.loadBaseCamp();
-    this.preloadSVGAssets();
     this.setupEventListeners();
     this.setupCheatPanelInput();
+  }
+
+  async init(): Promise<void> {
+    await this.preloadSVGAssets();
   }
 
   private setupEventListeners(): void {

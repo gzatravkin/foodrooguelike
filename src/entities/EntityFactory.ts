@@ -40,8 +40,10 @@ export class EntityFactory {
         return this.create(id) as Weapon;
     }
 
+    // Deprecated: Dish creation is now handled by CookingSystem
     createDish(recipeId: string, ingredients: string[], cookingMethod: string, quality: number): Dish {
-        // Calculate base value from ingredient worth
+        console.warn('EntityFactory.createDish is deprecated. Use CookingSystem.cook instead.');
+
         let ingredientValue = 0;
         ingredients.forEach(ingId => {
             const template = this.getTemplate(ingId);
@@ -50,31 +52,30 @@ export class EntityFactory {
             }
         });
 
-        // Apply cooking multiplier (2.5x for profitability) and quality
         const cookingMethodTemplate = this.getTemplate(cookingMethod);
         const methodModifier = cookingMethodTemplate?.qualityModifier || 1.0;
         const baseValue = ingredientValue * 2.5 * quality * methodModifier;
+        const baseEffect = Math.floor(quality * 10);
 
         return {
             id: `dish_${Date.now()}`,
             type: 'dish',
+            recipeId: recipeId || 'unknown_dish',
             name: `${cookingMethod} Dish`,
             description: `Made with ${ingredients.join(', ')}`,
             ingredients,
             cookingMethod,
+            cookingTime: 0,
             quality,
             value: Math.floor(baseValue),
-            effects: this.calculateDishEffects(quality)
-        };
-    }
-
-    private calculateDishEffects(quality: number) {
-        const baseEffect = Math.floor(quality * 10);
-        return {
-            health: baseEffect,
-            attack: Math.floor(baseEffect * 0.5),
-            defense: Math.floor(baseEffect * 0.3),
-            duration: 3
+            rarity: 'common',
+            buffType: 'health',
+            effects: {
+                health: baseEffect,
+                attack: Math.floor(baseEffect * 0.5),
+                defense: Math.floor(baseEffect * 0.3),
+                duration: 3
+            }
         };
     }
 

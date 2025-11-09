@@ -11,6 +11,7 @@ import type { SVGRenderer } from '../rendering/SVGRenderer';
 export class CookingScreen extends Screen {
     private selectedIngredients: string[] = [];
     private selectedMethod: string = '';
+    private cookingTime: number = 60; // Default 60 seconds
     private resultMessage: string = '';
 
     constructor(renderer: SVGRenderer) {
@@ -33,6 +34,9 @@ export class CookingScreen extends Screen {
 
         // Cooking methods
         this.renderCookingMethods(550, 120);
+
+        // Cooking time selector
+        this.renderCookingTimeSelector(50, 350);
 
         // Selected items
         this.renderSelection(50, 450);
@@ -115,10 +119,46 @@ export class CookingScreen extends Screen {
         });
     }
 
+    private renderCookingTimeSelector(x: number, y: number): void {
+        const label = this.renderer.createText(x, y, 'Cooking Time:', 20, '#FFD700');
+        this.renderer.append(label);
+
+        // Time preset buttons
+        const presets = [15, 30, 45, 60, 90, 120, 150, 180];
+        presets.forEach((time, i) => {
+            const isSelected = this.cookingTime === time;
+            const btn = this.renderer.createButton(
+                x + (i % 4) * 105,
+                y + 30 + Math.floor(i / 4) * 40,
+                100,
+                35,
+                `${time}s`,
+                () => this.setCookingTime(time)
+            );
+
+            if (isSelected) {
+                const rect = btn.querySelector('rect');
+                if (rect) rect.setAttribute('fill', '#2E7D32');
+            }
+
+            this.renderer.append(btn);
+        });
+
+        // Display current time
+        const timeText = this.renderer.createText(x + 450, y + 40, `Time: ${this.cookingTime}s`, 18, '#FFD700');
+        this.renderer.append(timeText);
+    }
+
     private renderSelection(x: number, y: number): void {
-        const text = `Selected: ${this.selectedIngredients.length} ingredients, Method: ${this.selectedMethod || 'none'}`;
+        const text = `Selected: ${this.selectedIngredients.length} ingredients, Method: ${this.selectedMethod || 'none'}, Time: ${this.cookingTime}s`;
         const label = this.renderer.createText(x, y, text, 18, '#aaa');
         this.renderer.append(label);
+    }
+
+    private setCookingTime(time: number): void {
+        this.cookingTime = time;
+        this.resultMessage = '';
+        this.render();
     }
 
     private toggleIngredient(id: string): void {
@@ -139,13 +179,25 @@ export class CookingScreen extends Screen {
     }
 
     private cook(): void {
-        const dish = cookingSystem.cook(this.selectedIngredients, this.selectedMethod);
-        this.resultMessage = `Created ${dish.name}! Quality: ${Math.round(dish.quality * 100)}%`;
+        const dish = cookingSystem.cook(this.selectedIngredients, this.selectedMethod, this.cookingTime);
+        const qualityPercent = Math.round(dish.quality * 100);
+        const rarityColor = {
+            common: '#90EE90',
+            uncommon: '#4FC3F7',
+            rare: '#BA68C8',
+            legendary: '#FFD700'
+        }[dish.rarity] || '#90EE90';
 
-        gameState.addToInventory(dish.id);
+        this.resultMessage = `Created ${dish.name}! (${dish.rarity.toUpperCase()}) Quality: ${qualityPercent}% Value: ${dish.value}g`;
+
+        // Store dish separately from inventory
+        gameState.addDish(dish.id);
+        // Also register the dish as a template so it can be retrieved later
+        entityFactory.registerTemplate(dish.id, dish);
 
         this.selectedIngredients = [];
         this.selectedMethod = '';
+        this.cookingTime = 60;
 
         this.render();
     }
@@ -157,6 +209,7 @@ export class CookingScreen extends Screen {
     cleanup(): void {
         this.selectedIngredients = [];
         this.selectedMethod = '';
+        this.cookingTime = 60;
         this.resultMessage = '';
     }
 }

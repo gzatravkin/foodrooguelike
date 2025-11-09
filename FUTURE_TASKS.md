@@ -95,7 +95,7 @@
 
 - [x] 🔥 **Add 10 more enemies** - Create varied enemies in `src/data/enemies.json` with unique stats and loot tables. Include boss variants. Test balance. (~50 lines JSON)
 
-- [ ] 🔥 **Add 20 more ingredients** - Expand ingredient variety in `src/data/ingredients.json`. Include legendary/exotic types. Organize by rarity tiers. (~100 lines JSON)
+- [WIP] 🔥 **Add 20 more ingredients** - Expand ingredient variety in `src/data/ingredients.json`. Include legendary/exotic types. Organize by rarity tiers. (~100 lines JSON)
 
 - [ ] ⭐ **Multiple expedition zones** - Add forest, cave, volcano zones with different enemies. Create `src/systems/ZoneSystem.ts` and update `ExpeditionScreen.ts`. (~180 lines)
 

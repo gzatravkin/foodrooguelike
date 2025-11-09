@@ -38,6 +38,29 @@ npm run preview
 
 Open your browser to `http://localhost:5173`
 
+## Deployment
+
+### GitHub Pages (Automatic)
+
+This project includes GitHub Actions workflows for automatic deployment:
+
+1. **Enable GitHub Pages**: Go to Settings → Pages → Source: **GitHub Actions**
+2. **Push to main branch**: Deployment happens automatically
+3. **View your game**: `https://[username].github.io/foodrooguelike/`
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed instructions.
+
+### Quick Deploy
+
+```bash
+# Test production build locally
+npm run build:gh
+npm run preview:gh
+
+# Push to main/master to deploy
+git push origin main
+```
+
 ## Architecture Overview
 
 The game is built with **extreme modularity** in mind. Adding new content requires NO modification of existing code.

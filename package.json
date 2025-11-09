@@ -5,8 +5,10 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc && vite build",
+    "build:gh": "GITHUB_PAGES=true npm run build",
     "dev": "vite",
     "preview": "vite preview",
+    "preview:gh": "GITHUB_PAGES=true npm run build && vite preview",
     "type-check": "tsc --noEmit"
   },
   "keywords": ["roguelike", "game", "typescript", "svg"],

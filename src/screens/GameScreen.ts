@@ -17,7 +17,6 @@ import * as SVGArt from '../rendering/SVGArt';
 import { GameScreenRenderer } from './GameScreenRenderer';
 import { CombatSystem } from './CombatSystem';
 import { InputHandler } from './InputHandler';
-import { ShopManager } from './ShopManager';
 import { SpawnManager } from './SpawnManager';
 import { GameScreenUpdater } from './GameScreenUpdater';
 import { CheatPanel } from '../ui/CheatPanel';
@@ -36,7 +35,6 @@ export class GameScreen {
   private combatSystem: CombatSystem;
   private inputHandler: InputHandler;
   private spawnManager: SpawnManager;
-  private shopManager: ShopManager;
   private updater: GameScreenUpdater;
   private cheatPanel: CheatPanel;
   private particleSystem: ParticleSystem;
@@ -58,7 +56,6 @@ export class GameScreen {
     this.combatSystem = new CombatSystem(this.mapSystem);
     this.spawnManager = new SpawnManager(this.mapSystem);
     this.inputHandler = new InputHandler(input, this.mapSystem, this.combatSystem);
-    this.shopManager = new ShopManager(input);
     this.particleSystem = new ParticleSystem();
     this.updater = new GameScreenUpdater(this.mapSystem, this.combatSystem, this.particleSystem);
     this.inputHandler.setParticleSystem(this.particleSystem);
@@ -236,11 +233,6 @@ export class GameScreen {
       return;
     }
 
-    if (this.shopManager.isShopOpen()) {
-      this.shopManager.handleShopInput(this.player);
-      return;
-    }
-
     this.inputHandler.handleWeaponSwitching(this.player);
     this.inputHandler.handlePlayerMovement(this.player, deltaTime);
     this.inputHandler.handlePlayerAttack(this.player, this.enemies, deltaTime);
@@ -250,7 +242,7 @@ export class GameScreen {
       this.player,
       this.mode,
       this.mapSystem,
-      () => this.shopManager.openShop(),
+      () => gameState.setScreen('shop'),
       () => this.loadExpedition(1)
     );
 
@@ -259,7 +251,7 @@ export class GameScreen {
       const tileType = this.mapSystem.getTileAt(this.player.x, this.player.y);
       if (this.mode === 'base' && tileType) {
         if (tileType === TileType.SHOP) {
-          this.shopManager.openShop();
+          gameState.setScreen('shop');
         } else if (tileType === TileType.EXPEDITION_PORTAL) {
           this.loadExpedition(1);
         } else if (tileType === TileType.COOKING_STATION) {
@@ -328,20 +320,6 @@ export class GameScreen {
   render(): void {
     this.renderer.clear();
     this.renderer.renderMap(this.mapSystem.getCurrentMap());
-
-    if (this.shopManager.isShopOpen()) {
-      this.renderer.renderShop(
-        this.shopManager.getAvailableWeapons(),
-        this.player.gold,
-        this.player.weapon
-      );
-
-      // Render cheat panel on top of everything
-      const canvasRenderer = (this.renderer as any).renderer as CanvasRenderer;
-      const canvas = canvasRenderer.getCanvas();
-      this.cheatPanel.render(canvasRenderer.getContext(), canvas.width, canvas.height);
-      return;
-    }
 
     this.renderer.renderTraps(this.traps);
     this.renderer.renderCorpses(this.combatSystem.getCorpses(), this.nearbyCorpse);

@@ -3,61 +3,77 @@
  * Re-exports all SVG generators from specialized modules
  */
 
-// Player
-export { createPlayerSVG } from './SVGPlayer';
-
-// Basic Enemies
-export {
+// Import all SVG generators
+import { createPlayerSVG } from './SVGPlayer';
+import {
   createSlimeSVG,
   createGoblinSVG,
   createSkeletonSVG,
   createOrcSVG,
 } from './SVGEnemiesBasic';
-
-// Large Enemies
-export {
+import {
   createDragonSVG,
   createWolfSVG,
   createTrollSVG,
 } from './SVGEnemiesLarge';
-
-// Small Enemies
-export {
+import {
   createRatSVG,
   createBatSVG,
   createSpiderSVG,
 } from './SVGEnemiesSmall';
-
-// Boss Enemies
-export {
+import {
   createIceGolemSVG,
   createFireElementalSVG,
   createGiantCrabSVG,
   createDemonLordSVG,
 } from './SVGEnemiesBoss';
-
-// Weapons
-export {
+import {
   createMeleeSVG,
   createPistolSVG,
   createRifleSVG,
   createStaffSVG,
 } from './SVGWeapons';
-
-// Projectiles
-export {
+import {
   createBulletSVG,
   createMagicBoltSVG,
   createFireBallSVG,
   createPlasmaBoltSVG,
 } from './SVGProjectiles';
-
-// Environment
-export {
+import {
   createCorpseSVG,
   createFloorTileSVG,
   createWallTileSVG,
 } from './SVGEnvironment';
+
+// Re-export all
+export {
+  createPlayerSVG,
+  createSlimeSVG,
+  createGoblinSVG,
+  createSkeletonSVG,
+  createOrcSVG,
+  createDragonSVG,
+  createWolfSVG,
+  createTrollSVG,
+  createRatSVG,
+  createBatSVG,
+  createSpiderSVG,
+  createIceGolemSVG,
+  createFireElementalSVG,
+  createGiantCrabSVG,
+  createDemonLordSVG,
+  createMeleeSVG,
+  createPistolSVG,
+  createRifleSVG,
+  createStaffSVG,
+  createBulletSVG,
+  createMagicBoltSVG,
+  createFireBallSVG,
+  createPlasmaBoltSVG,
+  createCorpseSVG,
+  createFloorTileSVG,
+  createWallTileSVG,
+};
 
 // Map enemy IDs to SVG generators
 export const ENEMY_SVG_MAP: Record<string, () => string> = {

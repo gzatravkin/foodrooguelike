@@ -35,6 +35,10 @@ export class ExpeditionSelectionScreen extends Screen {
         const vb = this.renderer.getViewBox();
         const state = gameState.getState();
 
+        // Add semi-transparent background to catch all clicks and prevent interaction with elements below
+        const background = this.renderer.createRect(0, 0, vb.width, vb.height, 'rgba(0, 0, 0, 0.85)');
+        this.renderer.append(background);
+
         // Check if coming from world map with preselected expedition
         const preselected = localStorage.getItem('preselectedExpedition');
         if (preselected && !this.selectedExpedition) {

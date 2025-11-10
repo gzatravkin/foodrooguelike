@@ -7,6 +7,7 @@ import { CanvasRenderer } from '../rendering/CanvasRenderer';
 import { InputManager } from '../core/InputManager';
 import { gameState } from '../core/GameState';
 import { eventBus } from '../core/EventBus';
+import expeditionsData from '../data/expeditions.json';
 
 interface MapLocation {
   id: string;
@@ -273,28 +274,23 @@ export class GlobalMapScreen {
     }
   }
 
-  private async startExpedition(expeditionId: string): Promise<void> {
-    try {
-      // Load expedition data
-      const response = await fetch('/src/data/expeditions.json');
-      const expeditions = await response.json();
-      const expedition = expeditions[expeditionId];
+  private startExpedition(expeditionId: string): void {
+    const expedition = expeditionsData[expeditionId as keyof typeof expeditionsData];
 
-      if (expedition) {
-        // Check if player has enough gold for expedition cost
-        const currentGold = gameState.getState().gold;
-        if (currentGold >= expedition.cost) {
-          // Store expedition data and switch to expedition selection screen
-          // (which will show food buffs, then start the expedition)
-          localStorage.setItem('preselectedExpedition', JSON.stringify(expedition));
-          gameState.setScreen('expedition');
-        } else {
-          alert(`Not enough gold! This expedition costs ${expedition.cost} gold.`);
-        }
+    if (expedition) {
+      // Check if player has enough gold for expedition cost
+      const currentGold = gameState.getState().gold;
+      if (currentGold >= expedition.cost) {
+        // Store expedition data and switch to expedition selection screen
+        // (which will show food buffs, then start the expedition)
+        localStorage.setItem('preselectedExpedition', JSON.stringify(expedition));
+        gameState.setScreen('expedition');
+      } else {
+        alert(`Not enough gold! This expedition costs ${expedition.cost} gold.`);
       }
-    } catch (error) {
-      console.error('Failed to load expedition data:', error);
-      alert('Failed to load expedition data. Please try again.');
+    } else {
+      console.error('Expedition not found:', expeditionId);
+      alert('Expedition not found. Please try again.');
     }
   }
 
@@ -518,15 +514,11 @@ export class GlobalMapScreen {
         ctx.fillText('Press E to start expedition!', panelX + 20, panelY + 100);
 
         // Show expedition cost
-        fetch('/src/data/expeditions.json')
-          .then(res => res.json())
-          .then(expeditions => {
-            const expedition = expeditions[this.selectedLocation!.expeditionId];
-            if (expedition) {
-              ctx.fillStyle = '#FFD700';
-              ctx.fillText(`Expedition cost: ${expedition.cost} gold`, panelX + 20, panelY + 130);
-            }
-          });
+        const expedition = expeditionsData[this.selectedLocation.expeditionId as keyof typeof expeditionsData];
+        if (expedition) {
+          ctx.fillStyle = '#FFD700';
+          ctx.fillText(`Expedition cost: ${expedition.cost} gold`, panelX + 20, panelY + 130);
+        }
       }
     }
 

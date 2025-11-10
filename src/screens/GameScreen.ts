@@ -403,7 +403,7 @@ export class GameScreen {
         if (tileType === TileType.SHOP) {
           gameState.setScreen('shop');
         } else if (tileType === TileType.EXPEDITION_PORTAL) {
-          gameState.setScreen('expedition');
+          gameState.setScreen('worldmap');
         } else if (tileType === TileType.COOKING_STATION) {
           gameState.setScreen('cooking');
         } else if (tileType === TileType.TRAINING_HALL) {

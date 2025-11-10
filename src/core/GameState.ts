@@ -44,7 +44,7 @@ export interface GameData {
     inventory: string[];
     dishes: string[]; // IDs of cooked dishes available to sell/eat
     discoveredRecipes: string[];
-    currentScreen: 'base' | 'shop' | 'cooking' | 'settings' | 'restaurant' | 'upgrades' | 'recipebook' | 'game' | 'training' | 'expedition';
+    currentScreen: 'base' | 'shop' | 'cooking' | 'settings' | 'restaurant' | 'upgrades' | 'recipebook' | 'game' | 'training' | 'expedition' | 'worldmap';
     equipment: {
         weapon?: string;
         armor?: string;

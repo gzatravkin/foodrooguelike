@@ -237,6 +237,30 @@ export class GameScreen {
     this.inputHandler.handlePlayerMovement(this.player, deltaTime);
     this.inputHandler.handlePlayerAttack(this.player, this.enemies, deltaTime);
 
+    // Check for tile interactions (shop, expedition portal, cooking station)
+    const tileInteraction = this.updater.checkTileInteractions(
+      this.player,
+      this.mode,
+      this.mapSystem,
+      () => this.shopManager.openShop(),
+      () => this.loadExpedition(1)
+    );
+
+    // Handle interact action (E key or virtual button)
+    if (this.inputHandler.handleInteract()) {
+      const tileType = this.mapSystem.getTileAt(this.player.x, this.player.y);
+      if (this.mode === 'base' && tileType) {
+        if (tileType === TileType.SHOP) {
+          this.shopManager.openShop();
+        } else if (tileType === TileType.EXPEDITION_PORTAL) {
+          this.loadExpedition(1);
+        } else if (tileType === TileType.COOKING_STATION) {
+          // TODO: Implement cooking system
+          console.log('Cooking station interaction - not yet implemented');
+        }
+      }
+    }
+
     // Handle loot action
     if (this.inputHandler.handleLoot() && this.nearbyCorpse && !this.nearbyCorpse.looted) {
       const loot = this.nearbyCorpse.lootCorpse();
@@ -256,9 +280,18 @@ export class GameScreen {
     this.particleSystem.update(deltaTime);
     this.enemies = this.updater.handleDeadEnemies(this.enemies);
     const interactionResult = this.updater.checkInteractions(this.player, this.mode, this.combatSystem.getCorpses());
-    this.showInteractionPrompt = interactionResult.showPrompt;
-    this.interactionPromptText = interactionResult.promptText;
-    this.nearbyCorpse = interactionResult.nearbyCorpse;
+
+    // Combine tile interactions with corpse interactions (prioritize tile interactions)
+    if (tileInteraction.showPrompt) {
+      this.showInteractionPrompt = true;
+      this.interactionPromptText = tileInteraction.promptText;
+      this.nearbyCorpse = null;
+    } else {
+      this.showInteractionPrompt = interactionResult.showPrompt;
+      this.interactionPromptText = interactionResult.promptText;
+      this.nearbyCorpse = interactionResult.nearbyCorpse;
+    }
+
     this.updater.updateCamera(this.player, this.renderer);
     this.baseHealTimer = this.updater.handleBaseHealing(this.player, this.mode, this.baseHealTimer, deltaTime);
 

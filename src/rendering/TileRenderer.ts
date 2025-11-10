@@ -15,7 +15,27 @@ export class TileRenderer {
     return `rgba(${r}, ${g}, ${b}, ${alpha})`;
   }
   public renderTile(tileType: TileType, worldX: number, worldY: number, size: number, x: number, y: number): void {
-    if (tileType === TileType.FLOOR) {
+    if (tileType === TileType.GRASS) {
+      this.renderGrass(worldX, worldY, size, x, y);
+    } else if (tileType === TileType.WATER) {
+      this.renderWater(worldX, worldY, size, x, y);
+    } else if (tileType === TileType.LAVA) {
+      this.renderLava(worldX, worldY, size, x, y);
+    } else if (tileType === TileType.ICE) {
+      this.renderIce(worldX, worldY, size, x, y);
+    } else if (tileType === TileType.HEALTH_FOUNTAIN) {
+      this.renderHealthFountain(worldX, worldY, size);
+    } else if (tileType === TileType.TREASURE_CHEST) {
+      this.renderTreasureChest(worldX, worldY, size);
+    } else if (tileType === TileType.TELEPORTER) {
+      this.renderTeleporter(worldX, worldY, size);
+    } else if (tileType === TileType.SHRINE) {
+      this.renderShrine(worldX, worldY, size);
+    } else if (tileType === TileType.SPIKE_TRAP) {
+      this.renderSpikeTrap(worldX, worldY, size);
+    } else if (tileType === TileType.POISON_TRAP) {
+      this.renderPoisonTrap(worldX, worldY, size);
+    } else if (tileType === TileType.FLOOR) {
       // More varied floor colors based on position
       const seed = x * 7 + y * 13;
       const baseShade = 26 + (seed % 3) * 2; // Varies between #1a1a1a and #1e1e1e
@@ -171,6 +191,197 @@ export class TileRenderer {
     this.renderer.drawRect(worldX, worldY, size, size, '#1a1a1a');
     this.renderer.drawCircle(worldX + size / 2, worldY + size / 2, size * 0.4, '#ecf0f1');
     this.renderer.drawCircle(worldX + size / 2, worldY + size / 2, size * 0.25, '#bdc3c7');
+  }
+
+  private renderGrass(worldX: number, worldY: number, size: number, x: number, y: number): void {
+    const seed = x * 7 + y * 13;
+    const baseShade = 34 + (seed % 3) * 8;
+    const grassColor = `rgb(${baseShade - 10}, ${baseShade + 139}, ${baseShade - 10})`;
+    this.renderer.drawRect(worldX, worldY, size, size, grassColor);
+
+    // Add grass blades
+    const hash1 = (x * 127 + y * 311) % 100;
+    const hash2 = (x * 197 + y * 419) % 100;
+
+    for (let i = 0; i < 8; i++) {
+      const bladeX = worldX + ((hash1 * (i + 1) * 17) % 100 / 100) * size;
+      const bladeY = worldY + ((hash2 * (i + 1) * 23) % 100 / 100) * size;
+      this.renderer.drawLine(bladeX, bladeY, bladeX, bladeY - 3, 'rgba(46, 125, 50, 0.4)', 1);
+    }
+  }
+
+  private renderWater(worldX: number, worldY: number, size: number, x: number, y: number): void {
+    const seed = x * 7 + y * 13;
+    const time = Date.now() / 1000;
+    const wave = Math.sin(time + seed) * 0.1 + 0.9;
+    const waterColor = `rgb(${Math.floor(30 * wave)}, ${Math.floor(144 * wave)}, ${Math.floor(255 * wave)})`;
+    this.renderer.drawRect(worldX, worldY, size, size, waterColor);
+
+    // Add wave lines
+    const waveY1 = worldY + size * 0.3 + Math.sin(time + x * 0.5) * 2;
+    const waveY2 = worldY + size * 0.6 + Math.sin(time + x * 0.5 + 1) * 2;
+    this.renderer.drawLine(worldX, waveY1, worldX + size, waveY1, 'rgba(100, 180, 255, 0.3)', 1);
+    this.renderer.drawLine(worldX, waveY2, worldX + size, waveY2, 'rgba(100, 180, 255, 0.3)', 1);
+  }
+
+  private renderLava(worldX: number, worldY: number, size: number, x: number, y: number): void {
+    const seed = x * 7 + y * 13;
+    const time = Date.now() / 1000;
+    const pulse = Math.sin(time * 2 + seed) * 0.2 + 0.8;
+    const lavaColor = `rgb(${Math.floor(255 * pulse)}, ${Math.floor(69 * pulse)}, 0)`;
+    this.renderer.drawRect(worldX, worldY, size, size, lavaColor);
+
+    // Add bubbles
+    const hash = (x * 127 + y * 311 + Math.floor(time * 10)) % 100;
+    if (hash < 15) {
+      const bubbleX = worldX + (hash / 100) * size;
+      const bubbleY = worldY + size * 0.5;
+      this.renderer.drawCircle(bubbleX, bubbleY, 2, 'rgba(255, 140, 0, 0.6)');
+    }
+
+    // Darker crust patches
+    const hash2 = (x * 197 + y * 419) % 100;
+    if (hash2 < 25) {
+      const crustX = worldX + (hash2 / 100) * size;
+      const crustY = worldY + ((hash2 * 7) % 100 / 100) * size;
+      this.renderer.drawCircle(crustX, crustY, 3, 'rgba(139, 0, 0, 0.7)');
+    }
+  }
+
+  private renderIce(worldX: number, worldY: number, size: number, x: number, y: number): void {
+    const seed = x * 7 + y * 13;
+    const iceColor = `rgb(135, ${206 + (seed % 3) * 5}, ${235 + (seed % 2) * 10})`;
+    this.renderer.drawRect(worldX, worldY, size, size, iceColor);
+
+    // Add frost patterns
+    const hash1 = (x * 127 + y * 311) % 100;
+    const hash2 = (x * 197 + y * 419) % 100;
+
+    // Diagonal frost lines
+    if (hash1 < 40) {
+      const x1 = worldX + (hash1 / 100) * size;
+      const y1 = worldY + (hash2 / 100) * size;
+      this.renderer.drawLine(x1, y1, x1 + size * 0.3, y1 + size * 0.3, 'rgba(255, 255, 255, 0.4)', 1);
+    }
+
+    // Ice crystals
+    if (hash2 < 30) {
+      const crystalX = worldX + ((hash1 * 13) % 100 / 100) * size;
+      const crystalY = worldY + ((hash2 * 17) % 100 / 100) * size;
+      this.renderer.drawCircle(crystalX, crystalY, 1.5, 'rgba(255, 255, 255, 0.6)');
+    }
+  }
+
+  private renderHealthFountain(worldX: number, worldY: number, size: number): void {
+    this.renderer.drawRect(worldX, worldY, size, size, '#1a1a1a');
+
+    // Base
+    this.renderer.drawRect(worldX + size * 0.25, worldY + size * 0.6, size * 0.5, size * 0.3, '#8b7355');
+
+    // Water
+    const time = Date.now() / 1000;
+    const pulse = Math.sin(time * 3) * 0.1 + 0.9;
+    this.renderer.drawCircle(worldX + size / 2, worldY + size * 0.5, size * 0.25 * pulse, `rgba(255, 105, 180, ${pulse})`);
+
+    // Sparkles
+    for (let i = 0; i < 3; i++) {
+      const angle = (time + i * Math.PI * 2 / 3) * 2;
+      const sparkleX = worldX + size / 2 + Math.cos(angle) * size * 0.3;
+      const sparkleY = worldY + size * 0.4 + Math.sin(angle) * size * 0.3;
+      this.renderer.drawCircle(sparkleX, sparkleY, 2, 'rgba(255, 255, 255, 0.8)');
+    }
+  }
+
+  private renderTreasureChest(worldX: number, worldY: number, size: number): void {
+    this.renderer.drawRect(worldX, worldY, size, size, '#1a1a1a');
+
+    // Chest body
+    this.renderer.drawRect(worldX + size * 0.2, worldY + size * 0.4, size * 0.6, size * 0.4, '#8b6914');
+
+    // Chest lid
+    this.renderer.drawRect(worldX + size * 0.2, worldY + size * 0.25, size * 0.6, size * 0.2, '#daa520');
+
+    // Lock
+    this.renderer.drawCircle(worldX + size / 2, worldY + size * 0.5, size * 0.08, '#ffd700');
+
+    // Shine
+    this.renderer.drawCircle(worldX + size * 0.3, worldY + size * 0.3, 2, 'rgba(255, 255, 255, 0.8)');
+  }
+
+  private renderTeleporter(worldX: number, worldY: number, size: number): void {
+    this.renderer.drawRect(worldX, worldY, size, size, '#1a1a1a');
+
+    const time = Date.now() / 1000;
+
+    // Spinning outer ring
+    for (let i = 0; i < 8; i++) {
+      const angle = (time * 2 + i * Math.PI / 4);
+      const x = worldX + size / 2 + Math.cos(angle) * size * 0.35;
+      const y = worldY + size / 2 + Math.sin(angle) * size * 0.35;
+      this.renderer.drawCircle(x, y, 3, 'rgba(139, 0, 255, 0.6)');
+    }
+
+    // Pulsing center
+    const pulse = Math.sin(time * 4) * 0.15 + 0.85;
+    this.renderer.drawCircle(worldX + size / 2, worldY + size / 2, size * 0.2 * pulse, `rgba(139, 0, 255, ${pulse})`);
+    this.renderer.drawCircle(worldX + size / 2, worldY + size / 2, size * 0.1 * pulse, `rgba(200, 100, 255, ${pulse})`);
+  }
+
+  private renderShrine(worldX: number, worldY: number, size: number): void {
+    this.renderer.drawRect(worldX, worldY, size, size, '#1a1a1a');
+
+    // Pedestal
+    this.renderer.drawRect(worldX + size * 0.3, worldY + size * 0.6, size * 0.4, size * 0.3, '#696969');
+
+    // Shrine top (pyramid)
+    const centerX = worldX + size / 2;
+    const topY = worldY + size * 0.2;
+    const bottomY = worldY + size * 0.6;
+    const leftX = worldX + size * 0.3;
+    const rightX = worldX + size * 0.7;
+
+    // Draw triangle for pyramid
+    this.renderer.drawLine(leftX, bottomY, centerX, topY, '#daa520', 2);
+    this.renderer.drawLine(rightX, bottomY, centerX, topY, '#daa520', 2);
+    this.renderer.drawLine(leftX, bottomY, rightX, bottomY, '#daa520', 2);
+
+    // Glow effect
+    const time = Date.now() / 1000;
+    const glow = Math.sin(time * 2) * 0.3 + 0.7;
+    this.renderer.drawCircle(centerX, topY, 4, `rgba(218, 165, 32, ${glow})`);
+  }
+
+  private renderSpikeTrap(worldX: number, worldY: number, size: number): void {
+    this.renderer.drawRect(worldX, worldY, size, size, '#2a2a2a');
+
+    // Draw spikes
+    for (let i = 0; i < 5; i++) {
+      const spikeX = worldX + size * 0.15 + i * size * 0.18;
+      const baseY = worldY + size * 0.7;
+      const tipY = worldY + size * 0.3;
+
+      // Spike triangle
+      this.renderer.drawLine(spikeX, baseY, spikeX + size * 0.08, tipY, '#8b0000', 2);
+      this.renderer.drawLine(spikeX + size * 0.16, baseY, spikeX + size * 0.08, tipY, '#8b0000', 2);
+      this.renderer.drawLine(spikeX, baseY, spikeX + size * 0.16, baseY, '#8b0000', 2);
+    }
+  }
+
+  private renderPoisonTrap(worldX: number, worldY: number, size: number): void {
+    this.renderer.drawRect(worldX, worldY, size, size, '#2a2a2a');
+
+    // Poison pool
+    this.renderer.drawCircle(worldX + size / 2, worldY + size / 2, size * 0.35, 'rgba(50, 205, 50, 0.5)');
+
+    // Poison bubbles
+    const time = Date.now() / 1000;
+    for (let i = 0; i < 4; i++) {
+      const angle = time + i * Math.PI / 2;
+      const bubbleX = worldX + size / 2 + Math.cos(angle) * size * 0.2;
+      const bubbleY = worldY + size / 2 + Math.sin(angle) * size * 0.2;
+      const bubbleSize = 2 + Math.sin(time * 3 + i) * 1;
+      this.renderer.drawCircle(bubbleX, bubbleY, bubbleSize, 'rgba(144, 238, 144, 0.7)');
+    }
   }
 
 }

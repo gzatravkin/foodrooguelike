@@ -150,6 +150,26 @@ export class Player extends Entity {
     return this.weapon?.spread || 0;
   }
 
+  getProjectileColor(): string {
+    return this.weapon?.projectileColor || '#FFD700';
+  }
+
+  getProjectileSize(): number {
+    return this.weapon?.projectileSize || 4;
+  }
+
+  getProjectileShape(): 'circle' | 'beam' | 'bolt' | 'fire' {
+    return this.weapon?.projectileShape || 'circle';
+  }
+
+  getTrailColor(): string | undefined {
+    return this.weapon?.trailColor;
+  }
+
+  getImpactColor(): string | undefined {
+    return this.weapon?.impactColor;
+  }
+
   getTotalDefense(): number {
     let defense = this.stats.defense;
     if (this.armor && this.armor.stats.defense) {

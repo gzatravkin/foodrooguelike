@@ -46,8 +46,13 @@ export class CombatSystem {
 
     const damageMultiplier = isDashShot ? 2.0 : 1.0;
     const speedMultiplier = isDashShot ? 1.5 : 1.0;
-    const color = isDashShot ? '#00FFFF' : '#FFD700';
-    const size = isDashShot ? 6 : 4;
+
+    // Use weapon-specific visuals, or cyan for dash shots
+    const color = isDashShot ? '#00FFFF' : player.getProjectileColor();
+    const size = isDashShot ? 6 : player.getProjectileSize();
+    const shape = isDashShot ? 'beam' : player.getProjectileShape();
+    const trailColor = isDashShot ? '#80DEEA' : player.getTrailColor();
+    const impactColor = isDashShot ? '#00ACC1' : player.getImpactColor();
 
     const projectile = new Projectile(
       spawn.x,
@@ -58,11 +63,19 @@ export class CombatSystem {
       player.id,
       'player',
       player.getAttackRange() * (isDashShot ? 1.3 : 1.0),
-      color
+      color,
+      shape,
+      trailColor,
+      impactColor
     );
 
     projectile.size = size;
     this.projectiles.push(projectile);
+
+    // Create muzzle flash particles
+    if (this.particleSystem && trailColor) {
+      this.particleSystem.createImpact(spawn.x, spawn.y, trailColor, 3);
+    }
   }
 
   spawnEnemyProjectile(enemy: Enemy): void {
@@ -95,6 +108,11 @@ export class CombatSystem {
 
   updateProjectiles(deltaTime: number, enemies: Enemy[], player: Player): void {
     for (const proj of this.projectiles) {
+      // Create trail particles for certain projectile types
+      if (this.particleSystem && proj.trailColor && Math.random() < 0.3) {
+        this.particleSystem.createImpact(proj.x, proj.y, proj.trailColor, 1);
+      }
+
       proj.update(deltaTime);
 
       const tile = this.mapSystem.getTileAt(proj.x, proj.y);
@@ -102,7 +120,8 @@ export class CombatSystem {
         proj.hitWall();
         // Create wall impact particles
         if (this.particleSystem && !proj.alive) {
-          this.particleSystem.createImpact(proj.x, proj.y, '#888', 4);
+          const impactColor = proj.impactColor || '#888';
+          this.particleSystem.createImpact(proj.x, proj.y, impactColor, 4);
         }
       }
 
@@ -113,11 +132,12 @@ export class CombatSystem {
             const prevHealth = enemy.stats.health;
             enemy.takeDamage(proj.damage);
 
-            // Create hit particles
+            // Create hit particles using weapon-specific colors
             if (this.particleSystem && enemy.stats.health < prevHealth) {
               const dx = enemy.x - proj.x;
               const dy = enemy.y - proj.y;
-              this.particleSystem.createImpact(proj.x, proj.y, proj.color, 8);
+              const impactColor = proj.impactColor || proj.color;
+              this.particleSystem.createImpact(proj.x, proj.y, impactColor, 8);
               this.particleSystem.createBlood(enemy.x, enemy.y, dx, dy);
             }
 

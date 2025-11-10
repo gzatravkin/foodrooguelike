@@ -88,6 +88,12 @@ export interface Weapon extends BaseEntity {
     spread?: number; // Angle spread for multi-projectile weapons
     rarity: 'common' | 'uncommon' | 'rare' | 'legendary';
     cost: number;
+    // Visual properties
+    projectileColor?: string; // Color of projectiles
+    projectileSize?: number; // Size of projectiles
+    projectileShape?: 'circle' | 'beam' | 'bolt' | 'fire'; // Shape of projectiles
+    trailColor?: string; // Trail particle color
+    impactColor?: string; // Impact particle color
 }
 
 export type GameEntity = Enemy | Ingredient | CookingMethod | Dish | Equipment | Weapon | Recipe;

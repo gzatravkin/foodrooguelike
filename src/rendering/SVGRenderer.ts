@@ -69,10 +69,31 @@ export class SVGRenderer {
         group.appendChild(rect);
         group.appendChild(text);
 
-        group.addEventListener('click', onClick);
+        // Prevent multiple rapid clicks with a cooldown flag
+        let isProcessing = false;
+
+        const handleClick = () => {
+            if (isProcessing) return;
+            isProcessing = true;
+            onClick();
+
+            // Reset cooldown after a short delay
+            setTimeout(() => {
+                isProcessing = false;
+            }, 300);
+        };
+
+        group.addEventListener('click', handleClick);
         group.addEventListener('touchstart', (e) => {
             e.preventDefault();
-            onClick();
+            e.stopPropagation();
+            handleClick();
+        });
+
+        // Prevent touchend from triggering click event
+        group.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
         });
 
         return group;

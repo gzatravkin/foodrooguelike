@@ -260,8 +260,9 @@ export class GameScreen {
     const dungeon = MapSystem.createDungeon(level);
     this.mapSystem.loadMap(dungeon);
 
-    this.player.x = 3 * 32 + 16;
-    this.player.y = 3 * 32 + 16;
+    // Use the spawn position from the dungeon (at STAIRS_UP)
+    this.player.x = dungeon.spawnX || 3 * 32 + 16;
+    this.player.y = dungeon.spawnY || 3 * 32 + 16;
 
     this.combatSystem.clearProjectiles();
     this.combatSystem.clearCorpses();

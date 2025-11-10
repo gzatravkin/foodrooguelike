@@ -47,7 +47,7 @@ export class GameScreen {
   private baseHealTimer: number = 0; // Timer for HP recovery at base
   private combatLog: Array<{text: string; timestamp: number; color: string}> = [];
   private readonly MAX_LOG_ENTRIES = 8;
-  private readonly LOG_DURATION = 5000; // 5 seconds
+  private readonly LOG_DURATION = 15000; // 15 seconds (increased from 5)
 
   constructor(
     renderer: CanvasRenderer,
@@ -81,8 +81,10 @@ export class GameScreen {
     this.setupEventListeners();
     this.setupCheatPanelInput();
 
-    // Add combat log entry
-    this.addCombatLog('Welcome to Food Roguelike!', '#90EE90');
+    // Add initial combat log entries
+    this.addCombatLog('=== Food Roguelike ===', '#FFD700');
+    this.addCombatLog('Press E on tiles to interact', '#90EE90');
+    this.addCombatLog('Walk over expedition portal to start!', '#4FC3F7');
   }
 
   async init(): Promise<void> {
@@ -90,16 +92,20 @@ export class GameScreen {
   }
 
   private addCombatLog(text: string, color: string = '#FFF'): void {
-    this.combatLog.unshift({
+    const entry = {
       text,
       timestamp: Date.now(),
       color
-    });
+    };
+    this.combatLog.unshift(entry);
 
     // Keep only the most recent entries
     if (this.combatLog.length > this.MAX_LOG_ENTRIES) {
       this.combatLog = this.combatLog.slice(0, this.MAX_LOG_ENTRIES);
     }
+
+    // Debug logging
+    console.log(`[Combat Log] ${text}`);
   }
 
   private updateCombatLog(): void {
@@ -125,21 +131,28 @@ export class GameScreen {
   private setupCheatPanelInput(): void {
     // Toggle cheat panel with backtick key
     window.addEventListener('keydown', (e) => {
+      // ESC during expedition mode to flee back to base (check this FIRST)
+      const currentScreen = gameState.getState().currentScreen;
+      if (e.key === 'Escape' && this.mode === 'expedition' && currentScreen === 'game' && !this.cheatPanel.isVisible()) {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('Fleeing expedition, returning to base...');
+        this.loadBaseCamp();
+        return;
+      }
+
+      // Cheat panel toggle
       if (e.key === '`' || e.key === 'Dead') {
         e.preventDefault();
         this.cheatPanel.toggle();
+        return;
       }
-      // Also allow ESC to close cheat panel
+
+      // ESC to close cheat panel
       if (e.key === 'Escape' && this.cheatPanel.isVisible()) {
         e.preventDefault();
         this.cheatPanel.close();
         return;
-      }
-      // ESC during expedition mode to flee back to base
-      const currentScreen = gameState.getState().currentScreen;
-      if (e.key === 'Escape' && this.mode === 'expedition' && currentScreen === 'game') {
-        e.preventDefault();
-        this.loadBaseCamp();
       }
     });
 
@@ -231,7 +244,8 @@ export class GameScreen {
 
     // Add log entry when returning from expedition
     if (wasExpedition) {
-      this.addCombatLog('Returned to base safely!', '#90EE90');
+      this.addCombatLog('=== RETURNED TO BASE ===', '#90EE90');
+      this.addCombatLog('You are safe now!', '#90EE90');
     }
   }
 
@@ -249,8 +263,10 @@ export class GameScreen {
     this.enemies = this.spawnManager.spawnEnemies(level, this.player);
     this.traps = this.spawnManager.spawnTraps(this.player);
 
-    // Add log entry
-    this.addCombatLog(`Entering expedition! ${this.enemies.length} enemies ahead`, '#FF6B6B');
+    // Add log entries
+    this.addCombatLog('=== EXPEDITION STARTED ===', '#FF6B6B');
+    this.addCombatLog(`${this.enemies.length} enemies detected!`, '#FF6B6B');
+    this.addCombatLog('Press ESC to flee anytime', '#FFD700');
   }
 
 

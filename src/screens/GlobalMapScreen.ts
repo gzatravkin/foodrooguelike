@@ -50,6 +50,15 @@ export class GlobalMapScreen {
   private readonly PLAYER_RADIUS = 16;
   private playerAngle: number = 0;
 
+  // Message notification system
+  private messageText: string = '';
+  private messageTimer: number = 0;
+  private readonly MESSAGE_DURATION = 3000; // 3 seconds
+
+  // Interaction cooldown to prevent spam
+  private interactionCooldown: number = 0;
+  private readonly INTERACTION_COOLDOWN = 500; // 500ms between interactions
+
   constructor(renderer: CanvasRenderer, input: InputManager) {
     this.renderer = renderer;
     this.input = input;
@@ -181,6 +190,24 @@ export class GlobalMapScreen {
     this.handleInput(deltaTime);
     this.updateCamera(deltaTime);
     this.checkLocationProximity();
+
+    // Update message timer
+    if (this.messageTimer > 0) {
+      this.messageTimer -= deltaTime * 1000;
+      if (this.messageTimer <= 0) {
+        this.messageText = '';
+      }
+    }
+
+    // Update interaction cooldown
+    if (this.interactionCooldown > 0) {
+      this.interactionCooldown -= deltaTime * 1000;
+    }
+  }
+
+  private showMessage(msg: string): void {
+    this.messageText = msg;
+    this.messageTimer = this.MESSAGE_DURATION;
   }
 
   private handleInput(deltaTime: number): void {
@@ -219,8 +246,9 @@ export class GlobalMapScreen {
 
     // Handle interaction (E key or Space)
     if (this.input.isKeyJustPressed('e') || this.input.isKeyJustPressed(' ')) {
-      if (this.selectedLocation) {
+      if (this.selectedLocation && this.interactionCooldown <= 0) {
         this.interactWithLocation(this.selectedLocation);
+        this.interactionCooldown = this.INTERACTION_COOLDOWN;
       }
     }
 
@@ -264,9 +292,10 @@ export class GlobalMapScreen {
           location.isUnlocked = true;
           this.saveUnlockedState();
           eventBus.emit('location:unlocked', location.name);
+          this.showMessage(`${location.name} unlocked!`);
         }
       } else {
-        alert(`Not enough gold! Need ${location.unlockCost} gold to unlock ${location.name}.`);
+        this.showMessage(`Not enough gold! Need ${location.unlockCost} gold to unlock ${location.name}.`);
       }
     } else {
       // Start expedition
@@ -286,11 +315,11 @@ export class GlobalMapScreen {
         localStorage.setItem('preselectedExpedition', JSON.stringify(expedition));
         gameState.setScreen('expedition');
       } else {
-        alert(`Not enough gold! This expedition costs ${expedition.cost} gold.`);
+        this.showMessage(`Not enough gold! This expedition costs ${expedition.cost} gold.`);
       }
     } else {
       console.error('Expedition not found:', expeditionId);
-      alert('Expedition not found. Please try again.');
+      this.showMessage('Expedition not found. Please try again.');
     }
   }
 
@@ -531,6 +560,53 @@ export class GlobalMapScreen {
     const title = 'World Map';
     ctx.strokeText(title, width / 2, 40);
     ctx.fillText(title, width / 2, 40);
+
+    // Message notification
+    if (this.messageText) {
+      const msgWidth = 600;
+      const msgHeight = 80;
+      const msgX = (width - msgWidth) / 2;
+      const msgY = height - 150;
+
+      // Message background with slight transparency
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
+      ctx.fillRect(msgX, msgY, msgWidth, msgHeight);
+
+      // Border
+      ctx.strokeStyle = '#FF4444';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(msgX, msgY, msgWidth, msgHeight);
+
+      // Message text
+      ctx.font = 'bold 20px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#FFF';
+
+      // Word wrap the message if needed
+      const words = this.messageText.split(' ');
+      const lines: string[] = [];
+      let currentLine = '';
+
+      for (const word of words) {
+        const testLine = currentLine + (currentLine ? ' ' : '') + word;
+        const metrics = ctx.measureText(testLine);
+
+        if (metrics.width > msgWidth - 40) {
+          if (currentLine) lines.push(currentLine);
+          currentLine = word;
+        } else {
+          currentLine = testLine;
+        }
+      }
+      if (currentLine) lines.push(currentLine);
+
+      // Draw lines centered
+      const lineHeight = 24;
+      const startY = msgY + (msgHeight - lines.length * lineHeight) / 2 + lineHeight / 2;
+      lines.forEach((line, i) => {
+        ctx.fillText(line, msgX + msgWidth / 2, startY + i * lineHeight);
+      });
+    }
   }
 
   destroy(): void {

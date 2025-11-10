@@ -9,6 +9,14 @@ import { dataLoader } from './core/DataLoader';
 import { CanvasRenderer } from './rendering/CanvasRenderer';
 import { InputManager } from './core/InputManager';
 import { GameScreen } from './screens/GameScreen';
+import { SVGRenderer } from './rendering/SVGRenderer';
+import { ScreenManager } from './rendering/ScreenManager';
+import { BaseScreen } from './screens/BaseScreen';
+import { CookingScreen } from './screens/CookingScreen';
+import { ShopScreen } from './screens/ShopScreen';
+import { RecipeBookScreen } from './screens/RecipeBookScreen';
+import { ExpeditionScreen } from './screens/ExpeditionScreen';
+import { SettingsScreen } from './screens/SettingsScreen';
 
 class Game {
     private renderer: CanvasRenderer;
@@ -16,6 +24,9 @@ class Game {
     private gameScreen!: GameScreen;
     private gameLoop: GameLoop;
     private lastTime: number = 0;
+    private svgRenderer: SVGRenderer;
+    private screenManager: ScreenManager;
+    private svgElement: SVGSVGElement;
 
     constructor() {
         const canvasElement = document.getElementById('game-canvas') as HTMLCanvasElement;
@@ -23,11 +34,42 @@ class Game {
             throw new Error('Canvas element not found');
         }
 
+        const svgEl = document.getElementById('game-ui');
+        if (!svgEl || !(svgEl instanceof SVGSVGElement)) {
+            throw new Error('SVG UI element not found');
+        }
+        this.svgElement = svgEl;
+
         this.renderer = new CanvasRenderer(canvasElement);
         this.input = new InputManager();
         this.gameLoop = new GameLoop();
+        this.svgRenderer = new SVGRenderer(this.svgElement);
+        this.screenManager = new ScreenManager();
 
+        this.setupScreens();
         this.setupEventListeners();
+    }
+
+    private setupScreens(): void {
+        // Register all SVG-based screens
+        this.screenManager.registerScreen('base', new BaseScreen(this.svgRenderer));
+        this.screenManager.registerScreen('cooking', new CookingScreen(this.svgRenderer));
+        this.screenManager.registerScreen('shop', new ShopScreen(this.svgRenderer));
+        this.screenManager.registerScreen('recipebook', new RecipeBookScreen(this.svgRenderer));
+        this.screenManager.registerScreen('expedition', new ExpeditionScreen(this.svgRenderer));
+        this.screenManager.registerScreen('settings', new SettingsScreen(this.svgRenderer));
+
+        // Listen to screen changes from gameState
+        eventBus.on('screen:changed', (screenName: string) => {
+            // Hide canvas and show SVG for UI screens
+            const uiScreens = ['base', 'cooking', 'shop', 'recipebook', 'expedition', 'settings', 'restaurant', 'upgrades'];
+            if (uiScreens.includes(screenName)) {
+                this.svgElement.classList.add('active');
+                this.screenManager.switchTo(screenName);
+            } else {
+                this.svgElement.classList.remove('active');
+            }
+        });
     }
 
     async init(): Promise<void> {

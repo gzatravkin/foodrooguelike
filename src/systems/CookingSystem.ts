@@ -12,7 +12,10 @@ export class CookingSystem {
         // Find best matching recipe
         const matchResult = this.findBestRecipeMatch(ingredientIds, cookingMethodId, cookingTime);
         const recipe = matchResult.recipe;
-        const quality = matchResult.quality;
+        let quality = matchResult.quality;
+
+        // Apply kitchen upgrade bonuses to quality
+        quality = this.applyUpgradeBonus(quality, cookingMethodId);
 
         // Discover recipe if it's a good match and not yet discovered
         if (recipe && quality >= 0.7 && !gameState.getState().discoveredRecipes.includes(recipe.id)) {
@@ -28,11 +31,56 @@ export class CookingSystem {
             quality
         );
 
-        // Remove ingredients from inventory
-        ingredientIds.forEach(id => gameState.removeFromInventory(id));
+        // Remove ingredients from inventory (with chance to preserve from upgrades)
+        const preserveChance = this.getIngredientPreserveChance();
+        ingredientIds.forEach(id => {
+            if (Math.random() > preserveChance) {
+                gameState.removeFromInventory(id);
+            }
+        });
 
         eventBus.emit('cooking:completed', dish);
         return dish;
+    }
+
+    private applyUpgradeBonus(baseQuality: number, cookingMethodId: string): number {
+        const upgrades = gameState.getState().upgrades.kitchen;
+        let qualityBonus = 0;
+
+        // Master Cookware - applies to all cooking methods
+        const masterCookware = upgrades.find(u => u.id === 'master_cookware');
+        if (masterCookware) {
+            qualityBonus += masterCookware.level * 0.05;
+        }
+
+        // Method-specific upgrades
+        if (cookingMethodId === 'bake') {
+            const betterOven = upgrades.find(u => u.id === 'better_oven');
+            if (betterOven) {
+                qualityBonus += betterOven.level * 0.10;
+            }
+        } else if (cookingMethodId === 'grill') {
+            const premiumGrill = upgrades.find(u => u.id === 'premium_grill');
+            if (premiumGrill) {
+                qualityBonus += premiumGrill.level * 0.10;
+            }
+        } else if (cookingMethodId === 'fry') {
+            const professionalFryer = upgrades.find(u => u.id === 'professional_fryer');
+            if (professionalFryer) {
+                qualityBonus += professionalFryer.level * 0.10;
+            }
+        }
+
+        return Math.min(1.0, baseQuality + qualityBonus);
+    }
+
+    private getIngredientPreserveChance(): number {
+        const upgrades = gameState.getState().upgrades.kitchen;
+        const ingredientPreserver = upgrades.find(u => u.id === 'ingredient_preserver');
+        if (ingredientPreserver) {
+            return ingredientPreserver.level * 0.05; // 5% per level
+        }
+        return 0;
     }
 
     private findBestRecipeMatch(

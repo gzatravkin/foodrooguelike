@@ -255,8 +255,7 @@ export class GameScreen {
         } else if (tileType === TileType.EXPEDITION_PORTAL) {
           this.loadExpedition(1);
         } else if (tileType === TileType.COOKING_STATION) {
-          // TODO: Implement cooking system
-          console.log('Cooking station interaction - not yet implemented');
+          gameState.setScreen('cooking');
         }
       }
     }
@@ -266,8 +265,8 @@ export class GameScreen {
       const loot = this.nearbyCorpse.lootCorpse();
       if (loot) {
         gameState.addGold(loot.gold);
-        // Note: ingredients system not fully implemented yet
-        // loot.ingredients.forEach(ing => gameState.addIngredient(ing));
+        // Add ingredients to inventory
+        loot.ingredients.forEach(ing => gameState.addToInventory(ing));
       }
     }
 
@@ -337,7 +336,7 @@ export class GameScreen {
     }
 
     this.renderer.renderTraps(this.traps);
-    this.renderer.renderCorpses(this.combatSystem.getCorpses());
+    this.renderer.renderCorpses(this.combatSystem.getCorpses(), this.nearbyCorpse);
     this.renderer.renderEnemies(this.enemies);
     this.renderer.renderProjectiles(this.combatSystem.getProjectiles());
     this.renderer.renderParticles(this.particleSystem.getParticles());

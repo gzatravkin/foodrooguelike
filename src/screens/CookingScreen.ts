@@ -13,6 +13,7 @@ export class CookingScreen extends Screen {
     private selectedMethod: string = '';
     private cookingTime: number = 60; // Default 60 seconds
     private resultMessage: string = '';
+    private lastDish: any = null;
 
     constructor(renderer: SVGRenderer) {
         super(renderer);
@@ -49,12 +50,16 @@ export class CookingScreen extends Screen {
             this.renderer.append(cookBtn);
         }
 
-        // Result message
-        if (this.resultMessage) {
-            const msg = this.renderer.createText(vb.width / 2, 650, this.resultMessage, 18, '#90EE90');
-            msg.setAttribute('text-anchor', 'middle');
-            this.renderer.append(msg);
+        // Result card (enhanced visual feedback)
+        if (this.lastDish) {
+            this.renderResultCard(vb.width / 2, 630);
         }
+
+        // Recipe book button
+        const recipeBookBtn = this.renderer.createButton(vb.width / 2 - 100, vb.height - 100, 200, 50, '📖 RECIPE BOOK', () => {
+            gameState.setCurrentScreen('recipebook');
+        });
+        this.renderer.append(recipeBookBtn);
 
         // Back button
         const backBtn = this.renderer.createButton(50, vb.height - 100, 150, 50, 'BACK', () => {
@@ -180,26 +185,85 @@ export class CookingScreen extends Screen {
 
     private cook(): void {
         const dish = cookingSystem.cook(this.selectedIngredients, this.selectedMethod, this.cookingTime);
-        const qualityPercent = Math.round(dish.quality * 100);
-        const rarityColor = {
-            common: '#90EE90',
-            uncommon: '#4FC3F7',
-            rare: '#BA68C8',
-            legendary: '#FFD700'
-        }[dish.rarity] || '#90EE90';
-
-        this.resultMessage = `Created ${dish.name}! (${dish.rarity.toUpperCase()}) Quality: ${qualityPercent}% Value: ${dish.value}g`;
 
         // Store dish separately from inventory
         gameState.addDish(dish.id);
         // Also register the dish as a template so it can be retrieved later
         entityFactory.registerTemplate(dish.id, dish);
 
+        this.lastDish = dish;
         this.selectedIngredients = [];
         this.selectedMethod = '';
         this.cookingTime = 60;
 
         this.render();
+    }
+
+    private renderResultCard(centerX: number, centerY: number): void {
+        if (!this.lastDish) return;
+
+        const dish = this.lastDish;
+        const qualityPercent = Math.round(dish.quality * 100);
+
+        // Rarity colors
+        const rarityColors: Record<string, { bg: string; border: string }> = {
+            common: { bg: '#4A4A4A', border: '#90EE90' },
+            uncommon: { bg: '#2E5CB8', border: '#4FC3F7' },
+            rare: { bg: '#8B35C1', border: '#BA68C8' },
+            legendary: { bg: '#CC8800', border: '#FFD700' }
+        };
+        const colors = rarityColors[dish.rarity] || rarityColors['common'];
+
+        // Card background
+        const cardWidth = 500;
+        const cardHeight = 120;
+        const cardX = centerX - cardWidth / 2;
+        const cardY = centerY - cardHeight / 2;
+
+        const cardBg = this.renderer.createRect(cardX, cardY, cardWidth, cardHeight, colors.bg);
+        cardBg.setAttribute('stroke', colors.border);
+        cardBg.setAttribute('stroke-width', '3');
+        cardBg.setAttribute('rx', '10');
+        this.renderer.append(cardBg);
+
+        // Success emoji and title
+        const successText = this.renderer.createText(centerX, cardY + 30, `✨ ${dish.name} ✨`, 24, colors.border);
+        successText.setAttribute('text-anchor', 'middle');
+        successText.setAttribute('font-weight', 'bold');
+        this.renderer.append(successText);
+
+        // Rarity badge
+        const rarityText = this.renderer.createText(centerX, cardY + 55, dish.rarity.toUpperCase(), 14, '#FFD700');
+        rarityText.setAttribute('text-anchor', 'middle');
+        this.renderer.append(rarityText);
+
+        // Quality bar
+        const barWidth = 200;
+        const barHeight = 15;
+        const barX = centerX - barWidth / 2;
+        const barY = cardY + 65;
+
+        // Background bar
+        const barBg = this.renderer.createRect(barX, barY, barWidth, barHeight, '#333');
+        barBg.setAttribute('rx', '3');
+        this.renderer.append(barBg);
+
+        // Quality fill
+        const fillWidth = barWidth * dish.quality;
+        const qualityColor = dish.quality >= 0.9 ? '#FFD700' : dish.quality >= 0.7 ? '#90EE90' : dish.quality >= 0.5 ? '#FFA500' : '#FF6347';
+        const barFill = this.renderer.createRect(barX, barY, fillWidth, barHeight, qualityColor);
+        barFill.setAttribute('rx', '3');
+        this.renderer.append(barFill);
+
+        // Quality percentage
+        const qualityLabel = this.renderer.createText(centerX, barY + 12, `Quality: ${qualityPercent}%`, 12, '#FFF');
+        qualityLabel.setAttribute('text-anchor', 'middle');
+        this.renderer.append(qualityLabel);
+
+        // Value
+        const valueText = this.renderer.createText(centerX, cardY + 105, `Value: ${dish.value}g`, 16, '#FFD700');
+        valueText.setAttribute('text-anchor', 'middle');
+        this.renderer.append(valueText);
     }
 
     handleInput(event: MouseEvent | TouchEvent): void {
@@ -211,5 +275,6 @@ export class CookingScreen extends Screen {
         this.selectedMethod = '';
         this.cookingTime = 60;
         this.resultMessage = '';
+        this.lastDish = null;
     }
 }

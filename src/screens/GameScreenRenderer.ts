@@ -13,6 +13,7 @@ import { Corpse } from '../entities/Corpse';
 import { Trap } from '../entities/Trap';
 import { GameMode } from './GameScreen';
 import { Weapon } from '../entities/types';
+import { gameState } from '../core/GameState';
 import { Particle } from '../entities/Particle';
 
 export class GameScreenRenderer {
@@ -102,15 +103,27 @@ export class GameScreenRenderer {
     }
   }
 
-  renderCorpses(corpses: Corpse[]): void {
+  renderCorpses(corpses: Corpse[], nearbyCorpse: Corpse | null = null): void {
     for (const corpse of corpses) {
       const opacity = corpse.looted ? 0.3 : 0.6;
       const size = corpse.size;
+      const isNearby = nearbyCorpse === corpse && !corpse.looted;
+
+      // Add glowing effect for lootable nearby corpses
+      if (isNearby) {
+        const pulseAlpha = Math.sin(Date.now() / 300) * 0.2 + 0.4;
+        this.renderer.drawCircle(corpse.x, corpse.y, size, `rgba(255, 215, 0, ${pulseAlpha})`);
+      }
 
       this.renderer.drawCircle(corpse.x, corpse.y, size / 2, `rgba(60, 40, 30, ${opacity})`);
 
-      const skullColor = corpse.looted ? '#555' : '#999';
+      const skullColor = corpse.looted ? '#555' : (isNearby ? '#FFD700' : '#999');
       this.renderer.drawText('💀', corpse.x, corpse.y + 4, skullColor, 16, 'center');
+
+      // Show ingredient indicator for nearby lootable corpses
+      if (isNearby && corpse.loot.ingredients.length > 0) {
+        this.renderer.drawText('🍖', corpse.x, corpse.y - size, '#90EE90', 14, 'center');
+      }
     }
   }
 
@@ -234,6 +247,20 @@ export class GameScreenRenderer {
     const weaponName = player.weapon?.name || 'Fists';
     const weaponType = player.isRangedWeapon() ? '🔫' : '⚔️';
     this.renderer.drawUIText(`${weaponType} ${weaponName}`, 20, 110, '#FFD700', 16);
+
+    // Active buffs
+    const activeBuffs = gameState.getState().activeBuffs;
+    if (activeBuffs.length > 0) {
+      let buffY = 170;
+      this.renderer.drawUIRectWithBorder(10, buffY, 300, 30 + (activeBuffs.length * 25), 'rgba(138, 43, 226, 0.3)', '#BA68C8', 2);
+      this.renderer.drawUIText('ACTIVE BUFFS:', 20, buffY + 20, '#FFD700', 14, 'left');
+
+      activeBuffs.forEach((buff, i) => {
+        const buffEmoji = buff.name.includes('health') ? '❤️' : buff.name.includes('attack') ? '⚔️' : '🛡️';
+        const buffText = `${buffEmoji} ${buff.name} (${Math.ceil(buff.duration / 60)}s)`;
+        this.renderer.drawUIText(buffText, 20, buffY + 45 + (i * 25), '#90EE90', 14);
+      });
+    }
 
     // Dash cooldown
     const dashCooldownPercent = Math.max(0, player.dashCooldown / 1.0);

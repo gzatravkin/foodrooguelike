@@ -86,6 +86,16 @@ export class EntityFactory {
     getAllOfType(type: string): GameEntity[] {
         return Array.from(this.templates.values()).filter(t => t.type === type);
     }
+
+    getAllRecipes(): any[] {
+        return Array.from(this.templates.values()).filter(t => t.type === 'recipe');
+    }
+
+    getIngredients(ingredientIds: string[]): Ingredient[] {
+        return ingredientIds
+            .map(id => this.createIngredient(id))
+            .filter(ing => ing !== null) as Ingredient[];
+    }
 }
 
 export const entityFactory = new EntityFactory();

@@ -29,7 +29,7 @@ export interface GameData {
     inventory: string[];
     dishes: string[]; // IDs of cooked dishes available to sell/eat
     discoveredRecipes: string[];
-    currentScreen: 'base' | 'expedition' | 'shop' | 'cooking' | 'settings' | 'restaurant' | 'upgrades';
+    currentScreen: 'base' | 'expedition' | 'shop' | 'cooking' | 'settings' | 'restaurant' | 'upgrades' | 'recipebook';
     equipment: {
         weapon?: string;
         armor?: string;
@@ -121,6 +121,10 @@ class GameState {
     setScreen(screen: GameData['currentScreen']): void {
         this.state.currentScreen = screen;
         eventBus.emit('screen:changed', screen);
+    }
+
+    setCurrentScreen(screen: GameData['currentScreen']): void {
+        this.setScreen(screen);
     }
 
     equipWeapon(weaponId: string): void {

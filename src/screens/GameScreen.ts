@@ -299,7 +299,8 @@ export class GameScreen {
       this.mode,
       this.mapSystem,
       () => gameState.setScreen('shop'),
-      () => this.loadExpedition(1)
+      () => this.loadExpedition(1),
+      () => this.loadBaseCamp()
     );
 
     // Handle interact action (E key or virtual button)
@@ -312,6 +313,10 @@ export class GameScreen {
           this.loadExpedition(1);
         } else if (tileType === TileType.COOKING_STATION) {
           gameState.setScreen('cooking');
+        }
+      } else if (this.mode === 'expedition' && tileType) {
+        if (tileType === TileType.STAIRS_DOWN) {
+          this.loadBaseCamp();
         }
       }
     }

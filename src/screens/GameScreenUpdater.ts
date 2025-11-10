@@ -100,9 +100,10 @@ export class GameScreenUpdater {
         aliveEnemies.push(enemy);
       } else if (!this.deadEnemiesSet.has(enemy)) {
         // Create corpse with loot
+        const enemyLoot = enemy.getLoot();
         const loot = {
           gold: enemy.enemyData.goldReward || 0,
-          ingredients: [] // Ingredients from loot table not yet implemented
+          ingredients: enemyLoot.items
         };
         const corpse = new Corpse(
           enemy.x,
@@ -148,7 +149,8 @@ export class GameScreenUpdater {
     mode: 'base' | 'expedition',
     mapSystem: MapSystem,
     onEnterShop: () => void,
-    onStartExpedition: () => void
+    onStartExpedition: () => void,
+    onReturnToBase?: () => void
   ): { showPrompt: boolean; promptText: string } {
     let showPrompt = false;
     let promptText = '';
@@ -165,6 +167,11 @@ export class GameScreenUpdater {
       } else if (tileType === TileType.COOKING_STATION) {
         showPrompt = true;
         promptText = 'Press E to Cook';
+      }
+    } else if (mode === 'expedition' && tileType) {
+      if (tileType === TileType.STAIRS_DOWN) {
+        showPrompt = true;
+        promptText = 'Press E to return to Base Camp';
       }
     }
 

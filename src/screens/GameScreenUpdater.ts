@@ -104,7 +104,7 @@ export class GameScreenUpdater {
         // Create corpse with loot
         const enemyLoot = enemy.getLoot();
         const loot = {
-          gold: enemy.enemyData.goldReward || 0,
+          gold: 0, // Enemies no longer drop gold
           ingredients: enemyLoot.items
         };
         const corpse = new Corpse(
@@ -135,8 +135,8 @@ export class GameScreenUpdater {
       for (const corpse of corpses) {
         if (corpse.isPlayerNear(player.x, player.y, 40) && corpse.canLoot()) {
           showPrompt = true;
-          const ingredientText = corpse.loot.ingredients.length > 0 ? ', ingredients' : '';
-          promptText = `Press F to loot (${corpse.loot.gold} gold${ingredientText})`;
+          const count = corpse.loot.ingredients.length;
+          promptText = count > 0 ? `Press F to loot (${count} ingredient${count !== 1 ? 's' : ''})` : 'Press F to loot';
           nearbyCorpse = corpse;
           break;
         }
@@ -169,6 +169,9 @@ export class GameScreenUpdater {
       } else if (tileType === TileType.COOKING_STATION) {
         showPrompt = true;
         promptText = 'Press E to Cook';
+      } else if (tileType === TileType.TRAINING_HALL) {
+        showPrompt = true;
+        promptText = 'Press E to enter Training Hall';
       }
     } else if (mode === 'expedition' && tileType) {
       if (tileType === TileType.STAIRS_DOWN) {

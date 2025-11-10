@@ -9,18 +9,19 @@ export enum TileType {
   COOKING_STATION = 3,
   SHOP = 4,
   EXPEDITION_PORTAL = 5,
-  STAIRS_DOWN = 6,
-  STAIRS_UP = 7,
-  WATER = 8,
-  LAVA = 9,
-  ICE = 10,
-  GRASS = 11,
-  HEALTH_FOUNTAIN = 12,
-  TREASURE_CHEST = 13,
-  TELEPORTER = 14,
-  SHRINE = 15,
-  SPIKE_TRAP = 16,
-  POISON_TRAP = 17,
+  TRAINING_HALL = 6,
+  STAIRS_DOWN = 7,
+  STAIRS_UP = 8,
+  WATER = 9,
+  LAVA = 10,
+  ICE = 11,
+  GRASS = 12,
+  HEALTH_FOUNTAIN = 13,
+  TREASURE_CHEST = 14,
+  TELEPORTER = 15,
+  SHRINE = 16,
+  SPIKE_TRAP = 17,
+  POISON_TRAP = 18,
 }
 
 export type Tile = {
@@ -54,6 +55,7 @@ export class MapSystem {
     this.tileColors.set(TileType.COOKING_STATION, '#ff6b35');
     this.tileColors.set(TileType.SHOP, '#4ecdc4');
     this.tileColors.set(TileType.EXPEDITION_PORTAL, '#9b59b6');
+    this.tileColors.set(TileType.TRAINING_HALL, '#FFD700');
     this.tileColors.set(TileType.STAIRS_DOWN, '#95a5a6');
     this.tileColors.set(TileType.STAIRS_UP, '#ecf0f1');
     this.tileColors.set(TileType.WATER, '#1e90ff');
@@ -153,6 +155,12 @@ export class MapSystem {
     tiles[2][16] = TileType.SHOP;
     tiles[3][15] = TileType.SHOP;
     tiles[3][16] = TileType.SHOP;
+
+    // Add training hall (bottom-left area)
+    tiles[11][3] = TileType.TRAINING_HALL;
+    tiles[11][4] = TileType.TRAINING_HALL;
+    tiles[12][3] = TileType.TRAINING_HALL;
+    tiles[12][4] = TileType.TRAINING_HALL;
 
     // Add expedition portal (bottom center)
     tiles[11][9] = TileType.EXPEDITION_PORTAL;

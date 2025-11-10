@@ -393,9 +393,17 @@ export class GameScreenRenderer {
       const aliveEnemies = enemies.filter(e => e.alive).length;
       const lootableCorpses = corpses.filter(c => c.canLoot()).length;
 
-      this.renderer.drawUIText(`Enemies: ${aliveEnemies}`, canvas.width - 150, 30, '#F44336', 18);
+      // Hunger timer
+      const hungerTime = gameState.getState().expeditionState.hungerTimer;
+      const hungerPercent = hungerTime / gameState.getState().expeditionState.maxHungerTime;
+      const hungerColor = hungerPercent > 0.5 ? '#4CAF50' : hungerPercent > 0.25 ? '#FF8C00' : '#F44336';
+
+      this.renderer.drawUIRectWithBorder(canvas.width - 210, 10, 200, 100, 'rgba(0, 0, 0, 0.7)', hungerColor, 2);
+      this.renderer.drawUIText('🍖 HUNGER TIMER', canvas.width - 110, 30, hungerColor, 14, 'center');
+      this.renderer.drawUIText(`${Math.ceil(hungerTime)}s`, canvas.width - 110, 52, hungerColor, 22, 'center');
+      this.renderer.drawUIText(`Enemies: ${aliveEnemies}`, canvas.width - 110, 75, '#F44336', 14, 'center');
       if (lootableCorpses > 0) {
-        this.renderer.drawUIText(`Corpses: ${lootableCorpses}`, canvas.width - 150, 55, '#999', 16);
+        this.renderer.drawUIText(`Corpses: ${lootableCorpses}`, canvas.width - 110, 95, '#999', 12, 'center');
       }
 
       // Escape instruction in expedition mode

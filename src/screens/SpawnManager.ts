@@ -19,10 +19,11 @@ export class SpawnManager {
 
     const allEnemies = entityFactory.getAllOfType('enemy') as EnemyData[];
     const levelEnemies = allEnemies.filter((e: EnemyData) => {
-      if (level === 1) return e.goldReward <= 15;
-      if (level === 2) return e.goldReward > 15 && e.goldReward <= 40;
-      if (level === 3) return e.goldReward > 40 && e.goldReward <= 100;
-      return e.goldReward > 100;
+      // Classify enemies by health (difficulty)
+      if (level === 1) return e.health <= 30;
+      if (level === 2) return e.health > 30 && e.health <= 60;
+      if (level === 3) return e.health > 60 && e.health <= 100;
+      return e.health > 100;
     });
 
     if (levelEnemies.length === 0) return enemies;
@@ -55,7 +56,6 @@ export class SpawnManager {
           enemy.stats.maxHealth *= 2;
           enemy.stats.attack *= 1.5;
           enemy.stats.defense *= 1.5;
-          enemy.enemyData.goldReward *= 3;
         }
 
         enemies.push(enemy);

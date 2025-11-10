@@ -1,0 +1,79 @@
+{
+  "forest_outskirts": {
+    "id": "forest_outskirts",
+    "name": "Forest Outskirts",
+    "description": "A safe area perfect for beginners",
+    "cost": 10,
+    "difficulty": 1,
+    "enemyTypes": ["slime", "rat"],
+    "enemyCount": { "min": 3, "max": 5 },
+    "lootMultiplier": 1.0,
+    "theme": "forest"
+  },
+  "dark_cave": {
+    "id": "dark_cave",
+    "name": "Dark Cave",
+    "description": "A damp cave filled with dangerous creatures",
+    "cost": 20,
+    "difficulty": 2,
+    "enemyTypes": ["bat", "spider", "slime"],
+    "enemyCount": { "min": 4, "max": 6 },
+    "lootMultiplier": 1.3,
+    "theme": "cave"
+  },
+  "goblin_camp": {
+    "id": "goblin_camp",
+    "name": "Goblin Camp",
+    "description": "A fortified camp of hostile goblins",
+    "cost": 35,
+    "difficulty": 3,
+    "enemyTypes": ["goblin", "wolf", "skeleton"],
+    "enemyCount": { "min": 5, "max": 7 },
+    "lootMultiplier": 1.5,
+    "theme": "ruins"
+  },
+  "orc_stronghold": {
+    "id": "orc_stronghold",
+    "name": "Orc Stronghold",
+    "description": "A brutal fortress of savage orcs",
+    "cost": 60,
+    "difficulty": 4,
+    "enemyTypes": ["orc", "troll", "wolf"],
+    "enemyCount": { "min": 6, "max": 8 },
+    "lootMultiplier": 1.8,
+    "theme": "dungeon"
+  },
+  "frozen_wasteland": {
+    "id": "frozen_wasteland",
+    "name": "Frozen Wasteland",
+    "description": "An icy realm guarded by a powerful boss",
+    "cost": 100,
+    "difficulty": 5,
+    "enemyTypes": ["ice_golem", "troll", "spider"],
+    "enemyCount": { "min": 5, "max": 7 },
+    "lootMultiplier": 2.2,
+    "theme": "ice"
+  },
+  "volcano_depths": {
+    "id": "volcano_depths",
+    "name": "Volcano Depths",
+    "description": "A fiery hell with rare ingredients",
+    "cost": 120,
+    "difficulty": 6,
+    "enemyTypes": ["fire_elemental", "dragon", "orc"],
+    "enemyCount": { "min": 6, "max": 8 },
+    "lootMultiplier": 2.5,
+    "theme": "lava"
+  },
+  "demon_realm": {
+    "id": "demon_realm",
+    "name": "Demon Realm",
+    "description": "The ultimate challenge for brave souls",
+    "cost": 200,
+    "difficulty": 7,
+    "enemyTypes": ["demon_lord", "fire_elemental", "ice_golem"],
+    "enemyCount": { "min": 7, "max": 10 },
+    "lootMultiplier": 3.0,
+    "theme": "void"
+  }
+}

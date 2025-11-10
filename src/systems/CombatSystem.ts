@@ -58,8 +58,6 @@ export class CombatSystem {
     }
 
     private processRewards(enemy: Enemy) {
-        gameState.addGold(enemy.goldReward);
-
         const loot: string[] = [];
         enemy.lootTable.forEach(drop => {
             if (Math.random() < drop.chance) {
@@ -69,7 +67,7 @@ export class CombatSystem {
         });
 
         return {
-            gold: enemy.goldReward,
+            gold: 0, // Enemies no longer drop gold directly
             loot
         };
     }

@@ -23,13 +23,28 @@ export interface RestaurantData {
     reputation: number;
 }
 
+export interface TrainingSkill {
+    id: string;
+    level: number;
+}
+
+export interface ExpeditionLocation {
+    id: string;
+    name: string;
+    description: string;
+    cost: number;
+    difficulty: number;
+    enemyTypes: string[];
+    lootMultiplier: number;
+}
+
 export interface GameData {
     player: PlayerStats;
     gold: number;
     inventory: string[];
     dishes: string[]; // IDs of cooked dishes available to sell/eat
     discoveredRecipes: string[];
-    currentScreen: 'base' | 'shop' | 'cooking' | 'settings' | 'restaurant' | 'upgrades' | 'recipebook' | 'game';
+    currentScreen: 'base' | 'shop' | 'cooking' | 'settings' | 'restaurant' | 'upgrades' | 'recipebook' | 'game' | 'training' | 'expedition';
     equipment: {
         weapon?: string;
         armor?: string;
@@ -44,6 +59,12 @@ export interface GameData {
         kitchen: Upgrade[];
         restaurantUpgrades: Upgrade[];
         characterPerks: Upgrade[];
+    };
+    trainingSkills: TrainingSkill[];
+    expeditionState: {
+        hungerTimer: number; // Time remaining in current expedition (seconds)
+        maxHungerTime: number; // 60 seconds
+        selectedFoodBuff?: string; // Dish ID for pre-expedition buff
     };
 }
 
@@ -62,7 +83,7 @@ class GameState {
                 attack: 10,
                 defense: 5
             },
-            gold: 0, // Start with no gold - must earn through cooking!
+            gold: 50, // Start with some gold for first expeditions
             inventory: [],
             dishes: [],
             discoveredRecipes: [],
@@ -78,6 +99,12 @@ class GameState {
                 kitchen: [],
                 restaurantUpgrades: [],
                 characterPerks: []
+            },
+            trainingSkills: [],
+            expeditionState: {
+                hungerTimer: 60,
+                maxHungerTime: 60,
+                selectedFoodBuff: undefined
             }
         };
     }
@@ -225,6 +252,48 @@ class GameState {
         this.state = this.getInitialState();
         localStorage.removeItem('foodroguelike_save');
         eventBus.emit('game:reset');
+    }
+
+    // Training system methods
+    purchaseTrainingSkill(skillId: string): void {
+        const existing = this.state.trainingSkills.find(s => s.id === skillId);
+        if (existing) {
+            existing.level++;
+        } else {
+            this.state.trainingSkills.push({ id: skillId, level: 1 });
+        }
+        eventBus.emit('training:purchased', { skillId });
+    }
+
+    getTrainingSkillLevel(skillId: string): number {
+        const skill = this.state.trainingSkills.find(s => s.id === skillId);
+        return skill?.level || 0;
+    }
+
+    // Expedition system methods
+    setHungerTimer(time: number): void {
+        this.state.expeditionState.hungerTimer = time;
+    }
+
+    tickHunger(deltaTime: number): void {
+        this.state.expeditionState.hungerTimer = Math.max(0, this.state.expeditionState.hungerTimer - deltaTime);
+    }
+
+    resetHungerTimer(): void {
+        this.state.expeditionState.hungerTimer = this.state.expeditionState.maxHungerTime;
+    }
+
+    setSelectedFoodBuff(dishId: string | undefined): void {
+        this.state.expeditionState.selectedFoodBuff = dishId;
+    }
+
+    spendGold(amount: number): boolean {
+        if (this.state.gold >= amount) {
+            this.state.gold -= amount;
+            eventBus.emit('gold:changed', this.state.gold);
+            return true;
+        }
+        return false;
     }
 }
 

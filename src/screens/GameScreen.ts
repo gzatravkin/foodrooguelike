@@ -48,6 +48,12 @@ export class GameScreen {
   private combatLog: Array<{text: string; timestamp: number; color: string}> = [];
   private readonly MAX_LOG_ENTRIES = 8;
   private readonly LOG_DURATION = 15000; // 15 seconds (increased from 5)
+  private interactedTiles: Set<string> = new Set(); // Track which tiles have been used
+  private tileEffectCooldowns: Map<string, number> = new Map(); // Cooldowns for tile effects
+  private playerBuffs: { speed?: number; damage?: number; defense?: number; duration: number } | null = null;
+  private lavaDamageTimer: number = 0;
+  private waterSlowTimer: number = 0;
+  private teleporterLocations: Array<{ x: number; y: number }> = [];
 
   constructor(
     renderer: CanvasRenderer,
@@ -263,6 +269,24 @@ export class GameScreen {
     this.enemies = this.spawnManager.spawnEnemies(level, this.player);
     this.traps = this.spawnManager.spawnTraps(this.player);
 
+    // Reset interactive tiles tracking
+    this.interactedTiles.clear();
+    this.tileEffectCooldowns.clear();
+    this.playerBuffs = null;
+    this.teleporterLocations = [];
+
+    // Find all teleporter locations
+    for (let y = 0; y < dungeon.height; y++) {
+      for (let x = 0; x < dungeon.width; x++) {
+        if (dungeon.tiles[y][x] === TileType.TELEPORTER) {
+          this.teleporterLocations.push({
+            x: x * dungeon.tileSize + dungeon.tileSize / 2,
+            y: y * dungeon.tileSize + dungeon.tileSize / 2
+          });
+        }
+      }
+    }
+
     // Add log entries
     this.addCombatLog('=== EXPEDITION STARTED ===', '#FF6B6B');
     this.addCombatLog(`${this.enemies.length} enemies detected!`, '#FF6B6B');
@@ -317,6 +341,14 @@ export class GameScreen {
       } else if (this.mode === 'expedition' && tileType) {
         if (tileType === TileType.STAIRS_DOWN) {
           this.loadBaseCamp();
+        } else if (tileType === TileType.HEALTH_FOUNTAIN) {
+          this.interactWithHealthFountain();
+        } else if (tileType === TileType.TREASURE_CHEST) {
+          this.interactWithTreasureChest();
+        } else if (tileType === TileType.SHRINE) {
+          this.interactWithShrine();
+        } else if (tileType === TileType.TELEPORTER) {
+          this.interactWithTeleporter();
         }
       }
     }
@@ -382,6 +414,30 @@ export class GameScreen {
     this.updater.updateCamera(this.player, this.renderer);
     this.baseHealTimer = this.updater.handleBaseHealing(this.player, this.mode, this.baseHealTimer, deltaTime);
 
+    // Handle tile effects in expeditions
+    if (this.mode === 'expedition') {
+      this.handleTileEffects(deltaTime);
+    }
+
+    // Update player buffs
+    if (this.playerBuffs && this.playerBuffs.duration > 0) {
+      this.playerBuffs.duration -= deltaTime;
+      if (this.playerBuffs.duration <= 0) {
+        // Remove buffs
+        if (this.playerBuffs.speed) {
+          this.player.stats.speed /= this.playerBuffs.speed;
+        }
+        if (this.playerBuffs.damage) {
+          this.player.stats.attack /= this.playerBuffs.damage;
+        }
+        if (this.playerBuffs.defense) {
+          this.player.stats.defense /= this.playerBuffs.defense;
+        }
+        this.playerBuffs = null;
+        this.addCombatLog('Buff expired', '#888');
+      }
+    }
+
     if (!this.player.alive) {
       this.handlePlayerDeath();
     }
@@ -398,6 +454,179 @@ export class GameScreen {
 
 
 
+
+  private handleTileEffects(deltaTime: number): void {
+    const tileType = this.mapSystem.getTileAt(this.player.x, this.player.y);
+    if (!tileType) return;
+
+    const map = this.mapSystem.getCurrentMap();
+    if (!map) return;
+
+    const tileX = Math.floor(this.player.x / map.tileSize);
+    const tileY = Math.floor(this.player.y / map.tileSize);
+    const tileKey = `${tileX},${tileY}`;
+
+    // Lava damage
+    if (tileType === TileType.LAVA) {
+      this.lavaDamageTimer += deltaTime;
+      if (this.lavaDamageTimer >= 0.5) { // 10 damage per 0.5 seconds
+        this.player.takeDamage(10);
+        this.addCombatLog('Burned by lava! -10 HP', '#FF4500');
+        this.lavaDamageTimer = 0;
+      }
+    } else {
+      this.lavaDamageTimer = 0;
+    }
+
+    // Water slowing effect
+    if (tileType === TileType.WATER) {
+      if (this.player.slowedDuration <= 0) {
+        this.player.slowedDuration = 0.1; // Keep applying slow while on water
+        this.player.slowMultiplier = 0.5; // 50% speed in water
+      }
+    }
+
+    // Spike/Poison trap damage
+    if (tileType === TileType.SPIKE_TRAP || tileType === TileType.POISON_TRAP) {
+      const cooldown = this.tileEffectCooldowns.get(tileKey) || 0;
+      if (cooldown <= 0 && !this.player.isDashing) {
+        const damage = tileType === TileType.SPIKE_TRAP ? 20 : 15;
+        this.player.takeDamage(damage);
+        this.addCombatLog(`Trap triggered! -${damage} HP`, '#FF0000');
+        this.tileEffectCooldowns.set(tileKey, 2.0); // 2 second cooldown
+
+        if (tileType === TileType.POISON_TRAP) {
+          // Add poison DOT effect
+          this.player.slowedDuration = Math.max(this.player.slowedDuration, 3.0);
+          this.player.slowMultiplier = 0.6;
+          this.addCombatLog('Poisoned!', '#32CD32');
+        }
+      }
+    }
+
+    // Update cooldowns
+    this.tileEffectCooldowns.forEach((value, key) => {
+      const newValue = value - deltaTime;
+      if (newValue <= 0) {
+        this.tileEffectCooldowns.delete(key);
+      } else {
+        this.tileEffectCooldowns.set(key, newValue);
+      }
+    });
+  }
+
+  private interactWithHealthFountain(): void {
+    const map = this.mapSystem.getCurrentMap();
+    if (!map) return;
+
+    const tileX = Math.floor(this.player.x / map.tileSize);
+    const tileY = Math.floor(this.player.y / map.tileSize);
+    const tileKey = `fountain-${tileX},${tileY}`;
+
+    if (this.interactedTiles.has(tileKey)) {
+      this.addCombatLog('Fountain is dry', '#888');
+      return;
+    }
+
+    const healAmount = 30;
+    this.player.heal(healAmount);
+    this.interactedTiles.add(tileKey);
+    this.addCombatLog(`Healed ${healAmount} HP from fountain!`, '#FF69B4');
+    this.addCombatLog('Fountain dried up', '#888');
+  }
+
+  private interactWithTreasureChest(): void {
+    const map = this.mapSystem.getCurrentMap();
+    if (!map) return;
+
+    const tileX = Math.floor(this.player.x / map.tileSize);
+    const tileY = Math.floor(this.player.y / map.tileSize);
+    const tileKey = `chest-${tileX},${tileY}`;
+
+    if (this.interactedTiles.has(tileKey)) {
+      this.addCombatLog('Chest is empty', '#888');
+      return;
+    }
+
+    const goldReward = 50 + Math.floor(Math.random() * 100);
+    gameState.addGold(goldReward);
+    this.interactedTiles.add(tileKey);
+    this.addCombatLog(`Found ${goldReward} gold!`, '#FFD700');
+
+    // 50% chance for random ingredient
+    if (Math.random() < 0.5) {
+      const ingredients = ['tomato', 'cheese', 'lettuce', 'beef', 'bread', 'chicken', 'fish', 'potato'];
+      const randomIng = ingredients[Math.floor(Math.random() * ingredients.length)];
+      gameState.addToInventory(randomIng);
+      const template = entityFactory.getTemplate(randomIng);
+      const itemName = template?.name || randomIng;
+      this.addCombatLog(`Found: ${itemName}`, '#90EE90');
+    }
+  }
+
+  private interactWithShrine(): void {
+    const map = this.mapSystem.getCurrentMap();
+    if (!map) return;
+
+    const tileX = Math.floor(this.player.x / map.tileSize);
+    const tileY = Math.floor(this.player.y / map.tileSize);
+    const tileKey = `shrine-${tileX},${tileY}`;
+
+    if (this.interactedTiles.has(tileKey)) {
+      this.addCombatLog('Shrine power depleted', '#888');
+      return;
+    }
+
+    // Random buff
+    const buffTypes = ['speed', 'damage', 'defense'];
+    const buffType = buffTypes[Math.floor(Math.random() * buffTypes.length)];
+
+    this.interactedTiles.add(tileKey);
+
+    if (buffType === 'speed') {
+      this.playerBuffs = { speed: 1.5, duration: 15.0 };
+      this.player.stats.speed *= 1.5;
+      this.addCombatLog('Blessed with speed! +50% speed for 15s', '#DAA520');
+    } else if (buffType === 'damage') {
+      this.playerBuffs = { damage: 1.5, duration: 15.0 };
+      this.player.stats.attack *= 1.5;
+      this.addCombatLog('Blessed with power! +50% damage for 15s', '#DAA520');
+    } else {
+      this.playerBuffs = { defense: 1.5, duration: 15.0 };
+      this.player.stats.defense *= 1.5;
+      this.addCombatLog('Blessed with protection! +50% defense for 15s', '#DAA520');
+    }
+  }
+
+  private interactWithTeleporter(): void {
+    if (this.teleporterLocations.length < 2) {
+      this.addCombatLog('Teleporter is inactive', '#888');
+      return;
+    }
+
+    // Find which teleporter we're on
+    let currentTeleporterIndex = -1;
+    for (let i = 0; i < this.teleporterLocations.length; i++) {
+      const dist = Math.sqrt(
+        Math.pow(this.player.x - this.teleporterLocations[i].x, 2) +
+        Math.pow(this.player.y - this.teleporterLocations[i].y, 2)
+      );
+      if (dist < 20) {
+        currentTeleporterIndex = i;
+        break;
+      }
+    }
+
+    if (currentTeleporterIndex === -1) return;
+
+    // Teleport to a different random teleporter
+    const otherTeleporters = this.teleporterLocations.filter((_, i) => i !== currentTeleporterIndex);
+    const destination = otherTeleporters[Math.floor(Math.random() * otherTeleporters.length)];
+
+    this.player.x = destination.x;
+    this.player.y = destination.y;
+    this.addCombatLog('Teleported!', '#8B00FF');
+  }
 
   private handlePlayerDeath(): void {
     this.player.alive = true;

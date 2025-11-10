@@ -27,7 +27,18 @@ export class SpawnManager {
 
     if (levelEnemies.length === 0) return enemies;
 
-    const numEnemies = 5 + Math.floor(Math.random() * 6);
+    // Randomize enemy count more (8-20 enemies)
+    const baseEnemies = 8 + Math.floor(Math.random() * 13);
+
+    // 30% chance for a "horde" event (2x enemies)
+    const isHorde = Math.random() < 0.3;
+    const numEnemies = isHorde ? baseEnemies * 2 : baseEnemies;
+
+    // 20% chance for "elite" enemy (stronger, higher tier)
+    const hasElite = Math.random() < 0.2;
+
+    // 40% chance for enemy groups (spawn 2-3 enemies together)
+    const spawnInGroups = Math.random() < 0.4;
 
     for (let i = 0; i < numEnemies; i++) {
       const enemyData = levelEnemies[Math.floor(Math.random() * levelEnemies.length)];
@@ -36,7 +47,33 @@ export class SpawnManager {
       if (position) {
         const weaponId = enemyData.weaponId;
         const weapon = weaponId ? entityFactory.createWeapon(weaponId) : null;
-        enemies.push(new Enemy(position.x, position.y, enemyData, weapon));
+        const enemy = new Enemy(position.x, position.y, enemyData, weapon);
+
+        // Apply elite modifier to first enemy if hasElite
+        if (i === 0 && hasElite) {
+          enemy.stats.health *= 2;
+          enemy.stats.maxHealth *= 2;
+          enemy.stats.attack *= 1.5;
+          enemy.stats.defense *= 1.5;
+          enemy.enemyData.goldReward *= 3;
+        }
+
+        enemies.push(enemy);
+
+        // If spawning in groups, add 1-2 more enemies nearby
+        if (spawnInGroups && Math.random() < 0.3) {
+          for (let j = 0; j < 1 + Math.floor(Math.random() * 2); j++) {
+            const groupX = position.x + (Math.random() - 0.5) * 100;
+            const groupY = position.y + (Math.random() - 0.5) * 100;
+
+            if (this.mapSystem.canMoveTo(groupX, groupY)) {
+              const groupEnemyData = levelEnemies[Math.floor(Math.random() * levelEnemies.length)];
+              const groupWeaponId = groupEnemyData.weaponId;
+              const groupWeapon = groupWeaponId ? entityFactory.createWeapon(groupWeaponId) : null;
+              enemies.push(new Enemy(groupX, groupY, groupEnemyData, groupWeapon));
+            }
+          }
+        }
       }
     }
 

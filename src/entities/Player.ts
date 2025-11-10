@@ -50,7 +50,7 @@ export class Player extends Entity {
       // When dash ends, apply slow effect
       if (this.dashDuration <= 0) {
         this.isDashing = false;
-        this.slowedDuration = 2.0; // Slow for 2 seconds after dash
+        this.slowedDuration = 1.0; // Slow for 1 second after dash
       }
     } else {
       this.isDashing = false;

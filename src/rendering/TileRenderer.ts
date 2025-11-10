@@ -71,6 +71,10 @@ export class TileRenderer {
       this.renderShopTile(worldX, worldY, size);
     } else if (tileType === TileType.EXPEDITION_PORTAL) {
       this.renderExpeditionPortal(worldX, worldY, size);
+    } else if (tileType === TileType.STAIRS_DOWN) {
+      this.renderStairsDown(worldX, worldY, size);
+    } else if (tileType === TileType.STAIRS_UP) {
+      this.renderStairsUp(worldX, worldY, size);
     }
   }
 
@@ -152,6 +156,21 @@ export class TileRenderer {
     this.renderer.drawCircle(worldX + size / 2, worldY + size / 2, size * 0.4, '#9b59b6');
     this.renderer.drawCircle(worldX + size / 2, worldY + size / 2, size * 0.25, '#bb79d6');
     this.renderer.drawCircle(worldX + size / 2, worldY + size / 2, size * 0.1, '#e0aaff');
+  }
+
+  private renderStairsDown(worldX: number, worldY: number, size: number): void {
+    // Render as a return portal (similar to expedition portal but different colors)
+    this.renderer.drawRect(worldX, worldY, size, size, '#1a1a1a');
+    this.renderer.drawCircle(worldX + size / 2, worldY + size / 2, size * 0.4, '#3498db');
+    this.renderer.drawCircle(worldX + size / 2, worldY + size / 2, size * 0.25, '#5dade2');
+    this.renderer.drawCircle(worldX + size / 2, worldY + size / 2, size * 0.1, '#aed6f1');
+  }
+
+  private renderStairsUp(worldX: number, worldY: number, size: number): void {
+    // Render as entrance stairs
+    this.renderer.drawRect(worldX, worldY, size, size, '#1a1a1a');
+    this.renderer.drawCircle(worldX + size / 2, worldY + size / 2, size * 0.4, '#ecf0f1');
+    this.renderer.drawCircle(worldX + size / 2, worldY + size / 2, size * 0.25, '#bdc3c7');
   }
 
 }

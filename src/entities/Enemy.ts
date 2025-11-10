@@ -14,6 +14,7 @@ export class Enemy extends Entity {
   public targetX: number = 0;
   public targetY: number = 0;
   public facingAngle: number = 0;
+  public loggedDeath: boolean = false;
 
   constructor(x: number, y: number, enemyData: EnemyData, weapon: Weapon | null = null) {
     const stats: EntityStats = {

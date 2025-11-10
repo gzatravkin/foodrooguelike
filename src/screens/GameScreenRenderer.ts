@@ -32,6 +32,13 @@ export class GameScreenRenderer {
     this.renderer.setCamera(x, y);
   }
 
+  private hexToRgba(hex: string, alpha: number): string {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  }
+
   renderMap(map: GameMap | null): void {
     if (!map) return;
 
@@ -278,5 +285,7 @@ export class GameScreenRenderer {
     }
   }
 
-
+  renderShop(availableWeapons: Weapon[], playerGold: number, currentWeapon: Weapon | null): void {
+    this.entityRenderer.renderShop(availableWeapons, playerGold, currentWeapon);
+  }
 }

@@ -111,59 +111,6 @@ export function createBatSVG(): string {
   `;
 }
 
-// Troll - large brutish creature
-export function createTrollSVG(): string {
-  return `
-    <defs>
-      <radialGradient id="trollSkin">
-        <stop offset="0%" style="stop-color:#4CAF50;stop-opacity:1" />
-        <stop offset="100%" style="stop-color:#2E7D32;stop-opacity:1" />
-      </radialGradient>
-    </defs>
-    <g class="troll-sprite">
-      <!-- Shadow -->
-      <ellipse cx="12" cy="30" rx="11" ry="3" fill="#000" opacity="0.35"/>
-      <!-- Hunched body -->
-      <ellipse cx="12" cy="20" rx="10" ry="11" fill="url(#trollSkin)" stroke="#1B5E20" stroke-width="2"/>
-      <ellipse cx="12" cy="22" rx="8" ry="8" fill="#388E3C" opacity="0.3"/>
-      <!-- Muscular arms -->
-      <ellipse cx="4" cy="20" rx="4" ry="9" fill="#43A047" stroke="#2E7D32" stroke-width="1.5"/>
-      <ellipse cx="20" cy="20" rx="4" ry="9" fill="#43A047" stroke="#2E7D32" stroke-width="1.5"/>
-      <!-- Large hands -->
-      <ellipse cx="3" cy="28" rx="3.5" ry="3" fill="#4CAF50" stroke="#2E7D32" stroke-width="1"/>
-      <ellipse cx="21" cy="28" rx="3.5" ry="3" fill="#4CAF50" stroke="#2E7D32" stroke-width="1"/>
-      <circle cx="2" cy="28" r="0.8" fill="#2E7D32"/>
-      <circle cx="3.5" cy="29" r="0.8" fill="#2E7D32"/>
-      <circle cx="20.5" cy="29" r="0.8" fill="#2E7D32"/>
-      <circle cx="22" cy="28" r="0.8" fill="#2E7D32"/>
-      <!-- Head -->
-      <ellipse cx="12" cy="11" rx="7" ry="6.5" fill="#4CAF50" stroke="#2E7D32" stroke-width="1.5"/>
-      <!-- Brow ridge -->
-      <rect x="6" y="9" width="12" height="2.5" fill="#388E3C" rx="1"/>
-      <!-- Small eyes -->
-      <circle cx="9" cy="10.5" r="1.2" fill="#000"/>
-      <circle cx="15" cy="10.5" r="1.2" fill="#000"/>
-      <circle cx="9.3" cy="10.2" r="0.4" fill="#FF5722"/>
-      <circle cx="15.3" cy="10.2" r="0.4" fill="#FF5722"/>
-      <!-- Large nose -->
-      <ellipse cx="12" cy="12.5" rx="2" ry="2.5" fill="#388E3C" stroke="#2E7D32" stroke-width="0.8"/>
-      <ellipse cx="11.3" cy="13" rx="0.6" ry="0.8" fill="#1B5E20"/>
-      <ellipse cx="12.7" cy="13" rx="0.6" ry="0.8" fill="#1B5E20"/>
-      <!-- Large mouth -->
-      <path d="M 8 14.5 Q 12 16 16 14.5" stroke="#1B5E20" stroke-width="1.5" fill="none"/>
-      <path d="M 8 14.5 Q 12 15.5 16 14.5" fill="#2E7D32" opacity="0.5"/>
-      <!-- Tusks -->
-      <path d="M 9 14 L 8 16 L 9.5 15 Z" fill="#FFF" stroke="#BDBDBD" stroke-width="0.5"/>
-      <path d="M 15 14 L 16 16 L 14.5 15 Z" fill="#FFF" stroke="#BDBDBD" stroke-width="0.5"/>
-      <!-- Warts/bumps -->
-      <circle cx="8" cy="11" r="0.8" fill="#388E3C"/>
-      <circle cx="16" cy="11.5" r="0.7" fill="#388E3C"/>
-      <circle cx="10" cy="18" r="1" fill="#388E3C"/>
-      <circle cx="14" cy="19" r="0.9" fill="#388E3C"/>
-    </g>
-  `;
-}
-
 // Spider - eight-legged horror
 export function createSpiderSVG(): string {
   return `

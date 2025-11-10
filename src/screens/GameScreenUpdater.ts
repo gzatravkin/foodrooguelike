@@ -11,6 +11,8 @@ import { CombatSystem } from './CombatSystem';
 import { ParticleSystem } from '../entities/Particle';
 
 export class GameScreenUpdater {
+  private deadEnemiesSet = new Set<Enemy>();
+
   constructor(
     private mapSystem: MapSystem,
     private combatSystem: CombatSystem,
@@ -44,8 +46,7 @@ export class GameScreenUpdater {
             if (player.stats.health < prevHealth) {
               const dx = player.x - enemy.x;
               const dy = player.y - enemy.y;
-              const angle = Math.atan2(dy, dx);
-              this.particleSystem.createBloodSplatter(player.x, player.y, angle);
+              this.particleSystem.createBlood(player.x, player.y, dx, dy);
             }
 
             enemy.attackCooldown = enemy.weapon ? enemy.weapon.attackSpeed : 1.0;
@@ -59,20 +60,14 @@ export class GameScreenUpdater {
     for (const trap of traps) {
       trap.update(deltaTime);
 
-      if (!trap.triggered && !player.isDashing) {
+      if (trap.canDamage() && !player.isDashing && trap.isPlayerNear(player.x, player.y)) {
+        trap.activate();
+        const trapDamage = trap.damage;
+        player.takeDamage(trapDamage);
+
         const dx = player.x - trap.x;
         const dy = player.y - trap.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-
-        if (distance < 20) {
-          trap.triggered = true;
-          trap.isVisible = true;
-          const trapDamage = 15;
-          player.takeDamage(trapDamage);
-
-          const angle = Math.atan2(dy, dx);
-          this.particleSystem.createBloodSplatter(player.x, player.y, angle);
-        }
+        this.particleSystem.createBlood(player.x, player.y, dx, dy);
       }
     }
   }
@@ -103,10 +98,21 @@ export class GameScreenUpdater {
     for (const enemy of enemies) {
       if (enemy.alive) {
         aliveEnemies.push(enemy);
-      } else if (!enemy.corpseCreated) {
-        const corpse = new Corpse(enemy.x, enemy.y, enemy.lootGold, enemy.lootIngredient, enemy.enemyType);
+      } else if (!this.deadEnemiesSet.has(enemy)) {
+        // Create corpse with loot
+        const loot = {
+          gold: enemy.enemyData.goldReward || 0,
+          ingredients: [] // Ingredients from loot table not yet implemented
+        };
+        const corpse = new Corpse(
+          enemy.x,
+          enemy.y,
+          enemy.enemyData.name,
+          enemy.enemyData.id,
+          loot
+        );
         this.combatSystem.addCorpse(corpse);
-        enemy.corpseCreated = true;
+        this.deadEnemiesSet.add(enemy);
       }
     }
 
@@ -124,10 +130,10 @@ export class GameScreenUpdater {
 
     if (mode === 'expedition') {
       for (const corpse of corpses) {
-        const distance = corpse.getDistanceTo(player);
-        if (distance < 40 && !corpse.looted) {
+        if (corpse.isPlayerNear(player.x, player.y, 40) && corpse.canLoot()) {
           showPrompt = true;
-          promptText = `Press E to loot (${corpse.gold} gold${corpse.ingredient ? ', ingredient' : ''})`;
+          const ingredientText = corpse.loot.ingredients.length > 0 ? ', ingredients' : '';
+          promptText = `Press F to loot (${corpse.loot.gold} gold${ingredientText})`;
           nearbyCorpse = corpse;
           break;
         }
@@ -146,22 +152,17 @@ export class GameScreenUpdater {
   ): { showPrompt: boolean; promptText: string } {
     let showPrompt = false;
     let promptText = '';
-    const map = mapSystem.getCurrentMap();
 
-    if (!map) return { showPrompt, promptText };
+    const tileType = mapSystem.getTileAt(player.x, player.y);
 
-    const tileX = Math.floor(player.x / map.tileSize);
-    const tileY = Math.floor(player.y / map.tileSize);
-    const tileType = map.getTile(tileX, tileY);
-
-    if (mode === 'base') {
-      if (tileType === TileType.Shop) {
+    if (mode === 'base' && tileType) {
+      if (tileType === TileType.SHOP) {
         showPrompt = true;
         promptText = 'Press E to enter Shop';
-      } else if (tileType === TileType.Portal) {
+      } else if (tileType === TileType.EXPEDITION_PORTAL) {
         showPrompt = true;
         promptText = 'Press E to start Expedition';
-      } else if (tileType === TileType.Cooking) {
+      } else if (tileType === TileType.COOKING_STATION) {
         showPrompt = true;
         promptText = 'Press E to Cook';
       }

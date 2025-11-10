@@ -166,6 +166,11 @@ export class CookingScreen extends Screen {
     }
 
     render(): void {
+        // Re-setup keyboard controls if they were cleaned up
+        if (!this.keyListener) {
+            this.setupKeyboardControls();
+        }
+
         this.renderer.clear();
         const vb = this.renderer.getViewBox();
 

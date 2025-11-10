@@ -404,18 +404,21 @@ export class GameScreenRenderer {
       this.renderer.drawUIText('(No Gold Loss)', canvas.width - 120, 135, '#90EE90', 12, 'center');
     }
 
-    // Combat log (bottom left)
-    if (combatLog.length > 0) {
-      const logX = 10;
-      const logY = canvas.height - 220;
-      const logHeight = Math.min(combatLog.length * 22 + 15, 200);
+    // Combat log (bottom left) - ALWAYS SHOW with border even if empty
+    const logX = 10;
+    const logY = canvas.height - 240;
+    const logEntries = combatLog.slice(0, 8);
+    const logHeight = Math.max(80, logEntries.length * 22 + 40);
 
-      this.renderer.drawUIRectWithBorder(logX, logY, 350, logHeight, 'rgba(0, 0, 0, 0.8)', '#FFD700', 2);
-      this.renderer.drawUIText('Combat Log', logX + 10, logY + 20, '#FFD700', 14, 'left');
+    this.renderer.drawUIRectWithBorder(logX, logY, 380, logHeight, 'rgba(0, 0, 0, 0.85)', '#FFD700', 2);
+    this.renderer.drawUIText('Combat Log', logX + 10, logY + 22, '#FFD700', 16, 'left');
 
-      combatLog.slice(0, 8).forEach((entry, i) => {
-        this.renderer.drawUIText(entry.text, logX + 10, logY + 45 + i * 20, entry.color, 13, 'left');
+    if (logEntries.length > 0) {
+      logEntries.forEach((entry, i) => {
+        this.renderer.drawUIText(entry.text, logX + 10, logY + 48 + i * 22, entry.color, 14, 'left');
       });
+    } else {
+      this.renderer.drawUIText('No messages yet...', logX + 10, logY + 48, '#666', 12, 'left');
     }
 
     // Inventory (top right, below enemy count)

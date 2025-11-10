@@ -6,6 +6,7 @@ import { Screen } from '../rendering/Screen';
 import { gameState } from '../core/GameState';
 import { cookingSystem } from '../systems/CookingSystem';
 import { entityFactory } from '../entities/EntityFactory';
+import { eventBus } from '../core/EventBus';
 import type { SVGRenderer } from '../rendering/SVGRenderer';
 
 type Section = 'ingredients' | 'methods' | 'time';
@@ -43,9 +44,17 @@ export class CookingScreen extends Screen {
                 return;
             }
 
-            // Go back with Escape
+            // Go back with Escape - close the UI and return to gameplay
             if (e.key === 'Escape') {
-                gameState.setScreen('base');
+                // Close the cooking UI by switching away from UI screens
+                // This will resume the game without showing the base menu
+                const currentState = gameState.getState();
+                // Only go to base menu if we're not set to a UI screen, otherwise just close
+                if (currentState.currentScreen === 'cooking') {
+                    // Hide the UI overlay by setting to a non-UI screen value
+                    (gameState as any).state.currentScreen = 'game';
+                    eventBus.emit('screen:changed', 'game');
+                }
                 return;
             }
 

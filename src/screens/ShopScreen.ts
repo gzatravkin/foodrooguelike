@@ -11,6 +11,8 @@ import type { Dish, Weapon } from '../entities/types';
 
 export class ShopScreen extends Screen {
     private message: string = '';
+    private lastPurchaseTime: number = 0;
+    private purchaseCooldown: number = 500; // 500ms cooldown between purchases
 
     constructor(renderer: SVGRenderer) {
         super(renderer);
@@ -140,6 +142,13 @@ export class ShopScreen extends Screen {
     }
 
     private buyWeapon(id: string): void {
+        // Prevent rapid consecutive purchases
+        const now = Date.now();
+        if (now - this.lastPurchaseTime < this.purchaseCooldown) {
+            return;
+        }
+        this.lastPurchaseTime = now;
+
         const success = shopSystem.buyWeapon(id);
         if (success) {
             this.message = 'Weapon purchased! Equip it from your inventory.';
@@ -150,6 +159,13 @@ export class ShopScreen extends Screen {
     }
 
     private buyEquipment(id: string): void {
+        // Prevent rapid consecutive purchases
+        const now = Date.now();
+        if (now - this.lastPurchaseTime < this.purchaseCooldown) {
+            return;
+        }
+        this.lastPurchaseTime = now;
+
         const success = shopSystem.buyEquipment(id);
         if (success) {
             this.message = 'Purchase successful!';
@@ -160,6 +176,13 @@ export class ShopScreen extends Screen {
     }
 
     private sellDish(dish: Dish): void {
+        // Prevent rapid consecutive sells
+        const now = Date.now();
+        if (now - this.lastPurchaseTime < this.purchaseCooldown) {
+            return;
+        }
+        this.lastPurchaseTime = now;
+
         shopSystem.sellDish(dish);
         gameState.removeFromInventory(dish.id);
         this.message = `Sold for ${dish.value} gold!`;
@@ -167,6 +190,13 @@ export class ShopScreen extends Screen {
     }
 
     private eatDish(dish: Dish): void {
+        // Prevent rapid consecutive eats
+        const now = Date.now();
+        if (now - this.lastPurchaseTime < this.purchaseCooldown) {
+            return;
+        }
+        this.lastPurchaseTime = now;
+
         shopSystem.eatDish(dish);
         gameState.removeFromInventory(dish.id);
         this.message = `Ate ${dish.name}! Buffs applied!`;

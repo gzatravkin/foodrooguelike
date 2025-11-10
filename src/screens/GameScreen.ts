@@ -131,6 +131,18 @@ export class GameScreen {
       eventBus.on('gold:changed', (gold: number) => {
         this.player.gold = gold;
       });
+
+      // Listen for screen changes to handle expedition starts
+      eventBus.on('screen:changed', (screen: string) => {
+        if (screen === 'game') {
+          // Check if we should load an expedition
+          const storedData = localStorage.getItem('selectedExpedition');
+          if (storedData) {
+            console.log('Starting expedition from stored data');
+            this.loadExpedition();
+          }
+        }
+      });
     });
   }
 

@@ -228,6 +228,14 @@ export class GameScreen {
       this.input.setVirtualButton('loot', controlState.buttons.loot);
     }
 
+    // Don't process game input if we're in a UI screen (cooking, shop, settings, etc.)
+    const currentScreen = gameState.getState().currentScreen;
+    const isUIScreen = ['cooking', 'shop', 'settings', 'recipebook'].includes(currentScreen);
+    if (isUIScreen) {
+      this.inputHandler.update();
+      return;
+    }
+
     if (this.shopManager.isShopOpen()) {
       this.shopManager.handleShopInput(this.player);
       return;

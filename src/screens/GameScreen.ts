@@ -350,7 +350,7 @@ export class GameScreen {
     deadEnemies.forEach(enemy => {
       if (!enemy.loggedDeath) {
         this.addCombatLog(`Killed ${enemy.enemyData.name}!`, '#FF6B6B');
-        (enemy as any).loggedDeath = true; // Mark as logged
+        enemy.loggedDeath = true; // Mark as logged
       }
     });
 

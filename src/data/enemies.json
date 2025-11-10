@@ -9,6 +9,9 @@
     "defense": 2,
     "goldReward": 8,
     "weaponId": "fists",
+    "aiBehavior": "patrol",
+    "attackPattern": "standard",
+    "speed": 60,
     "lootTable": [
       { "itemId": "jelly", "chance": 0.9 },
       { "itemId": "sugar", "chance": 0.5 },
@@ -25,6 +28,9 @@
     "defense": 3,
     "goldReward": 12,
     "weaponId": "crossbow",
+    "aiBehavior": "ranged",
+    "attackPattern": "retreat",
+    "speed": 85,
     "lootTable": [
       { "itemId": "mushroom", "chance": 0.8 },
       { "itemId": "herb", "chance": 0.6 },
@@ -43,6 +49,9 @@
     "defense": 8,
     "goldReward": 80,
     "weaponId": "dragon_breath",
+    "aiBehavior": "ranged",
+    "attackPattern": "strafe",
+    "speed": 90,
     "lootTable": [
       { "itemId": "dragon_fruit", "chance": 0.95 },
       { "itemId": "fire_pepper", "chance": 0.8 },
@@ -61,6 +70,9 @@
     "defense": 1,
     "goldReward": 5,
     "weaponId": "fists",
+    "aiBehavior": "aggressive",
+    "attackPattern": "standard",
+    "speed": 95,
     "lootTable": [
       { "itemId": "meat", "chance": 0.6 },
       { "itemId": "herb", "chance": 0.4 },
@@ -78,6 +90,9 @@
     "defense": 1,
     "goldReward": 10,
     "weaponId": "fists",
+    "aiBehavior": "aggressive",
+    "attackPattern": "strafe",
+    "speed": 110,
     "lootTable": [
       { "itemId": "jelly", "chance": 0.5 },
       { "itemId": "mushroom", "chance": 0.7 },
@@ -94,6 +109,9 @@
     "defense": 4,
     "goldReward": 15,
     "weaponId": "rusty_sword",
+    "aiBehavior": "patrol",
+    "attackPattern": "standard",
+    "speed": 75,
     "lootTable": [
       { "itemId": "mushroom", "chance": 0.9 },
       { "itemId": "herb", "chance": 0.7 },
@@ -111,6 +129,9 @@
     "defense": 5,
     "goldReward": 25,
     "weaponId": "iron_sword",
+    "aiBehavior": "aggressive",
+    "attackPattern": "charge",
+    "speed": 85,
     "lootTable": [
       { "itemId": "meat", "chance": 0.95 },
       { "itemId": "premium_meat", "chance": 0.4 },
@@ -129,6 +150,9 @@
     "defense": 10,
     "goldReward": 50,
     "weaponId": "fists",
+    "aiBehavior": "defensive",
+    "attackPattern": "standard",
+    "speed": 70,
     "lootTable": [
       { "itemId": "mushroom", "chance": 0.95 },
       { "itemId": "meat", "chance": 0.9 },
@@ -147,6 +171,9 @@
     "defense": 12,
     "goldReward": 120,
     "weaponId": "magic_staff",
+    "aiBehavior": "defensive",
+    "attackPattern": "retreat",
+    "speed": 65,
     "lootTable": [
       { "itemId": "dragon_fruit", "chance": 0.8 },
       { "itemId": "sugar", "chance": 0.95 },
@@ -165,6 +192,9 @@
     "defense": 6,
     "goldReward": 100,
     "weaponId": "dragon_breath",
+    "aiBehavior": "aggressive",
+    "attackPattern": "burst",
+    "speed": 100,
     "lootTable": [
       { "itemId": "fire_pepper", "chance": 1.0 },
       { "itemId": "dragon_fruit", "chance": 0.7 },
@@ -183,6 +213,9 @@
     "defense": 3,
     "goldReward": 18,
     "weaponId": "fists",
+    "aiBehavior": "ambusher",
+    "attackPattern": "burst",
+    "speed": 70,
     "lootTable": [
       { "itemId": "jelly", "chance": 0.8 },
       { "itemId": "mushroom", "chance": 0.9 },
@@ -200,6 +233,9 @@
     "defense": 4,
     "goldReward": 30,
     "weaponId": "fists",
+    "aiBehavior": "aggressive",
+    "attackPattern": "charge",
+    "speed": 105,
     "lootTable": [
       { "itemId": "meat", "chance": 1.0 },
       { "itemId": "premium_meat", "chance": 0.5 },
@@ -217,6 +253,9 @@
     "defense": 9,
     "goldReward": 40,
     "weaponId": "fists",
+    "aiBehavior": "defensive",
+    "attackPattern": "standard",
+    "speed": 60,
     "lootTable": [
       { "itemId": "premium_meat", "chance": 0.8 },
       { "itemId": "meat", "chance": 0.95 },
@@ -235,6 +274,9 @@
     "defense": 10,
     "goldReward": 200,
     "weaponId": "plasma_cannon",
+    "aiBehavior": "ranged",
+    "attackPattern": "burst",
+    "speed": 80,
     "lootTable": [
       { "itemId": "dragon_fruit", "chance": 1.0 },
       { "itemId": "fire_pepper", "chance": 1.0 },

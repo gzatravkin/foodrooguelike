@@ -13,9 +13,29 @@ export class SettingsScreen extends Screen {
     private volumeText: SVGTextElement | null = null;
     private animToggleCircle: SVGCircleElement | null = null;
     private soundToggleCircle: SVGCircleElement | null = null;
+    private keyListener: ((e: KeyboardEvent) => void) | null = null;
 
     constructor(renderer: SVGRenderer) {
         super(renderer);
+        this.setupKeyboardControls();
+    }
+
+    private setupKeyboardControls(): void {
+        this.keyListener = (e: KeyboardEvent) => {
+            const currentScreen = gameState.getState().currentScreen;
+            if (currentScreen !== 'settings') return;
+
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                // Close settings and return to game
+                (gameState as any).state.currentScreen = 'game';
+                import('../core/EventBus').then(({ eventBus }) => {
+                    eventBus.emit('screen:changed', 'game');
+                });
+            }
+        };
+
+        window.addEventListener('keydown', this.keyListener);
     }
 
     render(): void {
@@ -35,16 +55,16 @@ export class SettingsScreen extends Screen {
         this.renderSoundToggle(vb.width / 2 - 300, panelY + 220);
         this.renderResetButton(vb.width / 2 - 150, panelY + 340);
 
-        // Back button
-        const backBtn = this.renderer.createButton(
-            vb.width / 2 - 100,
-            vb.height - 100,
-            200,
-            50,
-            'BACK',
-            () => gameState.setScreen('base')
+        // ESC instruction
+        const escText = this.renderer.createText(
+            vb.width / 2,
+            vb.height - 60,
+            'Press ESC to close',
+            18,
+            '#AAA'
         );
-        this.renderer.append(backBtn);
+        escText.setAttribute('text-anchor', 'middle');
+        this.renderer.append(escText);
     }
 
     private renderVolumeControl(x: number, y: number): void {
@@ -275,6 +295,10 @@ export class SettingsScreen extends Screen {
     }
 
     cleanup(): void {
+        if (this.keyListener) {
+            window.removeEventListener('keydown', this.keyListener);
+            this.keyListener = null;
+        }
         this.sliderHandle = null;
         this.volumeText = null;
         this.animToggleCircle = null;

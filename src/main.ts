@@ -11,7 +11,6 @@ import { InputManager } from './core/InputManager';
 import { GameScreen } from './screens/GameScreen';
 import { SVGRenderer } from './rendering/SVGRenderer';
 import { ScreenManager } from './rendering/ScreenManager';
-import { BaseScreen } from './screens/BaseScreen';
 import { CookingScreen } from './screens/CookingScreen';
 import { ShopScreen } from './screens/ShopScreen';
 import { RecipeBookScreen } from './screens/RecipeBookScreen';
@@ -50,8 +49,7 @@ class Game {
     }
 
     private setupScreens(): void {
-        // Register all SVG-based screens
-        this.screenManager.registerScreen('base', new BaseScreen(this.svgRenderer));
+        // Register all SVG-based UI overlay screens
         this.screenManager.registerScreen('cooking', new CookingScreen(this.svgRenderer));
         this.screenManager.registerScreen('shop', new ShopScreen(this.svgRenderer));
         this.screenManager.registerScreen('recipebook', new RecipeBookScreen(this.svgRenderer));
@@ -59,8 +57,8 @@ class Game {
 
         // Listen to screen changes from gameState
         eventBus.on('screen:changed', (screenName: string) => {
-            // Hide canvas and show SVG for UI screens
-            const uiScreens = ['base', 'cooking', 'shop', 'recipebook', 'settings', 'restaurant', 'upgrades'];
+            // Hide canvas and show SVG for UI overlay screens
+            const uiScreens = ['cooking', 'shop', 'recipebook', 'settings', 'restaurant', 'upgrades'];
             if (uiScreens.includes(screenName)) {
                 this.svgElement.classList.add('active');
                 this.screenManager.switchTo(screenName);

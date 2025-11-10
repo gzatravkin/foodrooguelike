@@ -394,6 +394,11 @@ export class GameScreenRenderer {
       if (lootableCorpses > 0) {
         this.renderer.drawUIText(`Corpses: ${lootableCorpses}`, canvas.width - 150, 55, '#999', 16);
       }
+
+      // Escape instruction in expedition mode
+      this.renderer.drawUIRectWithBorder(canvas.width - 230, 90, 220, 60, 'rgba(139, 0, 0, 0.7)', '#FF6B6B', 2);
+      this.renderer.drawUIText('ESC: Flee to Base', canvas.width - 120, 115, '#FFD700', 16, 'center');
+      this.renderer.drawUIText('(No Gold Loss)', canvas.width - 120, 135, '#90EE90', 12, 'center');
     }
   }
 

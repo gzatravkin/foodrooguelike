@@ -6,16 +6,25 @@ import { Screen } from '../rendering/Screen';
 import { gameState } from '../core/GameState';
 import { shopSystem } from '../systems/ShopSystem';
 import { entityFactory } from '../entities/EntityFactory';
+import { eventBus } from '../core/EventBus';
 import type { SVGRenderer } from '../rendering/SVGRenderer';
 import type { Dish, Weapon } from '../entities/types';
 
 export class ShopScreen extends Screen {
     private message: string = '';
-    private lastPurchaseTime: number = 0;
-    private purchaseCooldown: number = 500; // 500ms cooldown between purchases
+    private messageTimeout: number | null = null;
 
     constructor(renderer: SVGRenderer) {
         super(renderer);
+
+        // Listen to gold changes to update the display
+        eventBus.on('gold:changed', () => {
+            this.updateGoldDisplay();
+        });
+
+        eventBus.on('inventory:changed', () => {
+            this.updateDishesDisplay();
+        });
     }
 
     render(): void {
@@ -29,8 +38,9 @@ export class ShopScreen extends Screen {
         title.setAttribute('font-weight', 'bold');
         this.renderer.append(title);
 
-        // Gold display
+        // Gold display (with ID for updates)
         const gold = this.renderer.createText(vb.width - 150, 60, `Gold: ${gameState.getState().gold}`, 20, '#FFD700');
+        gold.id = 'shop-gold-display';
         this.renderer.append(gold);
 
         // Weapons for sale
@@ -46,6 +56,7 @@ export class ShopScreen extends Screen {
         if (this.message) {
             const msg = this.renderer.createText(vb.width / 2, vb.height - 150, this.message, 18, '#90EE90');
             msg.setAttribute('text-anchor', 'middle');
+            msg.id = 'shop-message';
             this.renderer.append(msg);
         }
 
@@ -141,66 +152,82 @@ export class ShopScreen extends Screen {
         });
     }
 
-    private buyWeapon(id: string): void {
-        // Prevent rapid consecutive purchases
-        const now = Date.now();
-        if (now - this.lastPurchaseTime < this.purchaseCooldown) {
-            return;
-        }
-        this.lastPurchaseTime = now;
+    private showMessage(msg: string): void {
+        this.message = msg;
 
+        // Clear any existing timeout
+        if (this.messageTimeout !== null) {
+            window.clearTimeout(this.messageTimeout);
+        }
+
+        // Update message display
+        this.updateMessageDisplay();
+
+        // Auto-clear message after 3 seconds
+        this.messageTimeout = window.setTimeout(() => {
+            this.message = '';
+            this.updateMessageDisplay();
+            this.messageTimeout = null;
+        }, 3000);
+    }
+
+    private updateMessageDisplay(): void {
+        const msgElement = document.getElementById('shop-message');
+        if (msgElement && msgElement instanceof SVGTextElement) {
+            if (this.message) {
+                msgElement.textContent = this.message;
+                msgElement.style.display = 'block';
+            } else {
+                msgElement.style.display = 'none';
+            }
+        }
+    }
+
+    private updateGoldDisplay(): void {
+        const goldElement = document.getElementById('shop-gold-display');
+        if (goldElement && goldElement instanceof SVGTextElement) {
+            goldElement.textContent = `Gold: ${gameState.getState().gold}`;
+        }
+    }
+
+    private updateDishesDisplay(): void {
+        // For now, re-render when inventory changes
+        // In the future, could optimize to only update the dishes section
+        this.render();
+    }
+
+    private buyWeapon(id: string): void {
         const success = shopSystem.buyWeapon(id);
         if (success) {
-            this.message = 'Weapon purchased! Equip it from your inventory.';
+            this.showMessage('Weapon purchased! Equipped automatically.');
+            // Gold display updates automatically via event listener
         } else {
-            this.message = 'Not enough gold!';
+            this.showMessage('Not enough gold!');
         }
-        this.render();
     }
 
     private buyEquipment(id: string): void {
-        // Prevent rapid consecutive purchases
-        const now = Date.now();
-        if (now - this.lastPurchaseTime < this.purchaseCooldown) {
-            return;
-        }
-        this.lastPurchaseTime = now;
-
         const success = shopSystem.buyEquipment(id);
         if (success) {
-            this.message = 'Purchase successful!';
+            this.showMessage('Equipment purchased!');
+            // Gold display updates automatically via event listener
         } else {
-            this.message = 'Not enough gold!';
+            this.showMessage('Not enough gold!');
         }
-        this.render();
     }
 
     private sellDish(dish: Dish): void {
-        // Prevent rapid consecutive sells
-        const now = Date.now();
-        if (now - this.lastPurchaseTime < this.purchaseCooldown) {
-            return;
-        }
-        this.lastPurchaseTime = now;
-
         shopSystem.sellDish(dish);
         gameState.removeFromInventory(dish.id);
-        this.message = `Sold for ${dish.value} gold!`;
-        this.render();
+        this.showMessage(`Sold ${dish.name} for ${dish.value} gold!`);
+        // Inventory change triggers re-render via event listener
     }
 
     private eatDish(dish: Dish): void {
-        // Prevent rapid consecutive eats
-        const now = Date.now();
-        if (now - this.lastPurchaseTime < this.purchaseCooldown) {
-            return;
-        }
-        this.lastPurchaseTime = now;
-
         shopSystem.eatDish(dish);
         gameState.removeFromInventory(dish.id);
-        this.message = `Ate ${dish.name}! Buffs applied!`;
-        this.render();
+        this.showMessage(`Ate ${dish.name}! Buffs applied!`);
+        // Inventory change triggers re-render via event listener
     }
 
     handleInput(event: MouseEvent | TouchEvent): void {
@@ -209,5 +236,9 @@ export class ShopScreen extends Screen {
 
     cleanup(): void {
         this.message = '';
+        if (this.messageTimeout !== null) {
+            window.clearTimeout(this.messageTimeout);
+            this.messageTimeout = null;
+        }
     }
 }

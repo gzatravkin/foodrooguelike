@@ -61,40 +61,72 @@ export class SVGRenderer {
         const rect = this.createRect(x, y, width, height, '#4CAF50');
         rect.setAttribute('rx', '5');
         rect.setAttribute('cursor', 'pointer');
+        rect.setAttribute('class', 'button-rect');
 
         const text = this.createText(x + width / 2, y + height / 2 + 5, label, 18, '#fff');
         text.setAttribute('text-anchor', 'middle');
         text.setAttribute('cursor', 'pointer');
+        text.setAttribute('pointer-events', 'none'); // Let clicks pass through to group
 
         group.appendChild(rect);
         group.appendChild(text);
 
-        // Prevent multiple rapid clicks with a cooldown flag
+        // Track if button was already clicked (debounce)
         let isProcessing = false;
 
-        const handleClick = () => {
-            if (isProcessing) return;
-            isProcessing = true;
-            onClick();
+        const handleClick = (e: Event) => {
+            if (isProcessing) {
+                console.log('Button click blocked - already processing');
+                return;
+            }
 
-            // Reset cooldown after a short delay
+            console.log(`Button clicked: ${label}`);
+            isProcessing = true;
+
+            // Visual feedback - darken button
+            rect.setAttribute('fill', '#2E7D32');
+
+            // Execute callback
+            try {
+                onClick();
+            } catch (error) {
+                console.error('Button click error:', error);
+            }
+
+            // Reset after delay
             setTimeout(() => {
                 isProcessing = false;
-            }, 300);
+                rect.setAttribute('fill', '#4CAF50');
+            }, 200);
         };
 
-        group.addEventListener('click', handleClick);
+        // Add hover effect
+        group.addEventListener('mouseenter', () => {
+            if (!isProcessing) {
+                rect.setAttribute('fill', '#66BB6A');
+            }
+        });
+
+        group.addEventListener('mouseleave', () => {
+            if (!isProcessing) {
+                rect.setAttribute('fill', '#4CAF50');
+            }
+        });
+
+        // Handle both click and touch events
+        group.addEventListener('click', handleClick, false);
+
         group.addEventListener('touchstart', (e) => {
             e.preventDefault();
             e.stopPropagation();
-            handleClick();
-        });
+            handleClick(e);
+        }, false);
 
-        // Prevent touchend from triggering click event
+        // Prevent touchend from also triggering a click
         group.addEventListener('touchend', (e) => {
             e.preventDefault();
             e.stopPropagation();
-        });
+        }, false);
 
         return group;
     }

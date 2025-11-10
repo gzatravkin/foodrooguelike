@@ -66,7 +66,7 @@ class GameState {
             inventory: [],
             dishes: [],
             discoveredRecipes: [],
-            currentScreen: 'base',
+            currentScreen: 'game',
             equipment: {},
             activeBuffs: [],
             restaurant: {

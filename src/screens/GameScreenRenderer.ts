@@ -15,6 +15,7 @@ import { GameMode } from './GameScreen';
 import { Weapon } from '../entities/types';
 import { gameState } from '../core/GameState';
 import { Particle } from '../entities/Particle';
+import { entityFactory } from '../entities/EntityFactory';
 
 export class GameScreenRenderer {
   private tileRenderer: TileRenderer;
@@ -319,7 +320,9 @@ export class GameScreenRenderer {
     enemies: Enemy[],
     corpses: Corpse[],
     showInteractionPrompt: boolean,
-    interactionPromptText: string
+    interactionPromptText: string,
+    combatLog: Array<{text: string; timestamp: number; color: string}> = [],
+    inventory: string[] = []
   ): void {
     const canvas = this.renderer.getCanvas();
 
@@ -399,6 +402,41 @@ export class GameScreenRenderer {
       this.renderer.drawUIRectWithBorder(canvas.width - 230, 90, 220, 60, 'rgba(139, 0, 0, 0.7)', '#FF6B6B', 2);
       this.renderer.drawUIText('ESC: Flee to Base', canvas.width - 120, 115, '#FFD700', 16, 'center');
       this.renderer.drawUIText('(No Gold Loss)', canvas.width - 120, 135, '#90EE90', 12, 'center');
+    }
+
+    // Combat log (bottom left)
+    if (combatLog.length > 0) {
+      const logX = 10;
+      const logY = canvas.height - 220;
+      const logHeight = Math.min(combatLog.length * 22 + 15, 200);
+
+      this.renderer.drawUIRectWithBorder(logX, logY, 350, logHeight, 'rgba(0, 0, 0, 0.8)', '#FFD700', 2);
+      this.renderer.drawUIText('Combat Log', logX + 10, logY + 20, '#FFD700', 14, 'left');
+
+      combatLog.slice(0, 8).forEach((entry, i) => {
+        this.renderer.drawUIText(entry.text, logX + 10, logY + 45 + i * 20, entry.color, 13, 'left');
+      });
+    }
+
+    // Inventory (top right, below enemy count)
+    if (inventory.length > 0) {
+      const invStartY = mode === 'expedition' ? 170 : 90;
+      const invHeight = Math.min(inventory.length * 20 + 30, 150);
+
+      this.renderer.drawUIRectWithBorder(canvas.width - 230, invStartY, 220, invHeight, 'rgba(0, 0, 0, 0.7)', '#90EE90', 2);
+      this.renderer.drawUIText('Inventory', canvas.width - 120, invStartY + 20, '#90EE90', 14, 'center');
+
+      // Show inventory items
+      inventory.slice(0, 6).forEach((itemId, i) => {
+        const template = entityFactory.getTemplate(itemId);
+        const itemName = template?.name || itemId;
+        const displayName = itemName.length > 18 ? itemName.substring(0, 15) + '...' : itemName;
+        this.renderer.drawUIText(displayName, canvas.width - 220, invStartY + 40 + i * 20, '#FFF', 12, 'left');
+      });
+
+      if (inventory.length > 6) {
+        this.renderer.drawUIText(`+${inventory.length - 6} more...`, canvas.width - 220, invStartY + 40 + 6 * 20, '#AAA', 11, 'left');
+      }
     }
   }
 

@@ -105,10 +105,17 @@ export class GameScreen {
         e.preventDefault();
         this.cheatPanel.toggle();
       }
-      // Also allow ESC to close
+      // Also allow ESC to close cheat panel
       if (e.key === 'Escape' && this.cheatPanel.isVisible()) {
         e.preventDefault();
         this.cheatPanel.close();
+        return;
+      }
+      // ESC during expedition mode to flee back to base
+      const currentScreen = gameState.getState().currentScreen;
+      if (e.key === 'Escape' && this.mode === 'expedition' && currentScreen === 'game') {
+        e.preventDefault();
+        this.loadBaseCamp();
       }
     });
 

@@ -23,6 +23,7 @@ export class ShopScreen extends Screen {
     private state: ShopState;
     private messageText: string = '';
     private messageTimer: number = 0;
+    private keyListener: ((e: KeyboardEvent) => void) | null = null;
 
     // Pagination constants
     private readonly WEAPONS_PER_PAGE = 6;
@@ -42,6 +43,7 @@ export class ShopScreen extends Screen {
         };
 
         this.setupEventListeners();
+        this.setupKeyboardControls();
     }
 
     private setupEventListeners(): void {
@@ -56,7 +58,34 @@ export class ShopScreen extends Screen {
         });
     }
 
+    private setupKeyboardControls(): void {
+        this.keyListener = (e: KeyboardEvent) => {
+            // Don't handle if not visible
+            if (gameState.getState().currentScreen !== 'shop') return;
+
+            // Close shop with Escape - return to gameplay
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                // Close the shop UI by returning to game
+                const currentState = gameState.getState();
+                if (currentState.currentScreen === 'shop') {
+                    // Hide the UI overlay by setting to game screen
+                    (gameState as any).state.currentScreen = 'game';
+                    eventBus.emit('screen:changed', 'game');
+                }
+                return;
+            }
+        };
+
+        window.addEventListener('keydown', this.keyListener);
+    }
+
     render(): void {
+        // Re-setup keyboard controls if they were cleaned up
+        if (!this.keyListener) {
+            this.setupKeyboardControls();
+        }
+
         this.renderer.clear();
         const vb = this.renderer.getViewBox();
 
@@ -369,15 +398,16 @@ export class ShopScreen extends Screen {
     }
 
     private renderFooter(width: number, height: number): void {
-        const backBtn = this.renderer.createButton(
-            width / 2 - 75,
-            height - 70,
-            150,
-            50,
-            'BACK',
-            () => gameState.setScreen('base')
+        // Show ESC instruction instead of BACK button
+        const escText = this.renderer.createText(
+            width / 2,
+            height - 40,
+            'Press ESC to close shop',
+            18,
+            '#AAA'
         );
-        this.renderer.append(backBtn);
+        escText.setAttribute('text-anchor', 'middle');
+        this.renderer.append(escText);
     }
 
     private updateGoldDisplay(): void {
@@ -467,6 +497,10 @@ export class ShopScreen extends Screen {
     }
 
     cleanup(): void {
+        if (this.keyListener) {
+            window.removeEventListener('keydown', this.keyListener);
+            this.keyListener = null;
+        }
         this.messageText = '';
         this.messageTimer = 0;
         this.state.weaponPage = 0;

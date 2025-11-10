@@ -45,6 +45,9 @@ export class GameScreen {
   private nearbyCorpse: Corpse | null = null;
   private svgsLoaded: boolean = false;
   private baseHealTimer: number = 0; // Timer for HP recovery at base
+  private combatLog: Array<{text: string; timestamp: number; color: string}> = [];
+  private readonly MAX_LOG_ENTRIES = 8;
+  private readonly LOG_DURATION = 5000; // 5 seconds
 
   constructor(
     renderer: CanvasRenderer,
@@ -77,10 +80,31 @@ export class GameScreen {
     this.loadBaseCamp();
     this.setupEventListeners();
     this.setupCheatPanelInput();
+
+    // Add combat log entry
+    this.addCombatLog('Welcome to Food Roguelike!', '#90EE90');
   }
 
   async init(): Promise<void> {
     await this.preloadSVGAssets();
+  }
+
+  private addCombatLog(text: string, color: string = '#FFF'): void {
+    this.combatLog.unshift({
+      text,
+      timestamp: Date.now(),
+      color
+    });
+
+    // Keep only the most recent entries
+    if (this.combatLog.length > this.MAX_LOG_ENTRIES) {
+      this.combatLog = this.combatLog.slice(0, this.MAX_LOG_ENTRIES);
+    }
+  }
+
+  private updateCombatLog(): void {
+    const now = Date.now();
+    this.combatLog = this.combatLog.filter(entry => now - entry.timestamp < this.LOG_DURATION);
   }
 
   private setupEventListeners(): void {
@@ -191,6 +215,7 @@ export class GameScreen {
   }
 
   loadBaseCamp(): void {
+    const wasExpedition = this.mode === 'expedition';
     this.mode = 'base';
     const baseCamp = MapSystem.createBaseCamp();
     this.mapSystem.loadMap(baseCamp);
@@ -203,6 +228,11 @@ export class GameScreen {
     this.combatSystem.clearProjectiles();
     this.combatSystem.clearCorpses();
     this.baseHealTimer = 0;
+
+    // Add log entry when returning from expedition
+    if (wasExpedition) {
+      this.addCombatLog('Returned to base safely!', '#90EE90');
+    }
   }
 
   loadExpedition(level: number = 1): void {
@@ -218,6 +248,9 @@ export class GameScreen {
 
     this.enemies = this.spawnManager.spawnEnemies(level, this.player);
     this.traps = this.spawnManager.spawnTraps(this.player);
+
+    // Add log entry
+    this.addCombatLog(`Entering expedition! ${this.enemies.length} enemies ahead`, '#FF6B6B');
   }
 
 
@@ -271,20 +304,47 @@ export class GameScreen {
     if (this.inputHandler.handleLoot() && this.nearbyCorpse && !this.nearbyCorpse.looted) {
       const loot = this.nearbyCorpse.lootCorpse();
       if (loot) {
-        gameState.addGold(loot.gold);
-        // Add ingredients to inventory
-        loot.ingredients.forEach(ing => gameState.addToInventory(ing));
+        if (loot.gold > 0) {
+          gameState.addGold(loot.gold);
+          this.addCombatLog(`+${loot.gold} Gold`, '#FFD700');
+        }
+        // Add ingredients to inventory and show in log
+        loot.ingredients.forEach(ing => {
+          gameState.addToInventory(ing);
+          const template = entityFactory.getTemplate(ing);
+          const itemName = template?.name || ing;
+          this.addCombatLog(`Found: ${itemName}`, '#90EE90');
+        });
       }
     }
 
     this.player.update(deltaTime);
+
+    // Track enemy count before processing deaths
+    const enemiesBeforeDeath = this.enemies.filter(e => e.alive).length;
 
     this.updater.updateEnemies(this.enemies, this.player, deltaTime);
     this.updater.updateTraps(this.traps, this.player, deltaTime);
     this.combatSystem.updateProjectiles(deltaTime, this.enemies, this.player);
     this.combatSystem.updateCorpses(deltaTime);
     this.particleSystem.update(deltaTime);
+
+    // Track which enemies died
+    const deadEnemies = this.enemies.filter(e => !e.alive);
+    deadEnemies.forEach(enemy => {
+      if (!enemy.loggedDeath) {
+        this.addCombatLog(`Killed ${enemy.enemyData.name}!`, '#FF6B6B');
+        (enemy as any).loggedDeath = true; // Mark as logged
+      }
+    });
+
     this.enemies = this.updater.handleDeadEnemies(this.enemies);
+
+    // Check if all enemies are cleared
+    const enemiesAfterDeath = this.enemies.filter(e => e.alive).length;
+    if (this.mode === 'expedition' && enemiesBeforeDeath > 0 && enemiesAfterDeath === 0) {
+      this.addCombatLog('All enemies cleared! Press E on portal to return to base', '#FFD700');
+    }
     const interactionResult = this.updater.checkInteractions(this.player, this.mode, this.combatSystem.getCorpses());
 
     // Combine tile interactions with corpse interactions (prioritize tile interactions)
@@ -304,6 +364,9 @@ export class GameScreen {
     if (!this.player.alive) {
       this.handlePlayerDeath();
     }
+
+    // Update combat log to remove old entries
+    this.updateCombatLog();
 
     this.inputHandler.update();
   }
@@ -334,13 +397,18 @@ export class GameScreen {
     this.renderer.renderProjectiles(this.combatSystem.getProjectiles());
     this.renderer.renderParticles(this.particleSystem.getParticles());
     this.renderer.renderPlayer(this.player);
+    // Get inventory from game state
+    const inventory = gameState.getState().inventory;
+
     this.renderer.renderUI(
       this.player,
       this.mode,
       this.enemies,
       this.combatSystem.getCorpses(),
       this.showInteractionPrompt,
-      this.interactionPromptText
+      this.interactionPromptText,
+      this.combatLog,
+      inventory
     );
 
     // Render cheat panel on top of everything

@@ -9,6 +9,9 @@ export interface BaseEntity {
     description: string;
 }
 
+export type AIBehaviorType = 'patrol' | 'aggressive' | 'defensive' | 'ranged' | 'ambusher' | 'standard';
+export type AttackPattern = 'standard' | 'burst' | 'charge' | 'strafe' | 'retreat';
+
 export interface Enemy extends BaseEntity {
     type: 'enemy';
     health: number;
@@ -20,6 +23,9 @@ export interface Enemy extends BaseEntity {
         chance: number;
     }>;
     goldReward: number;
+    aiBehavior?: AIBehaviorType; // AI personality type
+    attackPattern?: AttackPattern; // Attack pattern type
+    speed?: number; // Movement speed multiplier
 }
 
 export interface Ingredient extends BaseEntity {

@@ -35,6 +35,7 @@ export class GameScreenUpdater {
         if (enemy.isRangedWeapon()) {
           this.combatSystem.spawnEnemyProjectile(enemy);
           enemy.attackCooldown = enemy.weapon!.attackSpeed;
+          enemy.onAttackExecuted(); // Handle attack patterns like burst
           const spawn = enemy.getProjectileSpawn();
           this.particleSystem.createMuzzleFlash(spawn.x, spawn.y, enemy.facingAngle);
         } else {
@@ -50,6 +51,7 @@ export class GameScreenUpdater {
             }
 
             enemy.attackCooldown = enemy.weapon ? enemy.weapon.attackSpeed : 1.0;
+            enemy.onAttackExecuted(); // Handle attack patterns like burst
           }
         }
       }

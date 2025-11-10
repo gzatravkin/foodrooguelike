@@ -35,6 +35,8 @@ export type GameMap = {
   tileSize: number;
   tiles: TileType[][];
   name: string;
+  spawnX?: number; // Player spawn X coordinate (in pixels)
+  spawnY?: number; // Player spawn Y coordinate (in pixels)
 };
 
 export class MapSystem {
@@ -169,8 +171,49 @@ export class MapSystem {
 
   // Create a procedurally generated dungeon map with variety
   static createDungeon(level: number = 1): GameMap {
+    // Retry generation up to 5 times to ensure valid map
+    for (let attempt = 0; attempt < 5; attempt++) {
+      const result = this.generateDungeonAttempt(level);
+
+      // Validate the generated map
+      if (result && this.validateDungeon(result)) {
+        return result;
+      }
+
+      console.warn(`Dungeon generation attempt ${attempt + 1} failed, retrying...`);
+    }
+
+    // Fallback: return a simple valid dungeon
+    console.error('Failed to generate valid dungeon after 5 attempts, using fallback');
+    return this.generateFallbackDungeon(level);
+  }
+
+  private static validateDungeon(map: GameMap): boolean {
+    // Check that spawn position exists and is valid
+    if (!map.spawnX || !map.spawnY) return false;
+
+    const spawnTileX = Math.floor(map.spawnX / map.tileSize);
+    const spawnTileY = Math.floor(map.spawnY / map.tileSize);
+
+    // Verify spawn position is within bounds
+    if (spawnTileX < 0 || spawnTileX >= map.width || spawnTileY < 0 || spawnTileY >= map.height) {
+      return false;
+    }
+
+    // Verify spawn tile is walkable
+    const spawnTile = map.tiles[spawnTileY][spawnTileX];
+    if (spawnTile === TileType.WALL) {
+      return false;
+    }
+
+    return true;
+  }
+
+  private static generateFallbackDungeon(level: number): GameMap {
+    // Simple 3-room linear dungeon that always works
     const width = 30;
     const height = 20;
+    const tileSize = 32;
     const tiles: TileType[][] = [];
 
     // Initialize with walls
@@ -181,8 +224,91 @@ export class MapSystem {
       }
     }
 
-    // Generate random number of rooms (4-8)
-    const numRooms = 4 + Math.floor(Math.random() * 5);
+    // Create 3 simple rooms
+    const rooms = [
+      { x: 3, y: 3, w: 8, h: 8 },
+      { x: 14, y: 6, w: 8, h: 8 },
+      { x: 20, y: 3, w: 7, h: 8 }
+    ];
+
+    // Carve rooms
+    for (const room of rooms) {
+      for (let y = room.y; y < room.y + room.h; y++) {
+        for (let x = room.x; x < room.x + room.w; x++) {
+          tiles[y][x] = TileType.FLOOR;
+        }
+      }
+    }
+
+    // Connect rooms with corridors
+    for (let i = 0; i < rooms.length - 1; i++) {
+      const r1 = rooms[i];
+      const r2 = rooms[i + 1];
+      const x1 = Math.floor(r1.x + r1.w / 2);
+      const y1 = Math.floor(r1.y + r1.h / 2);
+      const x2 = Math.floor(r2.x + r2.w / 2);
+      const y2 = Math.floor(r2.y + r2.h / 2);
+
+      for (let x = Math.min(x1, x2); x <= Math.max(x1, x2); x++) {
+        tiles[y1][x] = TileType.FLOOR;
+      }
+      for (let y = Math.min(y1, y2); y <= Math.max(y1, y2); y++) {
+        tiles[y][x2] = TileType.FLOOR;
+      }
+    }
+
+    // Place stairs
+    const entranceX = Math.floor(rooms[0].x + rooms[0].w / 2);
+    const entranceY = Math.floor(rooms[0].y + rooms[0].h / 2);
+    tiles[entranceY][entranceX] = TileType.STAIRS_UP;
+
+    const exitX = Math.floor(rooms[2].x + rooms[2].w / 2);
+    const exitY = Math.floor(rooms[2].y + rooms[2].h / 2);
+    tiles[exitY][exitX] = TileType.STAIRS_DOWN;
+
+    return {
+      width,
+      height,
+      tileSize,
+      tiles,
+      name: `Dungeon Level ${level}`,
+      spawnX: entranceX * tileSize + tileSize / 2,
+      spawnY: entranceY * tileSize + tileSize / 2
+    };
+  }
+
+  private static generateDungeonAttempt(level: number): GameMap | null {
+    // Difficulty-based scaling
+    let width = 30;
+    let height = 20;
+    let minRooms = 4;
+    let maxRooms = 8;
+
+    if (level >= 7) {
+      width = 40;
+      height = 30;
+      minRooms = 8;
+      maxRooms = 12;
+    } else if (level >= 4) {
+      width = 35;
+      height = 25;
+      minRooms = 6;
+      maxRooms = 10;
+    }
+
+    const tileSize = 32;
+    const tiles: TileType[][] = [];
+
+    // Initialize with walls
+    for (let y = 0; y < height; y++) {
+      tiles[y] = [];
+      for (let x = 0; x < width; x++) {
+        tiles[y][x] = TileType.WALL;
+      }
+    }
+
+    // Generate random number of rooms
+    const numRooms = minRooms + Math.floor(Math.random() * (maxRooms - minRooms + 1));
     const rooms: { x: number; y: number; w: number; h: number; type: string }[] = [];
 
     // Generate rooms with random sizes and positions
@@ -190,7 +316,7 @@ export class MapSystem {
       let placed = false;
       let attempts = 0;
 
-      while (!placed && attempts < 50) {
+      while (!placed && attempts < 100) {
         const w = 5 + Math.floor(Math.random() * 8); // Width 5-12
         const h = 5 + Math.floor(Math.random() * 8); // Height 5-12
         const x = 2 + Math.floor(Math.random() * (width - w - 4));
@@ -217,6 +343,11 @@ export class MapSystem {
       }
     }
 
+    // Ensure minimum room count
+    if (rooms.length < 3) {
+      return null; // Failed to generate enough rooms
+    }
+
     // Carve out rooms with themed tiles
     for (const room of rooms) {
       for (let y = room.y; y < room.y + room.h; y++) {
@@ -239,39 +370,9 @@ export class MapSystem {
           tiles[y][x] = tileType;
         }
       }
-
-      // Add special features to rooms
-      const centerX = Math.floor(room.x + room.w / 2);
-      const centerY = Math.floor(room.y + room.h / 2);
-
-      if (room.type === 'treasure' && room.w >= 6 && room.h >= 6) {
-        // Place treasure chest in center
-        tiles[centerY][centerX] = TileType.TREASURE_CHEST;
-      } else if (Math.random() < 0.3) {
-        // 30% chance for health fountain
-        tiles[centerY][centerX] = TileType.HEALTH_FOUNTAIN;
-      } else if (Math.random() < 0.2) {
-        // 20% chance for shrine
-        tiles[centerY][centerX] = TileType.SHRINE;
-      } else if (Math.random() < 0.15) {
-        // 15% chance for teleporter
-        tiles[centerY][centerX] = TileType.TELEPORTER;
-      }
-
-      // Add random spike/poison traps around room edges
-      if (Math.random() < 0.4) {
-        const numTraps = 1 + Math.floor(Math.random() * 3);
-        for (let i = 0; i < numTraps; i++) {
-          const tx = room.x + 1 + Math.floor(Math.random() * (room.w - 2));
-          const ty = room.y + 1 + Math.floor(Math.random() * (room.h - 2));
-          if (tiles[ty][tx] === TileType.FLOOR || tiles[ty][tx] === TileType.GRASS) {
-            tiles[ty][tx] = Math.random() < 0.5 ? TileType.SPIKE_TRAP : TileType.POISON_TRAP;
-          }
-        }
-      }
     }
 
-    // Create corridors between rooms using L-shaped paths
+    // Create corridors between rooms using L-shaped paths (BEFORE placing features)
     for (let i = 0; i < rooms.length - 1; i++) {
       const room1 = rooms[i];
       const room2 = rooms[i + 1];
@@ -301,7 +402,7 @@ export class MapSystem {
       }
     }
 
-    // Connect first and last room as well for more connectivity
+    // Connect first and last room for more connectivity
     if (rooms.length > 2) {
       const room1 = rooms[0];
       const room2 = rooms[rooms.length - 1];
@@ -318,6 +419,43 @@ export class MapSystem {
       }
     }
 
+    // NOW place special features AFTER corridors (so they don't get overwritten)
+    for (const room of rooms) {
+      const centerX = Math.floor(room.x + room.w / 2);
+      const centerY = Math.floor(room.y + room.h / 2);
+
+      // Only place feature if the tile is still floor (not overwritten by corridor)
+      if (tiles[centerY][centerX] === TileType.FLOOR ||
+          tiles[centerY][centerX] === TileType.GRASS ||
+          tiles[centerY][centerX] === TileType.ICE) {
+        if (room.type === 'treasure' && room.w >= 6 && room.h >= 6) {
+          // Place treasure chest in center
+          tiles[centerY][centerX] = TileType.TREASURE_CHEST;
+        } else if (Math.random() < 0.3) {
+          // 30% chance for health fountain
+          tiles[centerY][centerX] = TileType.HEALTH_FOUNTAIN;
+        } else if (Math.random() < 0.2) {
+          // 20% chance for shrine
+          tiles[centerY][centerX] = TileType.SHRINE;
+        } else if (Math.random() < 0.15) {
+          // 15% chance for teleporter
+          tiles[centerY][centerX] = TileType.TELEPORTER;
+        }
+      }
+
+      // Add random spike/poison traps around room edges
+      if (Math.random() < 0.4) {
+        const numTraps = 1 + Math.floor(Math.random() * 3);
+        for (let i = 0; i < numTraps; i++) {
+          const tx = room.x + 1 + Math.floor(Math.random() * (room.w - 2));
+          const ty = room.y + 1 + Math.floor(Math.random() * (room.h - 2));
+          if (tiles[ty][tx] === TileType.FLOOR || tiles[ty][tx] === TileType.GRASS) {
+            tiles[ty][tx] = Math.random() < 0.5 ? TileType.SPIKE_TRAP : TileType.POISON_TRAP;
+          }
+        }
+      }
+    }
+
     // Place entrance in first room
     const firstRoom = rooms[0];
     const entranceX = Math.floor(firstRoom.x + firstRoom.w / 2);
@@ -330,12 +468,18 @@ export class MapSystem {
     const exitY = Math.floor(lastRoom.y + lastRoom.h / 2);
     tiles[exitY][exitX] = TileType.STAIRS_DOWN;
 
+    // Calculate spawn position (at the entrance stairs)
+    const spawnX = entranceX * tileSize + tileSize / 2;
+    const spawnY = entranceY * tileSize + tileSize / 2;
+
     return {
       width,
       height,
-      tileSize: 32,
+      tileSize,
       tiles,
       name: `Dungeon Level ${level}`,
+      spawnX,
+      spawnY
     };
   }
 }

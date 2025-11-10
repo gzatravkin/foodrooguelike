@@ -34,8 +34,10 @@ export class ExpeditionScreen extends Screen {
             this.renderCombat(vb.width / 2, 200);
         }
 
-        // Back button
-        const backBtn = this.renderer.createButton(50, vb.height - 100, 150, 50, 'BACK TO BASE', () => {
+        // Back/Exit button
+        const buttonText = this.currentEnemy ? 'FLEE' : 'BACK TO BASE';
+        const backBtn = this.renderer.createButton(50, vb.height - 100, 150, 50, buttonText, () => {
+            this.cleanup();
             gameState.setScreen('base');
         });
         this.renderer.append(backBtn);
@@ -105,8 +107,10 @@ export class ExpeditionScreen extends Screen {
 
         if (result.victory) {
             this.combatLog.push(`Victory! Gained ${result.rewards?.gold} gold`);
-            result.rewards?.loot.forEach(item => {
-                this.combatLog.push(`Found: ${item}`);
+            result.rewards?.loot.forEach(itemId => {
+                const ingredient = entityFactory.getTemplate(itemId);
+                const itemName = ingredient?.name || itemId;
+                this.combatLog.push(`Found: ${itemName}`);
             });
             this.currentEnemy = null;
         } else {

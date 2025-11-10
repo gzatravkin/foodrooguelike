@@ -149,9 +149,10 @@ export class InputHandler {
     const hitbox = player.getAttackHitbox();
     const damageMultiplier = isDashShot ? 2.5 : 1.0;
 
-    // Create slash effect
+    // Create slash effect with weapon-specific colors
     if (this.particleSystem) {
-      this.particleSystem.createSlash(hitbox.x, hitbox.y, player.facingAngle, '#E8E8E8');
+      const slashColor = player.getImpactColor() || '#E8E8E8';
+      this.particleSystem.createSlash(hitbox.x, hitbox.y, player.facingAngle, slashColor);
     }
 
     let hitSomething = false;
@@ -167,9 +168,10 @@ export class InputHandler {
         const prevHealth = enemy.stats.health;
         enemy.takeDamage(player.getAttackDamage() * damageMultiplier);
 
-        // Create hit particles
+        // Create hit particles with weapon-specific colors
         if (this.particleSystem && enemy.stats.health < prevHealth) {
-          this.particleSystem.createImpact(enemy.x, enemy.y, '#FFD700', 6);
+          const impactColor = player.getImpactColor() || '#FFD700';
+          this.particleSystem.createImpact(enemy.x, enemy.y, impactColor, 6);
           this.particleSystem.createBlood(enemy.x, enemy.y, dx, dy);
           hitSomething = true;
         }

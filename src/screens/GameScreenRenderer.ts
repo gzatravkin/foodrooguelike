@@ -183,18 +183,80 @@ export class GameScreenRenderer {
 
   renderProjectiles(projectiles: Projectile[]): void {
     for (const proj of projectiles) {
-      const projSize = proj.size * 3;
-
-      this.renderer.drawCircle(proj.x, proj.y, projSize, 'rgba(255, 215, 0, 0.3)');
-      this.renderer.drawCircle(proj.x, proj.y, proj.size, proj.color);
-
-      const trailLength = 15;
       const speed = Math.sqrt(proj.vx * proj.vx + proj.vy * proj.vy);
       const normalizedVx = proj.vx / speed;
       const normalizedVy = proj.vy / speed;
-      const trailX = proj.x - normalizedVx * trailLength;
-      const trailY = proj.y - normalizedVy * trailLength;
-      this.renderer.drawLine(trailX, trailY, proj.x, proj.y, proj.color, 3);
+
+      // Render based on shape
+      switch (proj.shape) {
+        case 'beam':
+          // Energy beam - elongated with trail
+          const beamLength = proj.size * 4;
+          const beamEndX = proj.x - normalizedVx * beamLength;
+          const beamEndY = proj.y - normalizedVy * beamLength;
+
+          // Outer glow
+          this.renderer.drawLine(beamEndX, beamEndY, proj.x, proj.y, this.hexToRgba(proj.color, 0.3), proj.size * 2);
+          // Inner beam
+          this.renderer.drawLine(beamEndX, beamEndY, proj.x, proj.y, proj.color, proj.size);
+          // Bright core
+          this.renderer.drawCircle(proj.x, proj.y, proj.size * 0.6, '#FFFFFF');
+          break;
+
+        case 'bolt':
+          // Magic bolt - arrow-like with glow
+          const boltLength = proj.size * 3;
+          const boltEndX = proj.x - normalizedVx * boltLength;
+          const boltEndY = proj.y - normalizedVy * boltLength;
+
+          // Glow aura
+          this.renderer.drawCircle(proj.x, proj.y, proj.size * 2, this.hexToRgba(proj.color, 0.3));
+          // Bolt shaft
+          this.renderer.drawLine(boltEndX, boltEndY, proj.x, proj.y, proj.color, proj.size * 0.8);
+          // Bolt head
+          this.renderer.drawCircle(proj.x, proj.y, proj.size, proj.color);
+          // Bright tip
+          this.renderer.drawCircle(proj.x, proj.y, proj.size * 0.4, this.hexToRgba('#FFFFFF', 0.8));
+          break;
+
+        case 'fire':
+          // Fire projectile - irregular with embers
+          const fireSize = proj.size * (0.8 + Math.random() * 0.4);
+
+          // Outer fire glow
+          this.renderer.drawCircle(proj.x, proj.y, fireSize * 1.8, this.hexToRgba('#FF9800', 0.4));
+          // Main fire
+          this.renderer.drawCircle(proj.x, proj.y, fireSize, proj.color);
+          // Hot core
+          this.renderer.drawCircle(proj.x, proj.y, fireSize * 0.5, '#FFEB3B');
+
+          // Ember trail
+          for (let i = 1; i <= 3; i++) {
+            const emberX = proj.x - normalizedVx * i * 8 + (Math.random() - 0.5) * 4;
+            const emberY = proj.y - normalizedVy * i * 8 + (Math.random() - 0.5) * 4;
+            const emberSize = proj.size * 0.3 * (1 - i * 0.2);
+            this.renderer.drawCircle(emberX, emberY, emberSize, this.hexToRgba('#FF5722', 0.6 - i * 0.15));
+          }
+          break;
+
+        case 'circle':
+        default:
+          // Standard circular projectile with glow
+          const glowSize = proj.size * 3;
+          const trailColor = proj.trailColor || proj.color;
+
+          // Outer glow
+          this.renderer.drawCircle(proj.x, proj.y, glowSize, this.hexToRgba(trailColor, 0.3));
+          // Main projectile
+          this.renderer.drawCircle(proj.x, proj.y, proj.size, proj.color);
+
+          // Motion trail
+          const trailLength = 15;
+          const trailX = proj.x - normalizedVx * trailLength;
+          const trailY = proj.y - normalizedVy * trailLength;
+          this.renderer.drawLine(trailX, trailY, proj.x, proj.y, this.hexToRgba(trailColor, 0.5), proj.size * 0.6);
+          break;
+      }
     }
   }
 
@@ -220,10 +282,33 @@ export class GameScreenRenderer {
     // Render equipped weapon
     this.entityRenderer.renderPlayerWeapon(player);
 
-    // Attack visualization
+    // Attack visualization for melee weapons
     if (player.attackCooldown > 0.3 && !player.isRangedWeapon()) {
       const hitbox = player.getAttackHitbox();
-      this.renderer.drawCircle(hitbox.x, hitbox.y, hitbox.radius, 'rgba(255, 255, 255, 0.3)');
+      const impactColor = player.getImpactColor();
+
+      if (impactColor) {
+        // Weapon-specific attack effect
+        this.renderer.drawCircle(hitbox.x, hitbox.y, hitbox.radius * 1.5, this.hexToRgba(impactColor, 0.2));
+        this.renderer.drawCircle(hitbox.x, hitbox.y, hitbox.radius, this.hexToRgba(impactColor, 0.4));
+
+        // Attack arc
+        const arcRadius = player.getAttackRange();
+        const arcStartAngle = player.facingAngle - 0.6;
+        const arcEndAngle = player.facingAngle + 0.6;
+
+        for (let i = 0; i < 10; i++) {
+          const t = i / 9;
+          const angle = arcStartAngle + (arcEndAngle - arcStartAngle) * t;
+          const x = player.x + Math.cos(angle) * arcRadius * 0.8;
+          const y = player.y + Math.sin(angle) * arcRadius * 0.8;
+          const alpha = 0.3 - t * 0.2;
+          this.renderer.drawCircle(x, y, 4, this.hexToRgba(impactColor, alpha));
+        }
+      } else {
+        // Default white effect
+        this.renderer.drawCircle(hitbox.x, hitbox.y, hitbox.radius, 'rgba(255, 255, 255, 0.3)');
+      }
     }
   }
 

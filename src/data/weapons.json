@@ -10,7 +10,8 @@
     "range": 40,
     "projectileSpeed": 0,
     "rarity": "common",
-    "cost": 0
+    "cost": 0,
+    "impactColor": "#FFF"
   },
   "rusty_sword": {
     "id": "rusty_sword",
@@ -23,7 +24,8 @@
     "range": 50,
     "projectileSpeed": 0,
     "rarity": "common",
-    "cost": 30
+    "cost": 30,
+    "impactColor": "#C0C0C0"
   },
   "iron_sword": {
     "id": "iron_sword",
@@ -36,7 +38,8 @@
     "range": 55,
     "projectileSpeed": 0,
     "rarity": "uncommon",
-    "cost": 80
+    "cost": 80,
+    "impactColor": "#E0E0E0"
   },
   "magic_staff": {
     "id": "magic_staff",
@@ -49,7 +52,12 @@
     "range": 300,
     "projectileSpeed": 250,
     "rarity": "uncommon",
-    "cost": 120
+    "cost": 120,
+    "projectileColor": "#BA68C8",
+    "projectileSize": 5,
+    "projectileShape": "bolt",
+    "trailColor": "#E1BEE7",
+    "impactColor": "#9C27B0"
   },
   "crossbow": {
     "id": "crossbow",
@@ -62,7 +70,12 @@
     "range": 350,
     "projectileSpeed": 400,
     "rarity": "uncommon",
-    "cost": 150
+    "cost": 150,
+    "projectileColor": "#8D6E63",
+    "projectileSize": 6,
+    "projectileShape": "bolt",
+    "trailColor": "#A1887F",
+    "impactColor": "#5D4037"
   },
   "pistol": {
     "id": "pistol",
@@ -75,7 +88,12 @@
     "range": 400,
     "projectileSpeed": 600,
     "rarity": "rare",
-    "cost": 250
+    "cost": 250,
+    "projectileColor": "#FFD700",
+    "projectileSize": 4,
+    "projectileShape": "circle",
+    "trailColor": "#FFE082",
+    "impactColor": "#FFA000"
   },
   "shotgun": {
     "id": "shotgun",
@@ -90,7 +108,12 @@
     "pelletCount": 5,
     "spread": 0.3,
     "rarity": "rare",
-    "cost": 300
+    "cost": 300,
+    "projectileColor": "#FF6F00",
+    "projectileSize": 3,
+    "projectileShape": "circle",
+    "trailColor": "#FFB74D",
+    "impactColor": "#E65100"
   },
   "assault_rifle": {
     "id": "assault_rifle",
@@ -103,7 +126,12 @@
     "range": 450,
     "projectileSpeed": 700,
     "rarity": "rare",
-    "cost": 400
+    "cost": 400,
+    "projectileColor": "#FFC107",
+    "projectileSize": 3,
+    "projectileShape": "beam",
+    "trailColor": "#FFECB3",
+    "impactColor": "#FF8F00"
   },
   "plasma_cannon": {
     "id": "plasma_cannon",
@@ -116,7 +144,12 @@
     "range": 500,
     "projectileSpeed": 350,
     "rarity": "legendary",
-    "cost": 800
+    "cost": 800,
+    "projectileColor": "#00E5FF",
+    "projectileSize": 8,
+    "projectileShape": "beam",
+    "trailColor": "#80DEEA",
+    "impactColor": "#00ACC1"
   },
   "demon_blade": {
     "id": "demon_blade",
@@ -129,7 +162,9 @@
     "range": 60,
     "projectileSpeed": 0,
     "rarity": "legendary",
-    "cost": 1000
+    "cost": 1000,
+    "impactColor": "#D32F2F",
+    "trailColor": "#F44336"
   },
   "dragon_breath": {
     "id": "dragon_breath",
@@ -144,6 +179,11 @@
     "pelletCount": 3,
     "spread": 0.2,
     "rarity": "legendary",
-    "cost": 1200
+    "cost": 1200,
+    "projectileColor": "#FF5722",
+    "projectileSize": 6,
+    "projectileShape": "fire",
+    "trailColor": "#FF9800",
+    "impactColor": "#F44336"
   }
 }

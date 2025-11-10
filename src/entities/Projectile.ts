@@ -15,6 +15,10 @@ export class Projectile {
   public size: number = 4;
   public maxDistance: number;
   public distanceTraveled: number = 0;
+  public shape: 'circle' | 'beam' | 'bolt' | 'fire' = 'circle';
+  public trailColor?: string;
+  public impactColor?: string;
+  public angle: number; // Store angle for directional rendering
 
   constructor(
     x: number,
@@ -25,7 +29,10 @@ export class Projectile {
     ownerId: string,
     ownerType: 'player' | 'enemy',
     maxDistance: number,
-    color: string = '#FFD700'
+    color: string = '#FFD700',
+    shape: 'circle' | 'beam' | 'bolt' | 'fire' = 'circle',
+    trailColor?: string,
+    impactColor?: string
   ) {
     this.x = x;
     this.y = y;
@@ -36,6 +43,10 @@ export class Projectile {
     this.ownerType = ownerType;
     this.maxDistance = maxDistance;
     this.color = color;
+    this.shape = shape;
+    this.trailColor = trailColor;
+    this.impactColor = impactColor;
+    this.angle = angle;
   }
 
   update(deltaTime: number): void {

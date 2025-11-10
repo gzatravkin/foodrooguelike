@@ -35,6 +35,14 @@ export class ExpeditionSelectionScreen extends Screen {
         const vb = this.renderer.getViewBox();
         const state = gameState.getState();
 
+        // Check if coming from world map with preselected expedition
+        const preselected = localStorage.getItem('preselectedExpedition');
+        if (preselected && !this.selectedExpedition) {
+            const expedition = JSON.parse(preselected);
+            this.selectedExpedition = expedition.id;
+            localStorage.removeItem('preselectedExpedition');
+        }
+
         // Title
         const title = this.renderer.createText(vb.width / 2, 50, '⚔️ EXPEDITION CENTER ⚔️', 32, '#FFD700');
         title.setAttribute('text-anchor', 'middle');
@@ -81,10 +89,11 @@ export class ExpeditionSelectionScreen extends Screen {
             vb.height - 100,
             180,
             60,
-            'BACK TO BASE',
+            'BACK',
             () => {
                 this.cleanup();
-                gameState.setScreen('base');
+                // Go back to world map (players now access expeditions through world map)
+                gameState.setScreen('worldmap');
             }
         );
         this.renderer.append(backBtn);

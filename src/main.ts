@@ -17,16 +17,19 @@ import { RecipeBookScreen } from './screens/RecipeBookScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { TrainingScreen } from './screens/TrainingScreen';
 import { ExpeditionSelectionScreen } from './screens/ExpeditionSelectionScreen';
+import { GlobalMapScreen } from './screens/GlobalMapScreen';
 
 class Game {
     private renderer: CanvasRenderer;
     private input: InputManager;
     private gameScreen!: GameScreen;
+    private globalMapScreen!: GlobalMapScreen;
     private gameLoop: GameLoop;
     private lastTime: number = 0;
     private svgRenderer: SVGRenderer;
     private screenManager: ScreenManager;
     private svgElement: SVGSVGElement;
+    private currentCanvasScreen: 'game' | 'worldmap' = 'game';
 
     constructor() {
         const canvasElement = document.getElementById('game-canvas') as HTMLCanvasElement;
@@ -69,6 +72,13 @@ class Game {
             } else {
                 this.svgElement.classList.remove('active');
             }
+
+            // Switch canvas screen for game/worldmap
+            if (screenName === 'worldmap') {
+                this.currentCanvasScreen = 'worldmap';
+            } else if (screenName === 'game' || screenName === 'base') {
+                this.currentCanvasScreen = 'game';
+            }
         });
     }
 
@@ -79,6 +89,10 @@ class Game {
         console.log('Initializing 2D top-view roguelike...');
         this.gameScreen = new GameScreen(this.renderer, this.input);
         await this.gameScreen.init();
+
+        console.log('Initializing global map...');
+        this.globalMapScreen = new GlobalMapScreen(this.renderer, this.input);
+
         console.log('Game initialized successfully!');
     }
 
@@ -93,11 +107,14 @@ class Game {
         const deltaTime = (currentTime - this.lastTime) / 1000;
         this.lastTime = currentTime;
 
-        // Update game logic
-        this.gameScreen.update(deltaTime);
-
-        // Render
-        this.gameScreen.render();
+        // Update and render based on current canvas screen
+        if (this.currentCanvasScreen === 'worldmap') {
+            this.globalMapScreen.update(deltaTime);
+            this.globalMapScreen.render();
+        } else {
+            this.gameScreen.update(deltaTime);
+            this.gameScreen.render();
+        }
     }
 
     private setupEventListeners(): void {

@@ -165,7 +165,7 @@ export class GameScreenUpdater {
         promptText = 'Press E to enter Shop';
       } else if (tileType === TileType.EXPEDITION_PORTAL) {
         showPrompt = true;
-        promptText = 'Press E to start Expedition';
+        promptText = 'Press E to open World Map';
       } else if (tileType === TileType.COOKING_STATION) {
         showPrompt = true;
         promptText = 'Press E to Cook';

@@ -7,6 +7,7 @@
     "health": 30,
     "attack": 5,
     "defense": 2,
+    "goldReward": 8,
     "weaponId": "fists",
     "lootTable": [
       { "itemId": "jelly", "chance": 0.9 },
@@ -22,6 +23,7 @@
     "health": 50,
     "attack": 8,
     "defense": 3,
+    "goldReward": 12,
     "weaponId": "crossbow",
     "lootTable": [
       { "itemId": "mushroom", "chance": 0.8 },
@@ -39,6 +41,7 @@
     "health": 100,
     "attack": 15,
     "defense": 8,
+    "goldReward": 80,
     "weaponId": "dragon_breath",
     "lootTable": [
       { "itemId": "dragon_fruit", "chance": 0.95 },
@@ -56,6 +59,7 @@
     "health": 20,
     "attack": 3,
     "defense": 1,
+    "goldReward": 5,
     "weaponId": "fists",
     "lootTable": [
       { "itemId": "meat", "chance": 0.6 },
@@ -72,6 +76,7 @@
     "health": 25,
     "attack": 6,
     "defense": 1,
+    "goldReward": 10,
     "weaponId": "fists",
     "lootTable": [
       { "itemId": "jelly", "chance": 0.5 },
@@ -87,6 +92,7 @@
     "health": 40,
     "attack": 7,
     "defense": 4,
+    "goldReward": 15,
     "weaponId": "rusty_sword",
     "lootTable": [
       { "itemId": "mushroom", "chance": 0.9 },
@@ -103,6 +109,7 @@
     "health": 60,
     "attack": 12,
     "defense": 5,
+    "goldReward": 25,
     "weaponId": "iron_sword",
     "lootTable": [
       { "itemId": "meat", "chance": 0.95 },
@@ -120,6 +127,7 @@
     "health": 80,
     "attack": 10,
     "defense": 10,
+    "goldReward": 50,
     "weaponId": "fists",
     "lootTable": [
       { "itemId": "mushroom", "chance": 0.95 },
@@ -137,6 +145,7 @@
     "health": 120,
     "attack": 12,
     "defense": 12,
+    "goldReward": 120,
     "weaponId": "magic_staff",
     "lootTable": [
       { "itemId": "dragon_fruit", "chance": 0.8 },
@@ -154,6 +163,7 @@
     "health": 90,
     "attack": 18,
     "defense": 6,
+    "goldReward": 100,
     "weaponId": "dragon_breath",
     "lootTable": [
       { "itemId": "fire_pepper", "chance": 1.0 },
@@ -171,6 +181,7 @@
     "health": 45,
     "attack": 9,
     "defense": 3,
+    "goldReward": 18,
     "weaponId": "fists",
     "lootTable": [
       { "itemId": "jelly", "chance": 0.8 },
@@ -187,6 +198,7 @@
     "health": 55,
     "attack": 11,
     "defense": 4,
+    "goldReward": 30,
     "weaponId": "fists",
     "lootTable": [
       { "itemId": "meat", "chance": 1.0 },
@@ -203,6 +215,7 @@
     "health": 70,
     "attack": 10,
     "defense": 9,
+    "goldReward": 40,
     "weaponId": "fists",
     "lootTable": [
       { "itemId": "premium_meat", "chance": 0.8 },
@@ -220,6 +233,7 @@
     "health": 150,
     "attack": 20,
     "defense": 10,
+    "goldReward": 200,
     "weaponId": "plasma_cannon",
     "lootTable": [
       { "itemId": "dragon_fruit", "chance": 1.0 },

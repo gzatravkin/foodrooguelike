@@ -1,5 +1,5 @@
 /**
- * CookingScreen - Where players combine ingredients to create dishes
+ * CookingScreen - Keyboard-driven cooking interface
  */
 
 import { Screen } from '../rendering/Screen';
@@ -8,162 +8,126 @@ import { cookingSystem } from '../systems/CookingSystem';
 import { entityFactory } from '../entities/EntityFactory';
 import type { SVGRenderer } from '../rendering/SVGRenderer';
 
+type Section = 'ingredients' | 'methods' | 'time';
+
 export class CookingScreen extends Screen {
     private selectedIngredients: string[] = [];
     private selectedMethod: string = '';
-    private cookingTime: number = 60; // Default 60 seconds
-    private resultMessage: string = '';
+    private cookingTime: number = 60;
     private lastDish: any = null;
+
+    private currentSection: Section = 'ingredients';
+    private ingredientCursor: number = 0;
+    private methodCursor: number = 0;
+    private timeCursor: number = 3; // Default to 60s (index 3)
+
+    private timePresets: number[] = [15, 30, 45, 60, 90, 120, 150, 180];
+    private keyListener: ((e: KeyboardEvent) => void) | null = null;
 
     constructor(renderer: SVGRenderer) {
         super(renderer);
+        this.setupKeyboardControls();
     }
 
-    render(): void {
-        this.renderer.clear();
+    private setupKeyboardControls(): void {
+        this.keyListener = (e: KeyboardEvent) => {
+            // Don't handle if not visible
+            if (gameState.getState().currentScreen !== 'cooking') return;
 
-        const vb = this.renderer.getViewBox();
+            e.preventDefault();
 
-        // Title
-        const title = this.renderer.createText(vb.width / 2, 60, 'COOKING', 36, '#FFA500');
-        title.setAttribute('text-anchor', 'middle');
-        title.setAttribute('font-weight', 'bold');
-        this.renderer.append(title);
+            // Section switching with Tab
+            if (e.key === 'Tab') {
+                this.cycleSection();
+                this.render();
+                return;
+            }
 
-        // Ingredients section
-        this.renderIngredients(50, 120);
+            // Go back with Escape
+            if (e.key === 'Escape') {
+                gameState.setScreen('base');
+                return;
+            }
 
-        // Cooking methods
-        this.renderCookingMethods(550, 120);
+            // Cook with C key
+            if (e.key === 'c' || e.key === 'C') {
+                if (this.canCook()) {
+                    this.cook();
+                }
+                return;
+            }
 
-        // Cooking time selector
-        this.renderCookingTimeSelector(50, 350);
+            // Recipe book with R key
+            if (e.key === 'r' || e.key === 'R') {
+                gameState.setCurrentScreen('recipebook');
+                return;
+            }
 
-        // Selected items
-        this.renderSelection(50, 450);
+            // Navigation
+            if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
+                this.moveCursor(-1);
+            } else if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
+                this.moveCursor(1);
+            } else if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+                this.moveCursor(-1);
+            } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+                this.moveCursor(1);
+            }
 
-        // Cook button
-        if (this.selectedIngredients.length > 0 && this.selectedMethod) {
-            const cookBtn = this.renderer.createButton(vb.width / 2 - 100, 550, 200, 60, 'COOK!', () => {
-                this.cook();
-            });
-            this.renderer.append(cookBtn);
+            // Selection with Enter or Space
+            if (e.key === 'Enter' || e.key === ' ') {
+                this.selectCurrentItem();
+            }
+
+            // Number keys for quick time selection
+            const num = parseInt(e.key);
+            if (!isNaN(num) && num >= 1 && num <= 8) {
+                this.timeCursor = num - 1;
+                this.cookingTime = this.timePresets[this.timeCursor];
+                this.render();
+            }
+
+            this.render();
+        };
+
+        window.addEventListener('keydown', this.keyListener);
+    }
+
+    private cycleSection(): void {
+        const sections: Section[] = ['ingredients', 'methods', 'time'];
+        const currentIndex = sections.indexOf(this.currentSection);
+        this.currentSection = sections[(currentIndex + 1) % sections.length];
+    }
+
+    private moveCursor(delta: number): void {
+        if (this.currentSection === 'ingredients') {
+            const ingredients = cookingSystem.getAvailableIngredients().slice(0, 8);
+            this.ingredientCursor = Math.max(0, Math.min(ingredients.length - 1, this.ingredientCursor + delta));
+        } else if (this.currentSection === 'methods') {
+            const methods = cookingSystem.getAvailableMethods();
+            this.methodCursor = Math.max(0, Math.min(methods.length - 1, this.methodCursor + delta));
+        } else if (this.currentSection === 'time') {
+            this.timeCursor = Math.max(0, Math.min(this.timePresets.length - 1, this.timeCursor + delta));
+            this.cookingTime = this.timePresets[this.timeCursor];
         }
+    }
 
-        // Result card (enhanced visual feedback)
-        if (this.lastDish) {
-            this.renderResultCard(vb.width / 2, 630);
+    private selectCurrentItem(): void {
+        if (this.currentSection === 'ingredients') {
+            const ingredients = cookingSystem.getAvailableIngredients().slice(0, 8);
+            const ingredientId = ingredients[this.ingredientCursor];
+            if (ingredientId) {
+                this.toggleIngredient(ingredientId);
+            }
+        } else if (this.currentSection === 'methods') {
+            const methods = cookingSystem.getAvailableMethods();
+            const methodId = methods[this.methodCursor];
+            if (methodId) {
+                this.selectedMethod = methodId;
+            }
+        } else if (this.currentSection === 'time') {
+            this.cookingTime = this.timePresets[this.timeCursor];
         }
-
-        // Recipe book button
-        const recipeBookBtn = this.renderer.createButton(vb.width / 2 - 100, vb.height - 100, 200, 50, '📖 RECIPE BOOK', () => {
-            gameState.setCurrentScreen('recipebook');
-        });
-        this.renderer.append(recipeBookBtn);
-
-        // Back button
-        const backBtn = this.renderer.createButton(50, vb.height - 100, 150, 50, 'BACK', () => {
-            gameState.setScreen('base');
-        });
-        this.renderer.append(backBtn);
-    }
-
-    private renderIngredients(x: number, y: number): void {
-        const ingredients = cookingSystem.getAvailableIngredients();
-
-        const label = this.renderer.createText(x, y, 'Available Ingredients:', 20, '#FFD700');
-        this.renderer.append(label);
-
-        ingredients.slice(0, 8).forEach((id, i) => {
-            const ingredient = entityFactory.getTemplate(id);
-            const isSelected = this.selectedIngredients.includes(id);
-
-            const btn = this.renderer.createButton(
-                x,
-                y + 40 + i * 35,
-                200,
-                30,
-                ingredient?.name || id,
-                () => this.toggleIngredient(id)
-            );
-
-            if (isSelected) {
-                const rect = btn.querySelector('rect');
-                if (rect) rect.setAttribute('fill', '#2E7D32');
-            }
-
-            this.renderer.append(btn);
-        });
-    }
-
-    private renderCookingMethods(x: number, y: number): void {
-        const methods = cookingSystem.getAvailableMethods();
-
-        const label = this.renderer.createText(x, y, 'Cooking Methods:', 20, '#FFD700');
-        this.renderer.append(label);
-
-        methods.forEach((id, i) => {
-            const method = entityFactory.getTemplate(id);
-            const isSelected = this.selectedMethod === id;
-
-            const btn = this.renderer.createButton(
-                x,
-                y + 40 + i * 35,
-                200,
-                30,
-                method?.name || id,
-                () => this.selectMethod(id)
-            );
-
-            if (isSelected) {
-                const rect = btn.querySelector('rect');
-                if (rect) rect.setAttribute('fill', '#2E7D32');
-            }
-
-            this.renderer.append(btn);
-        });
-    }
-
-    private renderCookingTimeSelector(x: number, y: number): void {
-        const label = this.renderer.createText(x, y, 'Cooking Time:', 20, '#FFD700');
-        this.renderer.append(label);
-
-        // Time preset buttons
-        const presets = [15, 30, 45, 60, 90, 120, 150, 180];
-        presets.forEach((time, i) => {
-            const isSelected = this.cookingTime === time;
-            const btn = this.renderer.createButton(
-                x + (i % 4) * 105,
-                y + 30 + Math.floor(i / 4) * 40,
-                100,
-                35,
-                `${time}s`,
-                () => this.setCookingTime(time)
-            );
-
-            if (isSelected) {
-                const rect = btn.querySelector('rect');
-                if (rect) rect.setAttribute('fill', '#2E7D32');
-            }
-
-            this.renderer.append(btn);
-        });
-
-        // Display current time
-        const timeText = this.renderer.createText(x + 450, y + 40, `Time: ${this.cookingTime}s`, 18, '#FFD700');
-        this.renderer.append(timeText);
-    }
-
-    private renderSelection(x: number, y: number): void {
-        const text = `Selected: ${this.selectedIngredients.length} ingredients, Method: ${this.selectedMethod || 'none'}, Time: ${this.cookingTime}s`;
-        const label = this.renderer.createText(x, y, text, 18, '#aaa');
-        this.renderer.append(label);
-    }
-
-    private setCookingTime(time: number): void {
-        this.cookingTime = time;
-        this.resultMessage = '';
-        this.render();
     }
 
     private toggleIngredient(id: string): void {
@@ -173,30 +137,211 @@ export class CookingScreen extends Screen {
         } else {
             this.selectedIngredients.push(id);
         }
-        this.resultMessage = '';
-        this.render();
+        this.lastDish = null;
     }
 
-    private selectMethod(id: string): void {
-        this.selectedMethod = id;
-        this.resultMessage = '';
-        this.render();
+    private canCook(): boolean {
+        return this.selectedIngredients.length > 0 && this.selectedMethod !== '';
     }
 
     private cook(): void {
         const dish = cookingSystem.cook(this.selectedIngredients, this.selectedMethod, this.cookingTime);
-
-        // Store dish separately from inventory
         gameState.addDish(dish.id);
-        // Also register the dish as a template so it can be retrieved later
         entityFactory.registerTemplate(dish.id, dish);
-
         this.lastDish = dish;
         this.selectedIngredients = [];
         this.selectedMethod = '';
         this.cookingTime = 60;
-
+        this.timeCursor = 3;
         this.render();
+    }
+
+    render(): void {
+        this.renderer.clear();
+        const vb = this.renderer.getViewBox();
+
+        // Title
+        const title = this.renderer.createText(vb.width / 2, 50, 'COOKING', 36, '#FFA500');
+        title.setAttribute('text-anchor', 'middle');
+        title.setAttribute('font-weight', 'bold');
+        this.renderer.append(title);
+
+        // Controls help
+        this.renderControls(vb.width / 2, 90);
+
+        // Three columns layout
+        this.renderIngredientsColumn(100, 140);
+        this.renderMethodsColumn(400, 140);
+        this.renderTimeColumn(700, 140);
+
+        // Selection summary
+        this.renderSummary(100, 450);
+
+        // Result card
+        if (this.lastDish) {
+            this.renderResultCard(vb.width / 2, 550);
+        }
+
+        // Status bar at bottom
+        this.renderStatusBar(vb.height - 50);
+    }
+
+    private renderControls(cx: number, y: number): void {
+        const controls = 'TAB: Switch Section | ARROWS/WASD: Navigate | ENTER/SPACE: Select | 1-8: Quick Time | C: Cook | R: Recipes | ESC: Back';
+        const text = this.renderer.createText(cx, y, controls, 14, '#AAA');
+        text.setAttribute('text-anchor', 'middle');
+        this.renderer.append(text);
+    }
+
+    private renderIngredientsColumn(x: number, y: number): void {
+        const isActive = this.currentSection === 'ingredients';
+        const titleColor = isActive ? '#FFD700' : '#888';
+
+        // Section title
+        const title = this.renderer.createText(x, y, '📦 INGREDIENTS', 22, titleColor);
+        title.setAttribute('font-weight', 'bold');
+        this.renderer.append(title);
+
+        if (isActive) {
+            const hint = this.renderer.createText(x, y + 25, '[Active - Use ↑↓ to navigate]', 12, '#90EE90');
+            this.renderer.append(hint);
+        }
+
+        const ingredients = cookingSystem.getAvailableIngredients().slice(0, 8);
+
+        ingredients.forEach((id, i) => {
+            const ingredient = entityFactory.getTemplate(id);
+            const isSelected = this.selectedIngredients.includes(id);
+            const isCursor = isActive && this.ingredientCursor === i;
+
+            let yPos = y + 50 + i * 32;
+
+            // Cursor indicator
+            if (isCursor) {
+                const cursor = this.renderer.createText(x - 15, yPos + 4, '▶', 16, '#FFD700');
+                this.renderer.append(cursor);
+            }
+
+            // Item background
+            if (isSelected || isCursor) {
+                const bg = this.renderer.createRect(x, yPos - 10, 250, 28, isSelected ? '#2E7D32' : '#444');
+                bg.setAttribute('rx', '4');
+                this.renderer.append(bg);
+            }
+
+            // Item text
+            const color = isSelected ? '#90EE90' : (isCursor ? '#FFF' : '#CCC');
+            const prefix = isSelected ? '✓ ' : '  ';
+            const text = this.renderer.createText(x + 10, yPos + 4, prefix + (ingredient?.name || id), 16, color);
+            this.renderer.append(text);
+        });
+    }
+
+    private renderMethodsColumn(x: number, y: number): void {
+        const isActive = this.currentSection === 'methods';
+        const titleColor = isActive ? '#FFD700' : '#888';
+
+        // Section title
+        const title = this.renderer.createText(x, y, '🔥 METHODS', 22, titleColor);
+        title.setAttribute('font-weight', 'bold');
+        this.renderer.append(title);
+
+        if (isActive) {
+            const hint = this.renderer.createText(x, y + 25, '[Active - Use ↑↓ to navigate]', 12, '#90EE90');
+            this.renderer.append(hint);
+        }
+
+        const methods = cookingSystem.getAvailableMethods();
+
+        methods.forEach((id, i) => {
+            const method = entityFactory.getTemplate(id);
+            const isSelected = this.selectedMethod === id;
+            const isCursor = isActive && this.methodCursor === i;
+
+            let yPos = y + 50 + i * 32;
+
+            // Cursor indicator
+            if (isCursor) {
+                const cursor = this.renderer.createText(x - 15, yPos + 4, '▶', 16, '#FFD700');
+                this.renderer.append(cursor);
+            }
+
+            // Item background
+            if (isSelected || isCursor) {
+                const bg = this.renderer.createRect(x, yPos - 10, 250, 28, isSelected ? '#2E7D32' : '#444');
+                bg.setAttribute('rx', '4');
+                this.renderer.append(bg);
+            }
+
+            // Item text
+            const color = isSelected ? '#90EE90' : (isCursor ? '#FFF' : '#CCC');
+            const prefix = isSelected ? '✓ ' : '  ';
+            const text = this.renderer.createText(x + 10, yPos + 4, prefix + (method?.name || id), 16, color);
+            this.renderer.append(text);
+        });
+    }
+
+    private renderTimeColumn(x: number, y: number): void {
+        const isActive = this.currentSection === 'time';
+        const titleColor = isActive ? '#FFD700' : '#888';
+
+        // Section title
+        const title = this.renderer.createText(x, y, '⏱️  TIME', 22, titleColor);
+        title.setAttribute('font-weight', 'bold');
+        this.renderer.append(title);
+
+        if (isActive) {
+            const hint = this.renderer.createText(x, y + 25, '[Active - Use ↔ or 1-8 keys]', 12, '#90EE90');
+            this.renderer.append(hint);
+        }
+
+        // Display times in 2 columns
+        this.timePresets.forEach((time, i) => {
+            const isSelected = this.timeCursor === i;
+            const isCursor = isActive && this.timeCursor === i;
+
+            const col = Math.floor(i / 4);
+            const row = i % 4;
+            const xPos = x + col * 100;
+            const yPos = y + 50 + row * 32;
+
+            // Cursor indicator
+            if (isCursor) {
+                const cursor = this.renderer.createText(xPos - 15, yPos + 4, '▶', 16, '#FFD700');
+                this.renderer.append(cursor);
+            }
+
+            // Item background
+            if (isSelected || isCursor) {
+                const bg = this.renderer.createRect(xPos, yPos - 10, 90, 28, isSelected ? '#2E7D32' : '#444');
+                bg.setAttribute('rx', '4');
+                this.renderer.append(bg);
+            }
+
+            // Item text
+            const color = isSelected ? '#90EE90' : (isCursor ? '#FFF' : '#CCC');
+            const text = this.renderer.createText(xPos + 10, yPos + 4, `${i + 1}. ${time}s`, 16, color);
+            this.renderer.append(text);
+        });
+    }
+
+    private renderSummary(x: number, y: number): void {
+        const text = `Selected: ${this.selectedIngredients.length} ingredients, Method: ${this.selectedMethod || 'none'}, Time: ${this.cookingTime}s`;
+        const label = this.renderer.createText(x, y, text, 18, '#FFA500');
+        label.setAttribute('font-weight', 'bold');
+        this.renderer.append(label);
+    }
+
+    private renderStatusBar(y: number): void {
+        const canCook = this.canCook();
+        const statusText = canCook
+            ? '✓ Ready to cook! Press C to start cooking'
+            : 'Select ingredients and method to cook';
+        const statusColor = canCook ? '#90EE90' : '#FF6B6B';
+
+        const status = this.renderer.createText(50, y, statusText, 18, statusColor);
+        status.setAttribute('font-weight', 'bold');
+        this.renderer.append(status);
     }
 
     private renderResultCard(centerX: number, centerY: number): void {
@@ -205,7 +350,6 @@ export class CookingScreen extends Screen {
         const dish = this.lastDish;
         const qualityPercent = Math.round(dish.quality * 100);
 
-        // Rarity colors
         const rarityColors: Record<string, { bg: string; border: string }> = {
             common: { bg: '#4A4A4A', border: '#90EE90' },
             uncommon: { bg: '#2E5CB8', border: '#4FC3F7' },
@@ -214,7 +358,6 @@ export class CookingScreen extends Screen {
         };
         const colors = rarityColors[dish.rarity] || rarityColors['common'];
 
-        // Card background
         const cardWidth = 500;
         const cardHeight = 120;
         const cardX = centerX - cardWidth / 2;
@@ -226,55 +369,55 @@ export class CookingScreen extends Screen {
         cardBg.setAttribute('rx', '10');
         this.renderer.append(cardBg);
 
-        // Success emoji and title
         const successText = this.renderer.createText(centerX, cardY + 30, `✨ ${dish.name} ✨`, 24, colors.border);
         successText.setAttribute('text-anchor', 'middle');
         successText.setAttribute('font-weight', 'bold');
         this.renderer.append(successText);
 
-        // Rarity badge
         const rarityText = this.renderer.createText(centerX, cardY + 55, dish.rarity.toUpperCase(), 14, '#FFD700');
         rarityText.setAttribute('text-anchor', 'middle');
         this.renderer.append(rarityText);
 
-        // Quality bar
         const barWidth = 200;
         const barHeight = 15;
         const barX = centerX - barWidth / 2;
         const barY = cardY + 65;
 
-        // Background bar
         const barBg = this.renderer.createRect(barX, barY, barWidth, barHeight, '#333');
         barBg.setAttribute('rx', '3');
         this.renderer.append(barBg);
 
-        // Quality fill
         const fillWidth = barWidth * dish.quality;
         const qualityColor = dish.quality >= 0.9 ? '#FFD700' : dish.quality >= 0.7 ? '#90EE90' : dish.quality >= 0.5 ? '#FFA500' : '#FF6347';
         const barFill = this.renderer.createRect(barX, barY, fillWidth, barHeight, qualityColor);
         barFill.setAttribute('rx', '3');
         this.renderer.append(barFill);
 
-        // Quality percentage
         const qualityLabel = this.renderer.createText(centerX, barY + 12, `Quality: ${qualityPercent}%`, 12, '#FFF');
         qualityLabel.setAttribute('text-anchor', 'middle');
         this.renderer.append(qualityLabel);
 
-        // Value
         const valueText = this.renderer.createText(centerX, cardY + 105, `Value: ${dish.value}g`, 16, '#FFD700');
         valueText.setAttribute('text-anchor', 'middle');
         this.renderer.append(valueText);
     }
 
     handleInput(event: MouseEvent | TouchEvent): void {
-        // Handled by buttons
+        // Keyboard-only interface
     }
 
     cleanup(): void {
+        if (this.keyListener) {
+            window.removeEventListener('keydown', this.keyListener);
+            this.keyListener = null;
+        }
         this.selectedIngredients = [];
         this.selectedMethod = '';
         this.cookingTime = 60;
-        this.resultMessage = '';
         this.lastDish = null;
+        this.currentSection = 'ingredients';
+        this.ingredientCursor = 0;
+        this.methodCursor = 0;
+        this.timeCursor = 3;
     }
 }

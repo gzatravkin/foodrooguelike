@@ -222,6 +222,3 @@ export function createSpiderSVG(): string {
     </g>
   `;
 }
-
-// Ice Golem - frozen construct
-export function createIceGolemSVG(): string {

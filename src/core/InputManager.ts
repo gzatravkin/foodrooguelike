@@ -1,5 +1,5 @@
 /**
- * InputManager - Handles keyboard and mouse input
+ * InputManager - Handles keyboard, mouse, and mobile touch input
  */
 
 export type KeyState = {
@@ -13,8 +13,26 @@ export class InputManager {
   private mousePos = { x: 0, y: 0 };
   private mouseButtons: Map<number, KeyState> = new Map();
 
+  // Mobile/virtual input
+  private virtualMovement = { x: 0, y: 0 };
+  private virtualButtons: Map<string, KeyState> = new Map();
+  private isMobile = false;
+
   constructor() {
     this.setupListeners();
+    this.detectMobile();
+  }
+
+  private detectMobile(): void {
+    this.isMobile = (
+      'ontouchstart' in window ||
+      navigator.maxTouchPoints > 0 ||
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+    );
+  }
+
+  isMobileDevice(): boolean {
+    return this.isMobile;
   }
 
   private setupListeners(): void {
@@ -99,10 +117,20 @@ export class InputManager {
       state.justPressed = false;
       state.justReleased = false;
     });
+
+    this.virtualButtons.forEach((state) => {
+      state.justPressed = false;
+      state.justReleased = false;
+    });
   }
 
   // Helper methods for common input patterns
   getMovementVector(): { x: number; y: number } {
+    // Use virtual joystick if active
+    if (this.virtualMovement.x !== 0 || this.virtualMovement.y !== 0) {
+      return { ...this.virtualMovement };
+    }
+
     const vec = { x: 0, y: 0 };
 
     // WASD movement
@@ -119,5 +147,32 @@ export class InputManager {
     }
 
     return vec;
+  }
+
+  // Mobile control integration
+  setVirtualJoystick(x: number, y: number): void {
+    this.virtualMovement.x = x;
+    this.virtualMovement.y = y;
+  }
+
+  setVirtualButton(button: string, pressed: boolean): void {
+    const state = this.virtualButtons.get(button) || { pressed: false, justPressed: false, justReleased: false };
+
+    if (pressed && !state.pressed) {
+      state.justPressed = true;
+    } else if (!pressed && state.pressed) {
+      state.justReleased = true;
+    }
+
+    state.pressed = pressed;
+    this.virtualButtons.set(button, state);
+  }
+
+  isVirtualButtonPressed(button: string): boolean {
+    return this.virtualButtons.get(button)?.pressed || false;
+  }
+
+  isVirtualButtonJustPressed(button: string): boolean {
+    return this.virtualButtons.get(button)?.justPressed || false;
   }
 }

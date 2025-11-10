@@ -45,8 +45,13 @@ export class InputHandler {
   handlePlayerMovement(player: Player, deltaTime: number): void {
     const movement = this.input.getMovementVector();
 
-    if ((this.input.isKeyPressed('shift') || this.input.isKeyPressed('shiftleft') || this.input.isKeyPressed('shiftright')) &&
-        (movement.x !== 0 || movement.y !== 0)) {
+    // Check for dash (keyboard or virtual button)
+    const dashPressed = this.input.isKeyPressed('shift') ||
+                       this.input.isKeyPressed('shiftleft') ||
+                       this.input.isKeyPressed('shiftright') ||
+                       this.input.isVirtualButtonPressed('dash');
+
+    if (dashPressed && (movement.x !== 0 || movement.y !== 0)) {
       if (player.canDash()) {
         player.dash(movement.x, movement.y);
       }
@@ -81,7 +86,12 @@ export class InputHandler {
   }
 
   handlePlayerAttack(player: Player, enemies: Enemy[], deltaTime: number): void {
-    if (this.input.isKeyPressed(' ') || this.input.isMouseButtonPressed(0)) {
+    // Check for attack (keyboard, mouse, or virtual button)
+    const attackPressed = this.input.isKeyPressed(' ') ||
+                         this.input.isMouseButtonPressed(0) ||
+                         this.input.isVirtualButtonPressed('attack');
+
+    if (attackPressed) {
       if (player.canAttack()) {
         player.attack();
 
@@ -94,6 +104,16 @@ export class InputHandler {
         }
       }
     }
+  }
+
+  // Handle interact action (E key or virtual button)
+  handleInteract(): boolean {
+    return this.input.isKeyJustPressed('e') || this.input.isVirtualButtonJustPressed('interact');
+  }
+
+  // Handle loot action (F key or virtual button)
+  handleLoot(): boolean {
+    return this.input.isKeyJustPressed('f') || this.input.isVirtualButtonJustPressed('loot');
   }
 
   private handleRangedAttack(player: Player, isDashShot: boolean): void {

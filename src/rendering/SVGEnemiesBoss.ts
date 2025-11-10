@@ -266,6 +266,3 @@ export function createDemonLordSVG(): string {
     </g>
   `;
 }
-
-// Weapon SVGs (small icons) - Enhanced
-export function createMeleeSVG(): string {

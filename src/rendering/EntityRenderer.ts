@@ -87,7 +87,8 @@ export class EntityRenderer {
 
     this.renderer.drawLine(x - barWidth / 2, y, x + barWidth / 2, y, '#000', 1);
     this.renderer.drawLine(x - barWidth / 2, y + barHeight, x + barWidth / 2, y + barHeight, '#000', 1);
-  
+  }
+
   renderShop(availableWeapons: Weapon[], playerGold: number, currentWeapon: Weapon | null): void {
     const canvas = this.renderer.getCanvas();
 

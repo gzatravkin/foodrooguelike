@@ -233,6 +233,56 @@ export class GameScreen {
     }
   }
 
+  private spawnExpeditionEnemies(expeditionData: any, player: Player): Enemy[] {
+    const enemies: Enemy[] = [];
+    const { enemyTypes, enemyCount, lootMultiplier } = expeditionData;
+
+    const numEnemies = enemyCount.min + Math.floor(Math.random() * (enemyCount.max - enemyCount.min + 1));
+
+    for (let i = 0; i < numEnemies; i++) {
+      const enemyType = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
+      const enemyData = entityFactory.getTemplate(enemyType) as any;
+
+      if (enemyData) {
+        const position = this.findValidEnemyPosition(player);
+        if (position) {
+          const weaponId = enemyData.weaponId;
+          const weapon = weaponId ? entityFactory.createWeapon(weaponId) : null;
+          const enemy = new Enemy(position.x, position.y, enemyData, weapon);
+
+          // Apply loot multiplier by improving drop chances
+          if (lootMultiplier > 1) {
+            enemy.enemyData.lootTable = enemy.enemyData.lootTable.map((drop: any) => ({
+              ...drop,
+              chance: Math.min(1, drop.chance * lootMultiplier)
+            }));
+          }
+
+          enemies.push(enemy);
+        }
+      }
+    }
+
+    return enemies;
+  }
+
+  private findValidEnemyPosition(player: Player): { x: number; y: number } | null {
+    const map = this.mapSystem.getCurrentMap();
+    if (!map) return null;
+
+    for (let attempts = 0; attempts < 100; attempts++) {
+      const x = (2 + Math.floor(Math.random() * (map.width - 4))) * map.tileSize + map.tileSize / 2;
+      const y = (2 + Math.floor(Math.random() * (map.height - 4))) * map.tileSize + map.tileSize / 2;
+
+      const distFromPlayer = Math.sqrt((x - player.x) ** 2 + (y - player.y) ** 2);
+      if (this.mapSystem.canMoveTo(x, y) && distFromPlayer > 150) {
+        return { x, y };
+      }
+    }
+
+    return null;
+  }
+
   loadBaseCamp(): void {
     const wasExpedition = this.mode === 'expedition';
     this.mode = 'base';
@@ -257,7 +307,20 @@ export class GameScreen {
 
   loadExpedition(level: number = 1): void {
     this.mode = 'expedition';
-    const dungeon = MapSystem.createDungeon(level);
+
+    // Try to load selected expedition from localStorage
+    let expeditionData = null;
+    try {
+      const storedData = localStorage.getItem('selectedExpedition');
+      if (storedData) {
+        expeditionData = JSON.parse(storedData);
+        localStorage.removeItem('selectedExpedition'); // Clear after use
+      }
+    } catch (error) {
+      console.error('Failed to load expedition data:', error);
+    }
+
+    const dungeon = MapSystem.createDungeon(expeditionData?.difficulty || level);
     this.mapSystem.loadMap(dungeon);
 
     // Use the spawn position from the dungeon (at STAIRS_UP)
@@ -267,7 +330,12 @@ export class GameScreen {
     this.combatSystem.clearProjectiles();
     this.combatSystem.clearCorpses();
 
-    this.enemies = this.spawnManager.spawnEnemies(level, this.player);
+    // Spawn enemies based on expedition data
+    if (expeditionData) {
+      this.enemies = this.spawnExpeditionEnemies(expeditionData, this.player);
+    } else {
+      this.enemies = this.spawnManager.spawnEnemies(level, this.player);
+    }
     this.traps = this.spawnManager.spawnTraps(this.player);
 
     // Reset interactive tiles tracking
@@ -324,7 +392,7 @@ export class GameScreen {
       this.mode,
       this.mapSystem,
       () => gameState.setScreen('shop'),
-      () => this.loadExpedition(1),
+      () => gameState.setScreen('expedition'),
       () => this.loadBaseCamp()
     );
 
@@ -335,9 +403,11 @@ export class GameScreen {
         if (tileType === TileType.SHOP) {
           gameState.setScreen('shop');
         } else if (tileType === TileType.EXPEDITION_PORTAL) {
-          this.loadExpedition(1);
+          gameState.setScreen('expedition');
         } else if (tileType === TileType.COOKING_STATION) {
           gameState.setScreen('cooking');
+        } else if (tileType === TileType.TRAINING_HALL) {
+          gameState.setScreen('training');
         }
       } else if (this.mode === 'expedition' && tileType) {
         if (tileType === TileType.STAIRS_DOWN) {
@@ -418,6 +488,22 @@ export class GameScreen {
     // Handle tile effects in expeditions
     if (this.mode === 'expedition') {
       this.handleTileEffects(deltaTime);
+
+      // Update hunger timer
+      gameState.tickHunger(deltaTime);
+      const state = gameState.getState();
+
+      // Check if hunger timer expired
+      if (state.expeditionState.hungerTimer <= 0) {
+        this.addCombatLog('Out of time! Returning to base...', '#F44336');
+        this.addCombatLog('Mission failed - hunger overtook you', '#F44336');
+        setTimeout(() => {
+          this.loadBaseCamp();
+        }, 1000);
+      } else if (state.expeditionState.hungerTimer <= 10 && Math.floor(state.expeditionState.hungerTimer) % 2 === 0) {
+        // Warning at 10 seconds remaining
+        this.addCombatLog(`Time running out: ${Math.floor(state.expeditionState.hungerTimer)}s`, '#FF8C00');
+      }
     }
 
     // Update player buffs
@@ -549,14 +635,13 @@ export class GameScreen {
       return;
     }
 
-    const goldReward = 50 + Math.floor(Math.random() * 100);
-    gameState.addGold(goldReward);
     this.interactedTiles.add(tileKey);
-    this.addCombatLog(`Found ${goldReward} gold!`, '#FFD700');
+    this.addCombatLog('Opened treasure chest!', '#FFD700');
 
-    // 50% chance for random ingredient
-    if (Math.random() < 0.5) {
-      const ingredients = ['tomato', 'cheese', 'lettuce', 'beef', 'bread', 'chicken', 'fish', 'potato'];
+    // Guaranteed 2-4 random ingredients
+    const numIngredients = 2 + Math.floor(Math.random() * 3);
+    const ingredients = ['tomato', 'cheese', 'lettuce', 'beef', 'bread', 'chicken', 'fish', 'potato'];
+    for (let i = 0; i < numIngredients; i++) {
       const randomIng = ingredients[Math.floor(Math.random() * ingredients.length)];
       gameState.addToInventory(randomIng);
       const template = entityFactory.getTemplate(randomIng);

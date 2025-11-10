@@ -22,7 +22,7 @@ export interface Enemy extends BaseEntity {
         itemId: string;
         chance: number;
     }>;
-    goldReward: number;
+    goldReward?: number; // Deprecated - enemies no longer drop gold
     aiBehavior?: AIBehaviorType; // AI personality type
     attackPattern?: AttackPattern; // Attack pattern type
     speed?: number; // Movement speed multiplier

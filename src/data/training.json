@@ -1,0 +1,98 @@
+{
+  "combat_training": {
+    "id": "combat_training",
+    "name": "Combat Training",
+    "description": "Improve your attack power",
+    "baseCost": 30,
+    "costMultiplier": 1.5,
+    "maxLevel": 10,
+    "effect": {
+      "stat": "attack",
+      "amount": 2
+    }
+  },
+  "defensive_stance": {
+    "id": "defensive_stance",
+    "name": "Defensive Stance",
+    "description": "Increase your defense",
+    "baseCost": 30,
+    "costMultiplier": 1.5,
+    "maxLevel": 10,
+    "effect": {
+      "stat": "defense",
+      "amount": 1
+    }
+  },
+  "vitality": {
+    "id": "vitality",
+    "name": "Vitality",
+    "description": "Boost your maximum health",
+    "baseCost": 40,
+    "costMultiplier": 1.5,
+    "maxLevel": 10,
+    "effect": {
+      "stat": "maxHealth",
+      "amount": 10
+    }
+  },
+  "speed_training": {
+    "id": "speed_training",
+    "name": "Speed Training",
+    "description": "Move faster in expeditions",
+    "baseCost": 35,
+    "costMultiplier": 1.6,
+    "maxLevel": 5,
+    "effect": {
+      "stat": "speed",
+      "amount": 5
+    }
+  },
+  "ingredient_mastery": {
+    "id": "ingredient_mastery",
+    "name": "Ingredient Mastery",
+    "description": "Increase ingredient drop chances",
+    "baseCost": 50,
+    "costMultiplier": 1.8,
+    "maxLevel": 5,
+    "effect": {
+      "stat": "lootChance",
+      "amount": 0.1
+    }
+  },
+  "cooking_expertise": {
+    "id": "cooking_expertise",
+    "name": "Cooking Expertise",
+    "description": "Improve dish quality and value",
+    "baseCost": 45,
+    "costMultiplier": 1.7,
+    "maxLevel": 5,
+    "effect": {
+      "stat": "cookingBonus",
+      "amount": 0.1
+    }
+  },
+  "bargaining": {
+    "id": "bargaining",
+    "name": "Bargaining",
+    "description": "Get better prices when selling dishes",
+    "baseCost": 40,
+    "costMultiplier": 1.6,
+    "maxLevel": 5,
+    "effect": {
+      "stat": "sellBonus",
+      "amount": 0.15
+    }
+  },
+  "expedition_efficiency": {
+    "id": "expedition_efficiency",
+    "name": "Expedition Efficiency",
+    "description": "Reduce expedition costs",
+    "baseCost": 60,
+    "costMultiplier": 2.0,
+    "maxLevel": 3,
+    "effect": {
+      "stat": "expeditionDiscount",
+      "amount": 0.1
+    }
+  }
+}

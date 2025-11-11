@@ -24,6 +24,7 @@ import { CombatLogManager } from './CombatLogManager';
 import { TileInteractionManager } from './TileInteractionManager';
 import { GameModeManager, GameMode } from './GameModeManager';
 import { SVGAssetLoader } from './SVGAssetLoader';
+import { TileRegistry } from '../plugins/tiles/TileRegistry';
 
 export class GameScreen {
   private renderer: GameScreenRenderer;
@@ -101,6 +102,24 @@ export class GameScreen {
 
   private addCombatLog(text: string, color: string = '#FFF'): void {
     this.combatLogManager.addEntry(text, color);
+  }
+
+  private getTileIdFromType(tileType: TileType): string | null {
+    // Map TileType enum to tile plugin IDs
+    const tileTypeMap: Record<number, string> = {
+      [TileType.HEALTH_FOUNTAIN]: 'health_fountain',
+      [TileType.TREASURE_CHEST]: 'treasure_chest',
+      [TileType.SHRINE]: 'shrine',
+      [TileType.TELEPORTER]: 'teleporter',
+      [TileType.BERRY_BUSH]: 'berry_bush',
+      [TileType.HERB_PLANT]: 'herb_plant',
+      [TileType.MUSHROOM_PATCH]: 'mushroom_patch',
+      [TileType.CRYSTAL_FORMATION]: 'crystal_formation',
+      [TileType.FIRE_PLANT]: 'fire_plant',
+      [TileType.VOID_PLANT]: 'void_plant',
+      [TileType.ANCIENT_TREE]: 'ancient_tree',
+    };
+    return tileTypeMap[tileType] || null;
   }
 
   private setupEventListeners(): void {
@@ -285,17 +304,43 @@ export class GameScreen {
         } else if (tileType === TileType.UPGRADES_HALL) {
           gameState.setScreen('upgrades');
         }
-      } else if (this.gameModeManager.getMode() === 'expedition' && tileType) {
+      } else if (this.gameModeManager.getMode() === 'expedition' && tileType !== null) {
+        // Special case for stairs
         if (tileType === TileType.STAIRS_DOWN) {
           this.loadBaseCamp();
-        } else if (tileType === TileType.HEALTH_FOUNTAIN) {
-          this.tileInteractionManager.interactWithHealthFountain(this.player, this.mapSystem, (text, color) => this.addCombatLog(text, color));
-        } else if (tileType === TileType.TREASURE_CHEST) {
-          this.tileInteractionManager.interactWithTreasureChest(this.player, this.mapSystem, (text, color) => this.addCombatLog(text, color));
-        } else if (tileType === TileType.SHRINE) {
-          this.tileInteractionManager.interactWithShrine(this.player, this.mapSystem, (text, color) => this.addCombatLog(text, color));
-        } else if (tileType === TileType.TELEPORTER) {
-          this.tileInteractionManager.interactWithTeleporter(this.player, (text, color) => this.addCombatLog(text, color));
+        } else {
+          // Try to use TileRegistry for all interactive tiles
+          const tileId = this.getTileIdFromType(tileType);
+          if (tileId) {
+            const tilePlugin = TileRegistry.getTileById(tileId);
+            if (tilePlugin?.interaction) {
+              const map = this.mapSystem.getCurrentMap();
+              if (map) {
+                const tileX = Math.floor(this.player.x / map.tileSize);
+                const tileY = Math.floor(this.player.y / map.tileSize);
+
+                if (tilePlugin.interaction.canInteract(this.player, tileX, tileY, this.mapSystem)) {
+                  tilePlugin.interaction.onInteract(
+                    this.player,
+                    tileX,
+                    tileY,
+                    this.mapSystem,
+                    (text, color) => this.addCombatLog(text, color)
+                  );
+                } else {
+                  // Tile cannot be interacted with (already used, etc.)
+                  // The plugin's onInteract will handle the message
+                  tilePlugin.interaction.onInteract(
+                    this.player,
+                    tileX,
+                    tileY,
+                    this.mapSystem,
+                    (text, color) => this.addCombatLog(text, color)
+                  );
+                }
+              }
+            }
+          }
         }
       }
     }

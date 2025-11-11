@@ -46,6 +46,12 @@ export class BaseCampGenerator {
     tiles[12][3] = TileType.TRAINING_HALL;
     tiles[12][4] = TileType.TRAINING_HALL;
 
+    // Add upgrades hall (bottom-right area)
+    tiles[11][15] = TileType.UPGRADES_HALL;
+    tiles[11][16] = TileType.UPGRADES_HALL;
+    tiles[12][15] = TileType.UPGRADES_HALL;
+    tiles[12][16] = TileType.UPGRADES_HALL;
+
     // Add expedition portal (bottom center)
     tiles[11][9] = TileType.EXPEDITION_PORTAL;
     tiles[11][10] = TileType.EXPEDITION_PORTAL;

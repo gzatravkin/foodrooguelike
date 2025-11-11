@@ -172,6 +172,9 @@ export class GameScreenUpdater {
       } else if (tileType === TileType.TRAINING_HALL) {
         showPrompt = true;
         promptText = 'Press E to enter Training Hall';
+      } else if (tileType === TileType.UPGRADES_HALL) {
+        showPrompt = true;
+        promptText = 'Press E to enter Upgrades Hall';
       }
     } else if (mode === 'expedition' && tileType) {
       if (tileType === TileType.STAIRS_DOWN) {

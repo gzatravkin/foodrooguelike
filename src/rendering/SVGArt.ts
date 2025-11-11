@@ -8,9 +8,11 @@ import { createPlayerSVG } from './SVGPlayer';
 import {
   createSlimeSVG,
   createGoblinSVG,
+} from './SVGEnemiesBasic';
+import {
   createSkeletonSVG,
   createOrcSVG,
-} from './SVGEnemiesBasic';
+} from './SVGEnemiesIntermediate';
 import {
   createDragonSVG,
   createWolfSVG,

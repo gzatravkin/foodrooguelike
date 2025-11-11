@@ -44,6 +44,15 @@ import { MysteriousDoorTile } from './definitions/mysterious_door';
 import { LibraryTile } from './definitions/library';
 import { BlacksmithTile } from './definitions/blacksmith';
 
+// HARVESTABLE ITEMS
+import { BerryBushTile } from './definitions/berry_bush';
+import { HerbPlantTile } from './definitions/herb_plant';
+import { MushroomPatchTile } from './definitions/mushroom_patch';
+import { CrystalFormationTile } from './definitions/crystal_formation';
+import { FirePlantTile } from './definitions/fire_plant';
+import { VoidPlantTile } from './definitions/void_plant';
+import { AncientTreeTile } from './definitions/ancient_tree';
+
 /**
  * Initialize all tiles - called at game startup
  */
@@ -88,6 +97,15 @@ export function initializeTiles(): void {
   // NEW BUILDINGS - Proof of concept!
   TileRegistry.register(LibraryTile);
   TileRegistry.register(BlacksmithTile);
+
+  // HARVESTABLE ITEMS
+  TileRegistry.register(BerryBushTile);
+  TileRegistry.register(HerbPlantTile);
+  TileRegistry.register(MushroomPatchTile);
+  TileRegistry.register(CrystalFormationTile);
+  TileRegistry.register(FirePlantTile);
+  TileRegistry.register(VoidPlantTile);
+  TileRegistry.register(AncientTreeTile);
 
   TileRegistry.markInitialized();
   console.log('✅ Tile plugins initialized!');

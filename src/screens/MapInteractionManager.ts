@@ -4,10 +4,15 @@
 
 import { gameState } from '../core/GameState';
 import { eventBus } from '../core/EventBus';
-import { MapLocation } from './MapLocationManager';
+import { MapLocation, MapLocationManager } from './MapLocationManager';
 import expeditionsData from '../data/expeditions.json';
 
 export class MapInteractionManager {
+  private locationManager: MapLocationManager | null = null;
+
+  setLocationManager(manager: MapLocationManager): void {
+    this.locationManager = manager;
+  }
   private messageText: string = '';
   private messageTimer: number = 0;
   private readonly messageDuration: number = 3000; // 3 seconds
@@ -48,10 +53,20 @@ export class MapInteractionManager {
 
   interactWithLocation(location: MapLocation, onSave: () => void): void {
     if (!location.isUnlocked) {
+      // Check if location can be unlocked (level requirements)
+      if (this.locationManager) {
+        const unlockCheck = this.locationManager.canUnlockLocation(location);
+        if (!unlockCheck.canUnlock) {
+          this.showMessage(unlockCheck.reason || 'Cannot unlock this location yet.');
+          return;
+        }
+      }
+
       // Try to unlock with gold
       const currentGold = gameState.getState().gold;
       if (currentGold >= location.unlockCost) {
-        if (confirm(`Unlock ${location.name} for ${location.unlockCost} gold?`)) {
+        const requirementText = this.locationManager?.getUnlockRequirementText(location) || `${location.unlockCost} gold`;
+        if (confirm(`Unlock ${location.name}?\nRequires: ${requirementText}`)) {
           gameState.spendGold(location.unlockCost);
           location.isUnlocked = true;
           onSave();

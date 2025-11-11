@@ -34,6 +34,7 @@ export class GlobalMapScreen {
       this.playerManager.getY()
     );
     this.interactionManager = new MapInteractionManager();
+    this.interactionManager.setLocationManager(this.locationManager);
     this.renderHelper = new MapRenderHelper(renderer);
   }
 

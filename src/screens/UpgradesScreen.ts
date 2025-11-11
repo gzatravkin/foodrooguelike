@@ -5,6 +5,7 @@
 import { Screen } from '../rendering/Screen';
 import { gameState } from '../core/GameState';
 import type { SVGRenderer } from '../rendering/SVGRenderer';
+import { entityFactory } from '../entities/EntityFactory';
 import upgradesData from '../data/upgrades.json';
 
 interface UpgradeData {
@@ -16,7 +17,7 @@ interface UpgradeData {
     maxLevel: number;
     baseCost: number;
     costMultiplier: number;
-    effects: Record<string, number>;
+    effects: Record<string, number | string>;
 }
 
 type TabType = 'kitchen' | 'restaurant' | 'character';
@@ -260,7 +261,7 @@ export class UpgradesScreen extends Screen {
 
             // Unlock cooking method if this is a method unlock upgrade
             if (upgrade.type === 'cookingMethodUnlock' && upgrade.effects.unlockMethod) {
-                this.unlockCookingMethod(upgrade.effects.unlockMethod as string);
+                this.unlockCookingMethod(String(upgrade.effects.unlockMethod));
             }
 
             this.render();
@@ -268,7 +269,6 @@ export class UpgradesScreen extends Screen {
     }
 
     private unlockCookingMethod(methodId: string): void {
-        const { entityFactory } = require('../entities/EntityFactory');
         const method = entityFactory.getTemplate(methodId);
         if (method && method.type === 'cookingMethod') {
             (method as any).unlocked = true;

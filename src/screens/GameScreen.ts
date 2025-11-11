@@ -12,8 +12,6 @@ import { Corpse } from '../entities/Corpse';
 import { Trap } from '../entities/Trap';
 import { gameState } from '../core/GameState';
 import { entityFactory } from '../entities/EntityFactory';
-import { Enemy as EnemyData } from '../entities/types';
-import * as SVGArt from '../rendering/SVGArt';
 import { GameScreenRenderer } from './GameScreenRenderer';
 import { CombatSystem } from './CombatSystem';
 import { InputHandler } from './InputHandler';
@@ -22,8 +20,10 @@ import { GameScreenUpdater } from './GameScreenUpdater';
 import { CheatPanel } from '../ui/CheatPanel';
 import { ParticleSystem } from '../entities/Particle';
 import { MobileControls } from '../ui/MobileControls';
-
-export type GameMode = 'base' | 'expedition';
+import { CombatLogManager } from './CombatLogManager';
+import { TileInteractionManager } from './TileInteractionManager';
+import { GameModeManager, GameMode } from './GameModeManager';
+import { SVGAssetLoader } from './SVGAssetLoader';
 
 export class GameScreen {
   private renderer: GameScreenRenderer;
@@ -39,21 +39,16 @@ export class GameScreen {
   private cheatPanel: CheatPanel;
   private particleSystem: ParticleSystem;
   private mobileControls: MobileControls | null = null;
-  private mode: GameMode = 'base';
   private showInteractionPrompt: boolean = false;
   private interactionPromptText: string = '';
   private nearbyCorpse: Corpse | null = null;
-  private svgsLoaded: boolean = false;
-  private baseHealTimer: number = 0; // Timer for HP recovery at base
-  private combatLog: Array<{text: string; timestamp: number; color: string}> = [];
-  private readonly MAX_LOG_ENTRIES = 8;
-  private readonly LOG_DURATION = 15000; // 15 seconds (increased from 5)
-  private interactedTiles: Set<string> = new Set(); // Track which tiles have been used
-  private tileEffectCooldowns: Map<string, number> = new Map(); // Cooldowns for tile effects
-  private playerBuffs: { speed?: number; damage?: number; defense?: number; duration: number } | null = null;
-  private lavaDamageTimer: number = 0;
-  private waterSlowTimer: number = 0;
-  private teleporterLocations: Array<{ x: number; y: number }> = [];
+  private baseHealTimer: number = 0;
+
+  // New managers
+  private combatLogManager: CombatLogManager;
+  private tileInteractionManager: TileInteractionManager;
+  private gameModeManager: GameModeManager;
+  private svgAssetLoader: SVGAssetLoader;
 
   constructor(
     renderer: CanvasRenderer,
@@ -74,6 +69,12 @@ export class GameScreen {
       onAddGold: (amount: number) => this.addGold(amount)
     });
 
+    // Initialize new managers
+    this.combatLogManager = new CombatLogManager();
+    this.tileInteractionManager = new TileInteractionManager();
+    this.gameModeManager = new GameModeManager(this.spawnManager);
+    this.svgAssetLoader = new SVGAssetLoader();
+
     const startingWeapon = entityFactory.createWeapon('pistol');
     this.player = new Player(320, 240, startingWeapon || undefined);
 
@@ -88,35 +89,18 @@ export class GameScreen {
     this.setupCheatPanelInput();
 
     // Add initial combat log entries
-    this.addCombatLog('=== Food Roguelike ===', '#FFD700');
-    this.addCombatLog('Press E on tiles to interact', '#90EE90');
-    this.addCombatLog('Walk over expedition portal to start!', '#4FC3F7');
+    this.combatLogManager.addEntry('=== Food Roguelike ===', '#FFD700');
+    this.combatLogManager.addEntry('Press E on tiles to interact', '#90EE90');
+    this.combatLogManager.addEntry('Walk over expedition portal to start!', '#4FC3F7');
   }
 
   async init(): Promise<void> {
-    await this.preloadSVGAssets();
+    const canvasRenderer = (this.renderer as any).renderer as CanvasRenderer;
+    await this.svgAssetLoader.preloadAssets(canvasRenderer);
   }
 
   private addCombatLog(text: string, color: string = '#FFF'): void {
-    const entry = {
-      text,
-      timestamp: Date.now(),
-      color
-    };
-    this.combatLog.unshift(entry);
-
-    // Keep only the most recent entries
-    if (this.combatLog.length > this.MAX_LOG_ENTRIES) {
-      this.combatLog = this.combatLog.slice(0, this.MAX_LOG_ENTRIES);
-    }
-
-    // Debug logging
-    console.log(`[Combat Log] ${text}`);
-  }
-
-  private updateCombatLog(): void {
-    const now = Date.now();
-    this.combatLog = this.combatLog.filter(entry => now - entry.timestamp < this.LOG_DURATION);
+    this.combatLogManager.addEntry(text, color);
   }
 
   private setupEventListeners(): void {
@@ -147,11 +131,9 @@ export class GameScreen {
   }
 
   private setupCheatPanelInput(): void {
-    // Toggle cheat panel with backtick key
     window.addEventListener('keydown', (e) => {
-      // ESC during expedition mode to flee back to base (check this FIRST)
       const currentScreen = gameState.getState().currentScreen;
-      if (e.key === 'Escape' && this.mode === 'expedition' && currentScreen === 'game' && !this.cheatPanel.isVisible()) {
+      if (e.key === 'Escape' && this.gameModeManager.getMode() === 'expedition' && currentScreen === 'game' && !this.cheatPanel.isVisible()) {
         e.preventDefault();
         e.stopPropagation();
         console.log('Fleeing expedition, returning to base...');
@@ -159,14 +141,12 @@ export class GameScreen {
         return;
       }
 
-      // Cheat panel toggle
       if (e.key === '`' || e.key === 'Dead') {
         e.preventDefault();
         this.cheatPanel.toggle();
         return;
       }
 
-      // ESC to close cheat panel
       if (e.key === 'Escape' && this.cheatPanel.isVisible()) {
         e.preventDefault();
         this.cheatPanel.close();
@@ -174,7 +154,6 @@ export class GameScreen {
       }
     });
 
-    // Handle mouse clicks on cheat panel
     window.addEventListener('click', (e) => {
       if (this.cheatPanel.isVisible()) {
         const canvasRenderer = (this.renderer as any).renderer as CanvasRenderer;
@@ -204,113 +183,17 @@ export class GameScreen {
     console.log(`Added ${amount} gold. Total: ${gameState.getState().gold}`);
   }
 
-  private async preloadSVGAssets(): Promise<void> {
-    const wrapSVG = (content: string, viewBox: string = "0 0 24 30") =>
-      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}">${content}</svg>`;
-    const canvasRenderer = (this.renderer as any).renderer as CanvasRenderer;
-
-    try {
-      // Player
-      await canvasRenderer.preloadSVG(wrapSVG(SVGArt.createPlayerSVG()), 'player');
-
-      // All unique enemy sprites
-      await canvasRenderer.preloadSVG(wrapSVG(SVGArt.createSlimeSVG()), 'slime');
-      await canvasRenderer.preloadSVG(wrapSVG(SVGArt.createGoblinSVG()), 'goblin');
-      await canvasRenderer.preloadSVG(wrapSVG(SVGArt.createSkeletonSVG()), 'skeleton');
-      await canvasRenderer.preloadSVG(wrapSVG(SVGArt.createOrcSVG()), 'orc');
-      await canvasRenderer.preloadSVG(wrapSVG(SVGArt.createDragonSVG()), 'dragon');
-      await canvasRenderer.preloadSVG(wrapSVG(SVGArt.createWolfSVG()), 'wolf');
-      await canvasRenderer.preloadSVG(wrapSVG(SVGArt.createRatSVG()), 'rat');
-
-      // Missing enemies - using appropriate sprites (some reuse existing)
-      await canvasRenderer.preloadSVG(wrapSVG(SVGArt.createRatSVG()), 'bat'); // bat reuses rat
-      await canvasRenderer.preloadSVG(wrapSVG(SVGArt.createOrcSVG()), 'troll'); // troll reuses orc
-      await canvasRenderer.preloadSVG(wrapSVG(SVGArt.createSlimeSVG()), 'spider'); // spider reuses slime
-      await canvasRenderer.preloadSVG(wrapSVG(SVGArt.createSkeletonSVG()), 'ice_golem'); // ice_golem reuses skeleton
-      await canvasRenderer.preloadSVG(wrapSVG(SVGArt.createDragonSVG()), 'fire_elemental'); // fire_elemental reuses dragon
-      await canvasRenderer.preloadSVG(wrapSVG(SVGArt.createOrcSVG()), 'giant_crab'); // giant_crab reuses orc
-      await canvasRenderer.preloadSVG(wrapSVG(SVGArt.createDragonSVG()), 'demon_lord'); // demon_lord reuses dragon
-
-      // Projectile sprites
-      await canvasRenderer.preloadSVG(wrapSVG(SVGArt.createBulletSVG(), "0 0 6 6"), 'bullet');
-      await canvasRenderer.preloadSVG(wrapSVG(SVGArt.createMagicBoltSVG(), "0 0 8 8"), 'magic-bolt');
-      await canvasRenderer.preloadSVG(wrapSVG(SVGArt.createFireBallSVG(), "0 0 10 10"), 'fireball');
-      await canvasRenderer.preloadSVG(wrapSVG(SVGArt.createPlasmaBoltSVG(), "0 0 10 10"), 'plasma');
-
-      this.svgsLoaded = true;
-      console.log('All SVG assets preloaded successfully');
-    } catch (error) {
-      console.error('Failed to preload SVG assets:', error);
-      throw error;
-    }
-  }
-
-  private spawnExpeditionEnemies(expeditionData: any, player: Player): Enemy[] {
-    const enemies: Enemy[] = [];
-    const { enemyTypes, enemyCount, lootMultiplier } = expeditionData;
-
-    const numEnemies = enemyCount.min + Math.floor(Math.random() * (enemyCount.max - enemyCount.min + 1));
-
-    for (let i = 0; i < numEnemies; i++) {
-      const enemyType = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
-      const enemyData = entityFactory.getTemplate(enemyType) as any;
-
-      if (enemyData) {
-        const position = this.findValidEnemyPosition(player);
-        if (position) {
-          const weaponId = enemyData.weaponId;
-          const weapon = weaponId ? entityFactory.createWeapon(weaponId) : null;
-          const enemy = new Enemy(position.x, position.y, enemyData, weapon);
-
-          // Apply loot multiplier by improving drop chances
-          if (lootMultiplier > 1) {
-            enemy.enemyData.lootTable = enemy.enemyData.lootTable.map((drop: any) => ({
-              ...drop,
-              chance: Math.min(1, drop.chance * lootMultiplier)
-            }));
-          }
-
-          enemies.push(enemy);
-        }
-      }
-    }
-
-    return enemies;
-  }
-
-  private findValidEnemyPosition(player: Player): { x: number; y: number } | null {
-    const map = this.mapSystem.getCurrentMap();
-    if (!map) return null;
-
-    for (let attempts = 0; attempts < 100; attempts++) {
-      const x = (2 + Math.floor(Math.random() * (map.width - 4))) * map.tileSize + map.tileSize / 2;
-      const y = (2 + Math.floor(Math.random() * (map.height - 4))) * map.tileSize + map.tileSize / 2;
-
-      const distFromPlayer = Math.sqrt((x - player.x) ** 2 + (y - player.y) ** 2);
-      if (this.mapSystem.canMoveTo(x, y) && distFromPlayer > 150) {
-        return { x, y };
-      }
-    }
-
-    return null;
-  }
-
   loadBaseCamp(): void {
-    const wasExpedition = this.mode === 'expedition';
-    this.mode = 'base';
-    const baseCamp = MapSystem.createBaseCamp();
-    this.mapSystem.loadMap(baseCamp);
+    const wasExpedition = this.gameModeManager.getMode() === 'expedition';
+    const result = this.gameModeManager.loadBaseCamp(this.mapSystem, this.player);
 
-    this.player.x = 320;
-    this.player.y = 240;
-
-    this.enemies = [];
-    this.traps = [];
+    this.enemies = result.enemies;
+    this.traps = result.traps;
     this.combatSystem.clearProjectiles();
     this.combatSystem.clearCorpses();
     this.baseHealTimer = 0;
+    this.tileInteractionManager.reset();
 
-    // Add log entry when returning from expedition
     if (wasExpedition) {
       this.addCombatLog('=== RETURNED TO BASE ===', '#90EE90');
       this.addCombatLog('You are safe now!', '#90EE90');
@@ -318,57 +201,15 @@ export class GameScreen {
   }
 
   loadExpedition(level: number = 1): void {
-    this.mode = 'expedition';
+    const result = this.gameModeManager.loadExpedition(this.mapSystem, this.player, level);
 
-    // Try to load selected expedition from localStorage
-    let expeditionData = null;
-    try {
-      const storedData = localStorage.getItem('selectedExpedition');
-      if (storedData) {
-        expeditionData = JSON.parse(storedData);
-        localStorage.removeItem('selectedExpedition'); // Clear after use
-      }
-    } catch (error) {
-      console.error('Failed to load expedition data:', error);
-    }
-
-    const dungeon = MapSystem.createDungeon(expeditionData?.difficulty || level);
-    this.mapSystem.loadMap(dungeon);
-
-    // Use the spawn position from the dungeon (at STAIRS_UP)
-    this.player.x = dungeon.spawnX || 3 * 32 + 16;
-    this.player.y = dungeon.spawnY || 3 * 32 + 16;
-
+    this.enemies = result.enemies;
+    this.traps = result.traps;
     this.combatSystem.clearProjectiles();
     this.combatSystem.clearCorpses();
+    this.tileInteractionManager.reset();
+    this.tileInteractionManager.findTeleporters(this.mapSystem);
 
-    // Spawn enemies based on expedition data
-    if (expeditionData) {
-      this.enemies = this.spawnExpeditionEnemies(expeditionData, this.player);
-    } else {
-      this.enemies = this.spawnManager.spawnEnemies(level, this.player);
-    }
-    this.traps = this.spawnManager.spawnTraps(this.player);
-
-    // Reset interactive tiles tracking
-    this.interactedTiles.clear();
-    this.tileEffectCooldowns.clear();
-    this.playerBuffs = null;
-    this.teleporterLocations = [];
-
-    // Find all teleporter locations
-    for (let y = 0; y < dungeon.height; y++) {
-      for (let x = 0; x < dungeon.width; x++) {
-        if (dungeon.tiles[y][x] === TileType.TELEPORTER) {
-          this.teleporterLocations.push({
-            x: x * dungeon.tileSize + dungeon.tileSize / 2,
-            y: y * dungeon.tileSize + dungeon.tileSize / 2
-          });
-        }
-      }
-    }
-
-    // Add log entries
     this.addCombatLog('=== EXPEDITION STARTED ===', '#FF6B6B');
     this.addCombatLog(`${this.enemies.length} enemies detected!`, '#FF6B6B');
     this.addCombatLog('Press ESC to flee anytime', '#FFD700');
@@ -401,7 +242,7 @@ export class GameScreen {
     // Check for tile interactions (shop, expedition portal, cooking station)
     const tileInteraction = this.updater.checkTileInteractions(
       this.player,
-      this.mode,
+      this.gameModeManager.getMode(),
       this.mapSystem,
       () => gameState.setScreen('shop'),
       () => gameState.setScreen('expedition'),
@@ -411,7 +252,7 @@ export class GameScreen {
     // Handle interact action (E key or virtual button)
     if (this.inputHandler.handleInteract()) {
       const tileType = this.mapSystem.getTileAt(this.player.x, this.player.y);
-      if (this.mode === 'base' && tileType) {
+      if (this.gameModeManager.getMode() === 'base' && tileType) {
         if (tileType === TileType.SHOP) {
           gameState.setScreen('shop');
         } else if (tileType === TileType.EXPEDITION_PORTAL) {
@@ -421,17 +262,17 @@ export class GameScreen {
         } else if (tileType === TileType.TRAINING_HALL) {
           gameState.setScreen('training');
         }
-      } else if (this.mode === 'expedition' && tileType) {
+      } else if (this.gameModeManager.getMode() === 'expedition' && tileType) {
         if (tileType === TileType.STAIRS_DOWN) {
           this.loadBaseCamp();
         } else if (tileType === TileType.HEALTH_FOUNTAIN) {
-          this.interactWithHealthFountain();
+          this.tileInteractionManager.interactWithHealthFountain(this.player, this.mapSystem, (text, color) => this.addCombatLog(text, color));
         } else if (tileType === TileType.TREASURE_CHEST) {
-          this.interactWithTreasureChest();
+          this.tileInteractionManager.interactWithTreasureChest(this.player, this.mapSystem, (text, color) => this.addCombatLog(text, color));
         } else if (tileType === TileType.SHRINE) {
-          this.interactWithShrine();
+          this.tileInteractionManager.interactWithShrine(this.player, this.mapSystem, (text, color) => this.addCombatLog(text, color));
         } else if (tileType === TileType.TELEPORTER) {
-          this.interactWithTeleporter();
+          this.tileInteractionManager.interactWithTeleporter(this.player, (text, color) => this.addCombatLog(text, color));
         }
       }
     }
@@ -478,10 +319,10 @@ export class GameScreen {
 
     // Check if all enemies are cleared
     const enemiesAfterDeath = this.enemies.filter(e => e.alive).length;
-    if (this.mode === 'expedition' && enemiesBeforeDeath > 0 && enemiesAfterDeath === 0) {
+    if (this.gameModeManager.getMode() === 'expedition' && enemiesBeforeDeath > 0 && enemiesAfterDeath === 0) {
       this.addCombatLog('All enemies cleared! Press E on portal to return to base', '#FFD700');
     }
-    const interactionResult = this.updater.checkInteractions(this.player, this.mode, this.combatSystem.getCorpses());
+    const interactionResult = this.updater.checkInteractions(this.player, this.gameModeManager.getMode(), this.combatSystem.getCorpses());
 
     // Combine tile interactions with corpse interactions (prioritize tile interactions)
     if (tileInteraction.showPrompt) {
@@ -495,11 +336,11 @@ export class GameScreen {
     }
 
     this.updater.updateCamera(this.player, this.renderer);
-    this.baseHealTimer = this.updater.handleBaseHealing(this.player, this.mode, this.baseHealTimer, deltaTime);
+    this.baseHealTimer = this.updater.handleBaseHealing(this.player, this.gameModeManager.getMode(), this.baseHealTimer, deltaTime);
 
     // Handle tile effects in expeditions
-    if (this.mode === 'expedition') {
-      this.handleTileEffects(deltaTime);
+    if (this.gameModeManager.getMode() === 'expedition') {
+      this.tileInteractionManager.updateTileEffects(deltaTime, this.player, this.mapSystem, (text, color) => this.addCombatLog(text, color));
 
       // Update hunger timer
       gameState.tickHunger(deltaTime);
@@ -519,30 +360,14 @@ export class GameScreen {
     }
 
     // Update player buffs
-    if (this.playerBuffs && this.playerBuffs.duration > 0) {
-      this.playerBuffs.duration -= deltaTime;
-      if (this.playerBuffs.duration <= 0) {
-        // Remove buffs
-        if (this.playerBuffs.speed) {
-          this.player.stats.speed /= this.playerBuffs.speed;
-        }
-        if (this.playerBuffs.damage) {
-          this.player.stats.attack /= this.playerBuffs.damage;
-        }
-        if (this.playerBuffs.defense) {
-          this.player.stats.defense /= this.playerBuffs.defense;
-        }
-        this.playerBuffs = null;
-        this.addCombatLog('Buff expired', '#888');
-      }
-    }
+    this.tileInteractionManager.updateBuffs(deltaTime, this.player, (text, color) => this.addCombatLog(text, color));
 
     if (!this.player.alive) {
       this.handlePlayerDeath();
     }
 
     // Update combat log to remove old entries
-    this.updateCombatLog();
+    this.combatLogManager.update();
 
     this.inputHandler.update();
   }
@@ -551,180 +376,6 @@ export class GameScreen {
 
 
 
-
-
-
-  private handleTileEffects(deltaTime: number): void {
-    const tileType = this.mapSystem.getTileAt(this.player.x, this.player.y);
-    if (!tileType) return;
-
-    const map = this.mapSystem.getCurrentMap();
-    if (!map) return;
-
-    const tileX = Math.floor(this.player.x / map.tileSize);
-    const tileY = Math.floor(this.player.y / map.tileSize);
-    const tileKey = `${tileX},${tileY}`;
-
-    // Lava damage
-    if (tileType === TileType.LAVA) {
-      this.lavaDamageTimer += deltaTime;
-      if (this.lavaDamageTimer >= 0.5) { // 10 damage per 0.5 seconds
-        this.player.takeDamage(10);
-        this.addCombatLog('Burned by lava! -10 HP', '#FF4500');
-        this.lavaDamageTimer = 0;
-      }
-    } else {
-      this.lavaDamageTimer = 0;
-    }
-
-    // Water slowing effect
-    if (tileType === TileType.WATER) {
-      if (this.player.slowedDuration <= 0) {
-        this.player.slowedDuration = 0.1; // Keep applying slow while on water
-        this.player.slowMultiplier = 0.5; // 50% speed in water
-      }
-    }
-
-    // Spike/Poison trap damage
-    if (tileType === TileType.SPIKE_TRAP || tileType === TileType.POISON_TRAP) {
-      const cooldown = this.tileEffectCooldowns.get(tileKey) || 0;
-      if (cooldown <= 0 && !this.player.isDashing) {
-        const damage = tileType === TileType.SPIKE_TRAP ? 20 : 15;
-        this.player.takeDamage(damage);
-        this.addCombatLog(`Trap triggered! -${damage} HP`, '#FF0000');
-        this.tileEffectCooldowns.set(tileKey, 2.0); // 2 second cooldown
-
-        if (tileType === TileType.POISON_TRAP) {
-          // Add poison DOT effect
-          this.player.slowedDuration = Math.max(this.player.slowedDuration, 3.0);
-          this.player.slowMultiplier = 0.6;
-          this.addCombatLog('Poisoned!', '#32CD32');
-        }
-      }
-    }
-
-    // Update cooldowns
-    this.tileEffectCooldowns.forEach((value, key) => {
-      const newValue = value - deltaTime;
-      if (newValue <= 0) {
-        this.tileEffectCooldowns.delete(key);
-      } else {
-        this.tileEffectCooldowns.set(key, newValue);
-      }
-    });
-  }
-
-  private interactWithHealthFountain(): void {
-    const map = this.mapSystem.getCurrentMap();
-    if (!map) return;
-
-    const tileX = Math.floor(this.player.x / map.tileSize);
-    const tileY = Math.floor(this.player.y / map.tileSize);
-    const tileKey = `fountain-${tileX},${tileY}`;
-
-    if (this.interactedTiles.has(tileKey)) {
-      this.addCombatLog('Fountain is dry', '#888');
-      return;
-    }
-
-    const healAmount = 30;
-    this.player.heal(healAmount);
-    this.interactedTiles.add(tileKey);
-    this.addCombatLog(`Healed ${healAmount} HP from fountain!`, '#FF69B4');
-    this.addCombatLog('Fountain dried up', '#888');
-  }
-
-  private interactWithTreasureChest(): void {
-    const map = this.mapSystem.getCurrentMap();
-    if (!map) return;
-
-    const tileX = Math.floor(this.player.x / map.tileSize);
-    const tileY = Math.floor(this.player.y / map.tileSize);
-    const tileKey = `chest-${tileX},${tileY}`;
-
-    if (this.interactedTiles.has(tileKey)) {
-      this.addCombatLog('Chest is empty', '#888');
-      return;
-    }
-
-    this.interactedTiles.add(tileKey);
-    this.addCombatLog('Opened treasure chest!', '#FFD700');
-
-    // Guaranteed 2-4 random ingredients
-    const numIngredients = 2 + Math.floor(Math.random() * 3);
-    const ingredients = ['tomato', 'cheese', 'lettuce', 'beef', 'bread', 'chicken', 'fish', 'potato'];
-    for (let i = 0; i < numIngredients; i++) {
-      const randomIng = ingredients[Math.floor(Math.random() * ingredients.length)];
-      gameState.addToInventory(randomIng);
-      const template = entityFactory.getTemplate(randomIng);
-      const itemName = template?.name || randomIng;
-      this.addCombatLog(`Found: ${itemName}`, '#90EE90');
-    }
-  }
-
-  private interactWithShrine(): void {
-    const map = this.mapSystem.getCurrentMap();
-    if (!map) return;
-
-    const tileX = Math.floor(this.player.x / map.tileSize);
-    const tileY = Math.floor(this.player.y / map.tileSize);
-    const tileKey = `shrine-${tileX},${tileY}`;
-
-    if (this.interactedTiles.has(tileKey)) {
-      this.addCombatLog('Shrine power depleted', '#888');
-      return;
-    }
-
-    // Random buff
-    const buffTypes = ['speed', 'damage', 'defense'];
-    const buffType = buffTypes[Math.floor(Math.random() * buffTypes.length)];
-
-    this.interactedTiles.add(tileKey);
-
-    if (buffType === 'speed') {
-      this.playerBuffs = { speed: 1.5, duration: 15.0 };
-      this.player.stats.speed *= 1.5;
-      this.addCombatLog('Blessed with speed! +50% speed for 15s', '#DAA520');
-    } else if (buffType === 'damage') {
-      this.playerBuffs = { damage: 1.5, duration: 15.0 };
-      this.player.stats.attack *= 1.5;
-      this.addCombatLog('Blessed with power! +50% damage for 15s', '#DAA520');
-    } else {
-      this.playerBuffs = { defense: 1.5, duration: 15.0 };
-      this.player.stats.defense *= 1.5;
-      this.addCombatLog('Blessed with protection! +50% defense for 15s', '#DAA520');
-    }
-  }
-
-  private interactWithTeleporter(): void {
-    if (this.teleporterLocations.length < 2) {
-      this.addCombatLog('Teleporter is inactive', '#888');
-      return;
-    }
-
-    // Find which teleporter we're on
-    let currentTeleporterIndex = -1;
-    for (let i = 0; i < this.teleporterLocations.length; i++) {
-      const dist = Math.sqrt(
-        Math.pow(this.player.x - this.teleporterLocations[i].x, 2) +
-        Math.pow(this.player.y - this.teleporterLocations[i].y, 2)
-      );
-      if (dist < 20) {
-        currentTeleporterIndex = i;
-        break;
-      }
-    }
-
-    if (currentTeleporterIndex === -1) return;
-
-    // Teleport to a different random teleporter
-    const otherTeleporters = this.teleporterLocations.filter((_, i) => i !== currentTeleporterIndex);
-    const destination = otherTeleporters[Math.floor(Math.random() * otherTeleporters.length)];
-
-    this.player.x = destination.x;
-    this.player.y = destination.y;
-    this.addCombatLog('Teleported!', '#8B00FF');
-  }
 
   private handlePlayerDeath(): void {
     this.player.alive = true;
@@ -750,12 +401,12 @@ export class GameScreen {
 
     this.renderer.renderUI(
       this.player,
-      this.mode,
+      this.gameModeManager.getMode(),
       this.enemies,
       this.combatSystem.getCorpses(),
       this.showInteractionPrompt,
       this.interactionPromptText,
-      this.combatLog,
+      this.combatLogManager.getEntries(),
       inventory
     );
 

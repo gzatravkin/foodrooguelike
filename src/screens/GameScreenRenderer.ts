@@ -5,25 +5,29 @@
 import { CanvasRenderer } from '../rendering/CanvasRenderer';
 import { TileRenderer } from '../rendering/TileRenderer';
 import { EntityRenderer } from '../rendering/EntityRenderer';
+import { UIRenderer } from './UIRenderer';
+import { ProjectileRenderer } from './ProjectileRenderer';
 import { GameMap, TileType } from '../systems/MapSystem';
 import { Player } from '../entities/Player';
 import { Enemy } from '../entities/Enemy';
 import { Projectile } from '../entities/Projectile';
 import { Corpse } from '../entities/Corpse';
 import { Trap } from '../entities/Trap';
-import { GameMode } from './GameScreen';
+import { GameMode } from './GameModeManager';
 import { Weapon } from '../entities/types';
-import { gameState } from '../core/GameState';
 import { Particle } from '../entities/Particle';
-import { entityFactory } from '../entities/EntityFactory';
 
 export class GameScreenRenderer {
   private tileRenderer: TileRenderer;
   private entityRenderer: EntityRenderer;
+  private uiRenderer: UIRenderer;
+  private projectileRenderer: ProjectileRenderer;
 
   constructor(private renderer: CanvasRenderer) {
     this.tileRenderer = new TileRenderer(renderer);
     this.entityRenderer = new EntityRenderer(renderer);
+    this.uiRenderer = new UIRenderer(renderer);
+    this.projectileRenderer = new ProjectileRenderer(renderer);
   }
 
   clear(): void {
@@ -183,82 +187,7 @@ export class GameScreenRenderer {
   }
 
   renderProjectiles(projectiles: Projectile[]): void {
-    for (const proj of projectiles) {
-      const speed = Math.sqrt(proj.vx * proj.vx + proj.vy * proj.vy);
-      const normalizedVx = proj.vx / speed;
-      const normalizedVy = proj.vy / speed;
-
-      // Render based on shape
-      switch (proj.shape) {
-        case 'beam':
-          // Energy beam - elongated with trail
-          const beamLength = proj.size * 4;
-          const beamEndX = proj.x - normalizedVx * beamLength;
-          const beamEndY = proj.y - normalizedVy * beamLength;
-
-          // Outer glow
-          this.renderer.drawLine(beamEndX, beamEndY, proj.x, proj.y, this.hexToRgba(proj.color, 0.3), proj.size * 2);
-          // Inner beam
-          this.renderer.drawLine(beamEndX, beamEndY, proj.x, proj.y, proj.color, proj.size);
-          // Bright core
-          this.renderer.drawCircle(proj.x, proj.y, proj.size * 0.6, '#FFFFFF');
-          break;
-
-        case 'bolt':
-          // Magic bolt - arrow-like with glow
-          const boltLength = proj.size * 3;
-          const boltEndX = proj.x - normalizedVx * boltLength;
-          const boltEndY = proj.y - normalizedVy * boltLength;
-
-          // Glow aura
-          this.renderer.drawCircle(proj.x, proj.y, proj.size * 2, this.hexToRgba(proj.color, 0.3));
-          // Bolt shaft
-          this.renderer.drawLine(boltEndX, boltEndY, proj.x, proj.y, proj.color, proj.size * 0.8);
-          // Bolt head
-          this.renderer.drawCircle(proj.x, proj.y, proj.size, proj.color);
-          // Bright tip
-          this.renderer.drawCircle(proj.x, proj.y, proj.size * 0.4, this.hexToRgba('#FFFFFF', 0.8));
-          break;
-
-        case 'fire':
-          // Fire projectile - irregular with embers
-          const fireSize = proj.size * (0.8 + Math.random() * 0.4);
-
-          // Outer fire glow
-          this.renderer.drawCircle(proj.x, proj.y, fireSize * 1.8, this.hexToRgba('#FF9800', 0.4));
-          // Main fire
-          this.renderer.drawCircle(proj.x, proj.y, fireSize, proj.color);
-          // Hot core
-          this.renderer.drawCircle(proj.x, proj.y, fireSize * 0.5, '#FFEB3B');
-
-          // Ember trail
-          for (let i = 1; i <= 3; i++) {
-            const emberX = proj.x - normalizedVx * i * 8 + (Math.random() - 0.5) * 4;
-            const emberY = proj.y - normalizedVy * i * 8 + (Math.random() - 0.5) * 4;
-            const emberSize = proj.size * 0.3 * (1 - i * 0.2);
-            this.renderer.drawCircle(emberX, emberY, emberSize, this.hexToRgba('#FF5722', 0.6 - i * 0.15));
-          }
-          break;
-
-        case 'circle':
-        default:
-          // Standard circular projectile with glow
-          const glowSize = proj.size * 3;
-          const trailColor = proj.trailColor || proj.color;
-
-          // Outer glow
-          this.renderer.drawCircle(proj.x, proj.y, glowSize, this.hexToRgba(trailColor, 0.3));
-          // Main projectile
-          this.renderer.drawCircle(proj.x, proj.y, proj.size, proj.color);
-
-          // Motion trail
-          const trailLength = 15;
-          const trailX = proj.x - normalizedVx * trailLength;
-          const trailY = proj.y - normalizedVy * trailLength;
-          this.renderer.drawLine(trailX, trailY, proj.x, proj.y, this.hexToRgba(trailColor, 0.5), proj.size * 0.6);
-          break;
-      }
-    }
+    this.projectileRenderer.renderProjectiles(projectiles);
   }
 
   renderPlayer(player: Player): void {
@@ -324,131 +253,7 @@ export class GameScreenRenderer {
     combatLog: Array<{text: string; timestamp: number; color: string}> = [],
     inventory: string[] = []
   ): void {
-    const canvas = this.renderer.getCanvas();
-
-    // Player stats
-    this.renderer.drawUIRectWithBorder(10, 10, 300, 150, 'rgba(0, 0, 0, 0.7)', '#4CAF50', 2);
-    this.renderer.drawUIText(`HP: ${player.stats.health}/${player.stats.maxHealth}`, 20, 35, '#fff', 18);
-    this.renderer.drawUIText(`Gold: ${player.gold}`, 20, 60, '#FFD700', 18);
-    this.renderer.drawUIText(`ATK: ${player.getAttackDamage()} | DEF: ${player.getTotalDefense()}`, 20, 85, '#fff', 16);
-
-    const weaponName = player.weapon?.name || 'Fists';
-    const weaponType = player.isRangedWeapon() ? '🔫' : '⚔️';
-    this.renderer.drawUIText(`${weaponType} ${weaponName}`, 20, 110, '#FFD700', 16);
-
-    // Active buffs
-    const activeBuffs = gameState.getState().activeBuffs;
-    if (activeBuffs.length > 0) {
-      let buffY = 170;
-      this.renderer.drawUIRectWithBorder(10, buffY, 300, 30 + (activeBuffs.length * 25), 'rgba(138, 43, 226, 0.3)', '#BA68C8', 2);
-      this.renderer.drawUIText('ACTIVE BUFFS:', 20, buffY + 20, '#FFD700', 14, 'left');
-
-      activeBuffs.forEach((buff, i) => {
-        const buffEmoji = buff.name.includes('health') ? '❤️' : buff.name.includes('attack') ? '⚔️' : '🛡️';
-        const buffText = `${buffEmoji} ${buff.name} (${Math.ceil(buff.duration / 60)}s)`;
-        this.renderer.drawUIText(buffText, 20, buffY + 45 + (i * 25), '#90EE90', 14);
-      });
-    }
-
-    // Dash cooldown
-    const dashCooldownPercent = Math.max(0, player.dashCooldown / 1.0);
-    const dashColor = player.canDash() ? '#4CAF50' : '#666';
-    this.renderer.drawUIText('💨 Dash:', 20, 135, dashColor, 14);
-
-    const dashBarWidth = 80;
-    this.renderer.drawUIRect(100, 123, dashBarWidth, 14, '#222');
-    if (!player.canDash()) {
-      const fillWidth = dashBarWidth * (1 - dashCooldownPercent);
-      this.renderer.drawUIRect(100, 123, fillWidth, 14, '#4CAF50');
-    } else {
-      this.renderer.drawUIRect(100, 123, dashBarWidth, 14, '#4CAF50');
-    }
-
-    // Mode indicator
-    this.renderer.drawUIText(mode === 'base' ? 'BASE CAMP' : 'EXPEDITION', canvas.width / 2, 30, '#fff', 24, 'center');
-
-    // Controls
-    this.renderer.drawUIRectWithBorder(10, canvas.height - 195, 380, 185, 'rgba(0, 0, 0, 0.7)', '#fff', 2);
-    this.renderer.drawUIText('WASD/Arrows: Move', 20, canvas.height - 170, '#fff', 14);
-    this.renderer.drawUIText('Shift: Dash (dodge)', 20, canvas.height - 150, '#4CAF50', 14);
-    this.renderer.drawUIText('Space/Click: Attack', 20, canvas.height - 130, '#fff', 14);
-    this.renderer.drawUIText('Dash + Shoot: SUPER SHOT! 💥', 20, canvas.height - 110, '#00FFFF', 14);
-    this.renderer.drawUIText('  (2x DMG, 3x bullets, faster!)', 20, canvas.height - 95, '#00FFFF', 12);
-    this.renderer.drawUIText('1-9: Switch weapons', 20, canvas.height - 75, '#FFD700', 14);
-    this.renderer.drawUIText('E: Interact | F: Loot', 20, canvas.height - 55, '#fff', 14);
-    this.renderer.drawUIText('🎯 Aim: Mouse/Movement', 20, canvas.height - 35, '#fff', 14);
-
-    // Interaction prompt
-    if (showInteractionPrompt) {
-      const promptWidth = 350;
-      const promptX = canvas.width / 2 - promptWidth / 2;
-      const promptY = canvas.height - 180;
-
-      this.renderer.drawUIRectWithBorder(promptX, promptY, promptWidth, 50, 'rgba(0, 0, 0, 0.9)', '#FFD700', 3);
-      this.renderer.drawUIText(interactionPromptText, canvas.width / 2, promptY + 32, '#FFD700', 20, 'center');
-    }
-
-    // Enemy and corpse count in expedition
-    if (mode === 'expedition') {
-      const aliveEnemies = enemies.filter(e => e.alive).length;
-      const lootableCorpses = corpses.filter(c => c.canLoot()).length;
-
-      // Hunger timer
-      const hungerTime = gameState.getState().expeditionState.hungerTimer;
-      const hungerPercent = hungerTime / gameState.getState().expeditionState.maxHungerTime;
-      const hungerColor = hungerPercent > 0.5 ? '#4CAF50' : hungerPercent > 0.25 ? '#FF8C00' : '#F44336';
-
-      this.renderer.drawUIRectWithBorder(canvas.width - 210, 10, 200, 100, 'rgba(0, 0, 0, 0.7)', hungerColor, 2);
-      this.renderer.drawUIText('🍖 HUNGER TIMER', canvas.width - 110, 30, hungerColor, 14, 'center');
-      this.renderer.drawUIText(`${Math.ceil(hungerTime)}s`, canvas.width - 110, 52, hungerColor, 22, 'center');
-      this.renderer.drawUIText(`Enemies: ${aliveEnemies}`, canvas.width - 110, 75, '#F44336', 14, 'center');
-      if (lootableCorpses > 0) {
-        this.renderer.drawUIText(`Corpses: ${lootableCorpses}`, canvas.width - 110, 95, '#999', 12, 'center');
-      }
-
-      // Escape instruction in expedition mode
-      this.renderer.drawUIRectWithBorder(canvas.width - 230, 90, 220, 60, 'rgba(139, 0, 0, 0.7)', '#FF6B6B', 2);
-      this.renderer.drawUIText('ESC: Flee to Base', canvas.width - 120, 115, '#FFD700', 16, 'center');
-      this.renderer.drawUIText('(No Gold Loss)', canvas.width - 120, 135, '#90EE90', 12, 'center');
-    }
-
-    // Combat log (bottom left) - ALWAYS SHOW with border even if empty
-    const logX = 10;
-    const logY = canvas.height - 240;
-    const logEntries = combatLog.slice(0, 8);
-    const logHeight = Math.max(80, logEntries.length * 22 + 40);
-
-    this.renderer.drawUIRectWithBorder(logX, logY, 380, logHeight, 'rgba(0, 0, 0, 0.85)', '#FFD700', 2);
-    this.renderer.drawUIText('Combat Log', logX + 10, logY + 22, '#FFD700', 16, 'left');
-
-    if (logEntries.length > 0) {
-      logEntries.forEach((entry, i) => {
-        this.renderer.drawUIText(entry.text, logX + 10, logY + 48 + i * 22, entry.color, 14, 'left');
-      });
-    } else {
-      this.renderer.drawUIText('No messages yet...', logX + 10, logY + 48, '#666', 12, 'left');
-    }
-
-    // Inventory (top right, below enemy count)
-    if (inventory.length > 0) {
-      const invStartY = mode === 'expedition' ? 170 : 90;
-      const invHeight = Math.min(inventory.length * 20 + 30, 150);
-
-      this.renderer.drawUIRectWithBorder(canvas.width - 230, invStartY, 220, invHeight, 'rgba(0, 0, 0, 0.7)', '#90EE90', 2);
-      this.renderer.drawUIText('Inventory', canvas.width - 120, invStartY + 20, '#90EE90', 14, 'center');
-
-      // Show inventory items
-      inventory.slice(0, 6).forEach((itemId, i) => {
-        const template = entityFactory.getTemplate(itemId);
-        const itemName = template?.name || itemId;
-        const displayName = itemName.length > 18 ? itemName.substring(0, 15) + '...' : itemName;
-        this.renderer.drawUIText(displayName, canvas.width - 220, invStartY + 40 + i * 20, '#FFF', 12, 'left');
-      });
-
-      if (inventory.length > 6) {
-        this.renderer.drawUIText(`+${inventory.length - 6} more...`, canvas.width - 220, invStartY + 40 + 6 * 20, '#AAA', 11, 'left');
-      }
-    }
+    this.uiRenderer.renderUI(player, mode, enemies, corpses, showInteractionPrompt, interactionPromptText, combatLog, inventory);
   }
 
   renderShop(availableWeapons: Weapon[], playerGold: number, currentWeapon: Weapon | null): void {

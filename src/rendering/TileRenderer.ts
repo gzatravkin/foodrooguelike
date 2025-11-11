@@ -57,6 +57,12 @@ export class TileRenderer {
       case TileType.EXPEDITION_PORTAL:
         this.structureRenderer.renderExpeditionPortal(worldX, worldY, size);
         break;
+      case TileType.TRAINING_HALL:
+        this.structureRenderer.renderTrainingHall(worldX, worldY, size);
+        break;
+      case TileType.UPGRADES_HALL:
+        this.structureRenderer.renderUpgradesHall(worldX, worldY, size);
+        break;
       case TileType.STAIRS_DOWN:
         this.structureRenderer.renderStairsDown(worldX, worldY, size);
         break;

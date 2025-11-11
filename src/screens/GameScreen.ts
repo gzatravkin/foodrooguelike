@@ -116,6 +116,14 @@ export class GameScreen {
         this.player.gold = gold;
       });
 
+      // Listen for player stat updates (from upgrades, training, etc.)
+      eventBus.on('player:updated', (playerStats: any) => {
+        this.player.stats.maxHealth = playerStats.maxHealth;
+        this.player.stats.health = playerStats.health;
+        this.player.stats.attack = playerStats.attack;
+        this.player.stats.defense = playerStats.defense;
+      });
+
       // Listen for screen changes to handle expedition starts
       eventBus.on('screen:changed', (screen: string) => {
         if (screen === 'game') {

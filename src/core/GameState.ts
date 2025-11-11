@@ -239,6 +239,8 @@ class GameState {
             const saveData = localStorage.getItem('foodroguelike_save');
             if (saveData) {
                 this.state = JSON.parse(saveData);
+                // Recalculate player stats from upgrades after loading
+                this.recalculatePlayerStats();
                 eventBus.emit('game:loaded');
                 return true;
             }
@@ -294,6 +296,107 @@ class GameState {
             return true;
         }
         return false;
+    }
+
+    // Calculate total bonuses from character perk upgrades
+    calculateCharacterPerkBonuses(): Partial<PlayerStats> {
+        const bonuses: Partial<PlayerStats> = {
+            maxHealth: 0,
+            health: 0,
+            attack: 0,
+            defense: 0
+        };
+
+        const characterPerks = this.state.upgrades.characterPerks;
+
+        // Load upgrade data to get effect values
+        import('../data/upgrades.json').then((upgradesModule) => {
+            const upgradesData = upgradesModule.default as Record<string, any>;
+
+            characterPerks.forEach(perk => {
+                const upgradeData = upgradesData[perk.id];
+                if (!upgradeData || !upgradeData.effects) return;
+
+                const effects = upgradeData.effects;
+
+                // Apply bonuses based on level
+                if (effects.maxHealthBonus) {
+                    bonuses.maxHealth! += effects.maxHealthBonus * perk.level;
+                    bonuses.health! += effects.maxHealthBonus * perk.level;
+                }
+                if (effects.attackBonus) {
+                    bonuses.attack! += effects.attackBonus * perk.level;
+                }
+                if (effects.defenseBonus) {
+                    bonuses.defense! += effects.defenseBonus * perk.level;
+                }
+            });
+        });
+
+        return bonuses;
+    }
+
+    // Recalculate and apply all character perk and training skill bonuses from base stats
+    recalculatePlayerStats(): void {
+        // Start with base stats
+        const baseStats: PlayerStats = {
+            health: 100,
+            maxHealth: 100,
+            attack: 10,
+            defense: 5
+        };
+
+        // Get current health percentage to maintain it
+        const healthPercent = this.state.player.maxHealth > 0
+            ? this.state.player.health / this.state.player.maxHealth
+            : 1;
+
+        // Calculate total bonuses from character perks
+        let totalMaxHealthBonus = 0;
+        let totalAttackBonus = 0;
+        let totalDefenseBonus = 0;
+
+        const characterPerks = this.state.upgrades.characterPerks;
+
+        // Calculate bonuses from character perk upgrades
+        characterPerks.forEach(perk => {
+            if (perk.id === 'health_boost') {
+                totalMaxHealthBonus += 20 * perk.level; // 20 HP per level
+            } else if (perk.id === 'attack_boost') {
+                totalAttackBonus += 2 * perk.level; // 2 attack per level
+            } else if (perk.id === 'defense_boost') {
+                totalDefenseBonus += 1 * perk.level; // 1 defense per level
+            }
+        });
+
+        // Calculate bonuses from training skills
+        const trainingSkills = this.state.trainingSkills;
+        trainingSkills.forEach(skill => {
+            if (skill.id === 'vitality') {
+                totalMaxHealthBonus += 10 * skill.level; // 10 HP per level
+            } else if (skill.id === 'combat_training') {
+                totalAttackBonus += 2 * skill.level; // 2 attack per level
+            } else if (skill.id === 'defensive_stance') {
+                totalDefenseBonus += 1 * skill.level; // 1 defense per level
+            }
+        });
+
+        // Apply bonuses to base stats
+        const newMaxHealth = baseStats.maxHealth + totalMaxHealthBonus;
+        const newAttack = baseStats.attack + totalAttackBonus;
+        const newDefense = baseStats.defense + totalDefenseBonus;
+
+        // Maintain health percentage when max health changes
+        const newHealth = Math.ceil(newMaxHealth * healthPercent);
+
+        this.state.player = {
+            health: newHealth,
+            maxHealth: newMaxHealth,
+            attack: newAttack,
+            defense: newDefense
+        };
+
+        eventBus.emit('player:updated', this.state.player);
     }
 }
 

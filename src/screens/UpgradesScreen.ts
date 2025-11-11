@@ -247,39 +247,13 @@ export class UpgradesScreen extends Screen {
         if (gameState.spendGold(cost)) {
             gameState.purchaseUpgrade(upgrade.category, upgrade.id);
 
-            // Apply stat bonuses immediately if they're character perks
+            // Recalculate all character perk bonuses if this is a character perk
             if (upgrade.category === 'characterPerks') {
-                this.applyCharacterPerkEffect(upgrade);
+                gameState.recalculatePlayerStats();
             }
 
             this.render();
         }
-    }
-
-    private applyCharacterPerkEffect(upgrade: UpgradeData): void {
-        const state = gameState.getState();
-        const effects = upgrade.effects;
-
-        if (effects.maxHealthBonus) {
-            gameState.updatePlayer({
-                maxHealth: state.player.maxHealth + effects.maxHealthBonus,
-                health: state.player.health + effects.maxHealthBonus
-            });
-        }
-
-        if (effects.attackBonus) {
-            gameState.updatePlayer({
-                attack: state.player.attack + effects.attackBonus
-            });
-        }
-
-        if (effects.defenseBonus) {
-            gameState.updatePlayer({
-                defense: state.player.defense + effects.defenseBonus
-            });
-        }
-
-        // Other effects (drop rate, buff duration, dash cooldown) are applied when needed
     }
 
     handleInput(event: MouseEvent | TouchEvent): void {

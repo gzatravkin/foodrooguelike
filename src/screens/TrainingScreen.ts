@@ -186,28 +186,15 @@ export class TrainingScreen extends Screen {
         if (gameState.spendGold(cost)) {
             gameState.purchaseTrainingSkill(skillId);
 
-            // Apply the effect immediately to player stats
-            this.applySkillEffect(skill);
+            // Recalculate all player stats from upgrades and training
+            const effect = skill.effect;
+            if (effect.stat === 'attack' || effect.stat === 'defense' || effect.stat === 'maxHealth') {
+                gameState.recalculatePlayerStats();
+            }
+            // Other effects (speed, loot chance, etc.) are applied when needed
 
             this.render();
         }
-    }
-
-    private applySkillEffect(skill: TrainingSkill): void {
-        const state = gameState.getState();
-        const effect = skill.effect;
-
-        if (effect.stat === 'attack') {
-            gameState.updatePlayer({ attack: state.player.attack + effect.amount });
-        } else if (effect.stat === 'defense') {
-            gameState.updatePlayer({ defense: state.player.defense + effect.amount });
-        } else if (effect.stat === 'maxHealth') {
-            gameState.updatePlayer({
-                maxHealth: state.player.maxHealth + effect.amount,
-                health: state.player.health + effect.amount
-            });
-        }
-        // Other effects (speed, loot chance, etc.) are applied when needed
     }
 
     handleInput(event: MouseEvent | TouchEvent): void {

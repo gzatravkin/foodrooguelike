@@ -28,13 +28,22 @@ export class BaseScreen extends Screen {
         // Player stats
         this.renderStats(50, 120);
 
-        // Navigation buttons
-        this.createNavButton(vb.width / 2 - 150, 400, 250, 60, 'COOKING', () => {
+        // Navigation buttons - Row 1
+        this.createNavButton(vb.width / 2 - 260, 320, 240, 60, 'COOKING', () => {
             gameState.setScreen('cooking');
         });
 
-        this.createNavButton(vb.width / 2 + 150, 400, 250, 60, 'SHOP', () => {
+        this.createNavButton(vb.width / 2 - 10, 320, 240, 60, 'SHOP', () => {
             gameState.setScreen('shop');
+        });
+
+        // Navigation buttons - Row 2
+        this.createNavButton(vb.width / 2 - 260, 400, 240, 60, 'TRAINING', () => {
+            gameState.setScreen('training');
+        });
+
+        this.createNavButton(vb.width / 2 - 10, 400, 240, 60, 'UPGRADES', () => {
+            gameState.setScreen('upgrades');
         });
 
         // Restaurant info

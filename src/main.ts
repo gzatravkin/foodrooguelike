@@ -16,6 +16,7 @@ import { ShopScreen } from './screens/ShopScreen';
 import { RecipeBookScreen } from './screens/RecipeBookScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { TrainingScreen } from './screens/TrainingScreen';
+import { UpgradesScreen } from './screens/UpgradesScreen';
 import { ExpeditionSelectionScreen } from './screens/ExpeditionSelectionScreen';
 import { GlobalMapScreen } from './screens/GlobalMapScreen';
 
@@ -60,6 +61,7 @@ class Game {
         this.screenManager.registerScreen('recipebook', new RecipeBookScreen(this.svgRenderer));
         this.screenManager.registerScreen('settings', new SettingsScreen(this.svgRenderer));
         this.screenManager.registerScreen('training', new TrainingScreen(this.svgRenderer));
+        this.screenManager.registerScreen('upgrades', new UpgradesScreen(this.svgRenderer));
         this.screenManager.registerScreen('expedition', new ExpeditionSelectionScreen(this.svgRenderer));
 
         // Listen to screen changes from gameState

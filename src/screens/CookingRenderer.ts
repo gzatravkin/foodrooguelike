@@ -6,6 +6,7 @@ import { cookingSystem } from '../systems/CookingSystem';
 import { entityFactory } from '../entities/EntityFactory';
 import type { SVGRenderer } from '../rendering/SVGRenderer';
 import { CookingState } from './CookingState';
+import { gameState } from '../core/GameState';
 
 export class CookingRenderer {
     private renderer: SVGRenderer;
@@ -35,7 +36,6 @@ export class CookingRenderer {
         this.renderTimeColumn(700, 140);
 
         // Quick select panel (if there are saved recipes)
-        const { gameState } = require('../core/GameState');
         const savedRecipes = gameState.getSavedRecipeConfigs();
         if (savedRecipes && savedRecipes.length > 0) {
             this.renderQuickSelectPanel(100, 400);
@@ -225,7 +225,6 @@ export class CookingRenderer {
     }
 
     private renderQuickSelectPanel(x: number, y: number): void {
-        const { gameState } = require('../core/GameState');
         const isActive = this.state.getCurrentSection() === 'quickselect';
         const titleColor = isActive ? '#FFD700' : '#888';
 

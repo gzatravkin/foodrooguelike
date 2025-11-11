@@ -2,6 +2,8 @@
  * CookingState - Manages cooking screen state
  */
 
+import { entityFactory } from '../entities/EntityFactory';
+
 export type Section = 'ingredients' | 'methods' | 'time' | 'quickselect';
 
 export class CookingState {
@@ -127,7 +129,6 @@ export class CookingState {
         this.selectedIngredients = [];
 
         // Try to find actual ingredient instances for each template
-        const { entityFactory } = require('../entities/EntityFactory');
         for (const templateId of ingredientTemplates) {
             const found = availableIngredients.find(id => {
                 const template = entityFactory.getTemplate(id);

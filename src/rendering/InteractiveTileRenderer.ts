@@ -4,12 +4,15 @@
  */
 
 import { CanvasRenderer } from './CanvasRenderer';
+import { TileManager } from '../systems/TileManager';
+import { TileType } from '../systems/TileTypes';
 
 export class InteractiveTileRenderer {
   constructor(private renderer: CanvasRenderer) {}
 
   renderHealthFountain(worldX: number, worldY: number, size: number): void {
-    this.renderer.drawRect(worldX, worldY, size, size, '#1a1a1a');
+    const floorColor = TileManager.getTileColor(TileType.FLOOR);
+    this.renderer.drawRect(worldX, worldY, size, size, floorColor);
 
     // Base
     this.renderer.drawRect(worldX + size * 0.25, worldY + size * 0.6, size * 0.5, size * 0.3, '#8b7355');
@@ -29,7 +32,8 @@ export class InteractiveTileRenderer {
   }
 
   renderTreasureChest(worldX: number, worldY: number, size: number): void {
-    this.renderer.drawRect(worldX, worldY, size, size, '#1a1a1a');
+    const floorColor = TileManager.getTileColor(TileType.FLOOR);
+    this.renderer.drawRect(worldX, worldY, size, size, floorColor);
 
     // Chest body
     this.renderer.drawRect(worldX + size * 0.2, worldY + size * 0.4, size * 0.6, size * 0.4, '#8b6914');
@@ -45,7 +49,8 @@ export class InteractiveTileRenderer {
   }
 
   renderTeleporter(worldX: number, worldY: number, size: number): void {
-    this.renderer.drawRect(worldX, worldY, size, size, '#1a1a1a');
+    const floorColor = TileManager.getTileColor(TileType.FLOOR);
+    this.renderer.drawRect(worldX, worldY, size, size, floorColor);
 
     const time = Date.now() / 1000;
 
@@ -64,7 +69,8 @@ export class InteractiveTileRenderer {
   }
 
   renderShrine(worldX: number, worldY: number, size: number): void {
-    this.renderer.drawRect(worldX, worldY, size, size, '#1a1a1a');
+    const floorColor = TileManager.getTileColor(TileType.FLOOR);
+    this.renderer.drawRect(worldX, worldY, size, size, floorColor);
 
     // Pedestal
     this.renderer.drawRect(worldX + size * 0.3, worldY + size * 0.6, size * 0.4, size * 0.3, '#696969');

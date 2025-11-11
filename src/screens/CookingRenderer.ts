@@ -34,8 +34,15 @@ export class CookingRenderer {
         this.renderMethodsColumn(400, 140);
         this.renderTimeColumn(700, 140);
 
+        // Quick select panel (if there are saved recipes)
+        const { gameState } = require('../core/GameState');
+        const savedRecipes = gameState.getSavedRecipeConfigs();
+        if (savedRecipes && savedRecipes.length > 0) {
+            this.renderQuickSelectPanel(100, 400);
+        }
+
         // Selection summary
-        this.renderSummary(100, 450);
+        this.renderSummary(100, savedRecipes && savedRecipes.length > 0 ? 530 : 450);
 
         // Result card
         if (this.state.getLastDish()) {
@@ -67,11 +74,35 @@ export class CookingRenderer {
             this.renderer.append(hint);
         }
 
-        const ingredients = cookingSystem.getAvailableIngredients().slice(0, 8);
+        // Get all available ingredients and stack them
+        const allIngredients = cookingSystem.getAvailableIngredients();
 
-        ingredients.forEach((id, i) => {
-            const ingredient = entityFactory.getTemplate(id);
-            const isSelected = this.state.getSelectedIngredients().includes(id);
+        // Group ingredients by template ID
+        const ingredientStacks = new Map<string, {template: any, ids: string[], count: number}>();
+        allIngredients.forEach(id => {
+            const template = entityFactory.getTemplate(id);
+            if (template) {
+                const templateId = template.id;
+                if (!ingredientStacks.has(templateId)) {
+                    ingredientStacks.set(templateId, {
+                        template: template,
+                        ids: [],
+                        count: 0
+                    });
+                }
+                const stack = ingredientStacks.get(templateId)!;
+                stack.ids.push(id);
+                stack.count++;
+            }
+        });
+
+        // Convert to array and limit display
+        const stackedIngredients = Array.from(ingredientStacks.values()).slice(0, 8);
+
+        stackedIngredients.forEach((stack, i) => {
+            const selectedCount = stack.ids.filter(id =>
+                this.state.getSelectedIngredients().includes(id)
+            ).length;
             const isCursor = isActive && this.state.getIngredientCursor() === i;
 
             let yPos = y + 50 + i * 32;
@@ -83,16 +114,17 @@ export class CookingRenderer {
             }
 
             // Item background
-            if (isSelected || isCursor) {
-                const bg = this.renderer.createRect(x, yPos - 10, 250, 28, isSelected ? '#2E7D32' : '#444');
+            if (selectedCount > 0 || isCursor) {
+                const bg = this.renderer.createRect(x, yPos - 10, 250, 28, selectedCount > 0 ? '#2E7D32' : '#444');
                 bg.setAttribute('rx', '4');
                 this.renderer.append(bg);
             }
 
-            // Item text
-            const color = isSelected ? '#90EE90' : (isCursor ? '#FFF' : '#CCC');
-            const prefix = isSelected ? '✓ ' : '  ';
-            const text = this.renderer.createText(x + 10, yPos + 4, prefix + (ingredient?.name || id), 16, color);
+            // Item text with count
+            const color = selectedCount > 0 ? '#90EE90' : (isCursor ? '#FFF' : '#CCC');
+            const prefix = selectedCount > 0 ? '✓ ' : '  ';
+            const countText = stack.count > 1 ? ` (${selectedCount}/${stack.count})` : '';
+            const text = this.renderer.createText(x + 10, yPos + 4, prefix + stack.template.name + countText, 16, color);
             this.renderer.append(text);
         });
     }
@@ -190,6 +222,41 @@ export class CookingRenderer {
         const label = this.renderer.createText(x, y, text, 18, '#FFA500');
         label.setAttribute('font-weight', 'bold');
         this.renderer.append(label);
+    }
+
+    private renderQuickSelectPanel(x: number, y: number): void {
+        const { gameState } = require('../core/GameState');
+        const isActive = this.state.getCurrentSection() === 'quickselect';
+        const titleColor = isActive ? '#FFD700' : '#888';
+
+        // Section title
+        const title = this.renderer.createText(x, y, '⚡ QUICK RECIPES', 22, titleColor);
+        title.setAttribute('font-weight', 'bold');
+        this.renderer.append(title);
+
+        if (isActive) {
+            const hint = this.renderer.createText(x, y + 25, '[Active - Use ↑↓ to navigate, ENTER to load]', 12, '#90EE90');
+            this.renderer.append(hint);
+        }
+
+        const savedRecipes = gameState.getSavedRecipeConfigs();
+        const displayRecipes = savedRecipes.slice(0, 5);
+
+        displayRecipes.forEach((recipe: any, i: number) => {
+            const isCursor = isActive && this.state.getQuickSelectCursor() === i;
+            let yPos = y + 50 + i * 20;
+
+            // Cursor indicator
+            if (isCursor) {
+                const cursor = this.renderer.createText(x - 15, yPos + 4, '▶', 14, '#FFD700');
+                this.renderer.append(cursor);
+            }
+
+            // Recipe text
+            const color = isCursor ? '#FFD700' : '#CCC';
+            const text = this.renderer.createText(x + 10, yPos + 4, `${i + 1}. ${recipe.recipeName}`, 14, color);
+            this.renderer.append(text);
+        });
     }
 
     private renderStatusBar(y: number): void {

@@ -149,4 +149,16 @@ export class StructureTileRenderer {
     this.renderer.drawCircle(worldX + size / 2, worldY + size / 2, size * 0.4, '#ecf0f1');
     this.renderer.drawCircle(worldX + size / 2, worldY + size / 2, size * 0.25, '#bdc3c7');
   }
+
+  renderTrainingHall(worldX: number, worldY: number, size: number): void {
+    this.renderer.drawRect(worldX, worldY, size, size, '#1a1a1a');
+    this.renderer.drawRect(worldX + size * 0.2, worldY + size * 0.2, size * 0.6, size * 0.6, '#FFD700');
+    this.renderer.drawText('⚔', worldX + size / 2, worldY + size / 2 + 5, '#000', 16, 'center');
+  }
+
+  renderUpgradesHall(worldX: number, worldY: number, size: number): void {
+    this.renderer.drawRect(worldX, worldY, size, size, '#1a1a1a');
+    this.renderer.drawRect(worldX + size * 0.2, worldY + size * 0.2, size * 0.6, size * 0.6, '#b19cd9');
+    this.renderer.drawText('⬆', worldX + size / 2, worldY + size / 2 + 5, '#FFF', 16, 'center');
+  }
 }

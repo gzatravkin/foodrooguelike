@@ -118,13 +118,62 @@ export class InputHandler {
 
   private handleRangedAttack(player: Player, isDashShot: boolean): void {
     let pelletCount = player.getPelletCount();
-    const spreadAngle = player.getSpread();
+    let spreadAngle = player.getSpread();
+    const weaponId = player.weapon?.id || '';
 
+    // Weapon-specific dash attack projectile counts and spread
     if (isDashShot) {
-      if (pelletCount > 1) {
-        pelletCount += 2;
-      } else {
-        pelletCount = 3;
+      switch (weaponId) {
+        case 'magic_staff':
+          // Arcane Barrage - 5 magic missiles
+          pelletCount = 5;
+          spreadAngle = 0.4;
+          break;
+
+        case 'crossbow':
+          // Piercing Bolt - single powerful shot
+          pelletCount = 1;
+          spreadAngle = 0;
+          break;
+
+        case 'pistol':
+          // Quick Draw - 3 rapid shots
+          pelletCount = 3;
+          spreadAngle = 0.15;
+          break;
+
+        case 'shotgun':
+          // Explosive Scatter - way more pellets
+          pelletCount = 10;
+          spreadAngle = 0.5;
+          break;
+
+        case 'assault_rifle':
+          // Armor Piercing Burst - 5 shots
+          pelletCount = 5;
+          spreadAngle = 0.2;
+          break;
+
+        case 'plasma_cannon':
+          // Plasma Wave - single massive beam
+          pelletCount = 1;
+          spreadAngle = 0;
+          break;
+
+        case 'dragon_breath':
+          // Inferno Blast - massive cone of fire
+          pelletCount = 8;
+          spreadAngle = 0.6;
+          break;
+
+        default:
+          // Default behavior for other weapons
+          if (pelletCount > 1) {
+            pelletCount += 2;
+          } else {
+            pelletCount = 3;
+          }
+          break;
       }
     }
 
@@ -146,13 +195,90 @@ export class InputHandler {
   }
 
   private handleMeleeAttack(player: Player, enemies: Enemy[], isDashShot: boolean): void {
-    const hitbox = player.getAttackHitbox();
-    const damageMultiplier = isDashShot ? 2.5 : 1.0;
+    const weaponId = player.weapon?.id || 'fists';
+    let damageMultiplier = isDashShot ? 2.5 : 1.0;
+    let hitboxRadius = 20;
+    let rangeMultiplier = 1.0;
+    let slashColor = player.getImpactColor() || '#E8E8E8';
+    let extraSlashes = 0;
+
+    // Weapon-specific dash attack modifications for melee
+    if (isDashShot) {
+      switch (weaponId) {
+        case 'fists':
+          // Dash Punch - multiple hits in quick succession
+          damageMultiplier = 2.0;
+          hitboxRadius = 30;
+          rangeMultiplier = 1.2;
+          slashColor = '#FFD700';
+          extraSlashes = 2; // 3 total hits
+          break;
+
+        case 'rusty_sword':
+          // Rusty Slash - bleeding effect (more damage)
+          damageMultiplier = 3.0;
+          rangeMultiplier = 1.3;
+          slashColor = '#C75000';
+          break;
+
+        case 'iron_sword':
+          // Iron Whirlwind - 360 degree spin
+          damageMultiplier = 2.8;
+          hitboxRadius = 40;
+          rangeMultiplier = 1.5;
+          slashColor = '#E0E0E0';
+          extraSlashes = 3; // Multiple slash visuals in different directions
+          break;
+
+        case 'demon_blade':
+          // Demonic Fury - massive damage
+          damageMultiplier = 4.5;
+          rangeMultiplier = 1.4;
+          hitboxRadius = 35;
+          slashColor = '#D32F2F';
+          break;
+
+        default:
+          damageMultiplier = 2.5;
+          break;
+      }
+    }
+
+    // Calculate hitbox with potentially modified range
+    const range = player.getAttackRange() * rangeMultiplier;
+    const offsetX = Math.cos(player.facingAngle) * range;
+    const offsetY = Math.sin(player.facingAngle) * range;
+    const hitbox = {
+      x: player.x + offsetX,
+      y: player.y + offsetY,
+      radius: hitboxRadius,
+    };
 
     // Create slash effect with weapon-specific colors
     if (this.particleSystem) {
-      const slashColor = player.getImpactColor() || '#E8E8E8';
       this.particleSystem.createSlash(hitbox.x, hitbox.y, player.facingAngle, slashColor);
+
+      // Create extra slashes for multi-hit weapons
+      if (extraSlashes > 0 && isDashShot) {
+        if (weaponId === 'iron_sword') {
+          // 360 degree slashes
+          for (let i = 1; i <= extraSlashes; i++) {
+            const angle = player.facingAngle + (Math.PI * 2 * i) / (extraSlashes + 1);
+            const slashX = player.x + Math.cos(angle) * range;
+            const slashY = player.y + Math.sin(angle) * range;
+            this.particleSystem.createSlash(slashX, slashY, angle, slashColor);
+          }
+        } else if (weaponId === 'fists') {
+          // Quick succession slashes
+          for (let i = 1; i <= extraSlashes; i++) {
+            setTimeout(() => {
+              if (this.particleSystem) {
+                this.particleSystem.createSlash(hitbox.x, hitbox.y, player.facingAngle + (Math.random() - 0.5) * 0.3, slashColor);
+              }
+            }, i * 50);
+          }
+        }
+      }
     }
 
     let hitSomething = false;
@@ -164,7 +290,12 @@ export class InputHandler {
       const dy = enemy.y - hitbox.y;
       const distance = Math.sqrt(dx * dx + dy * dy);
 
-      if (distance <= hitbox.radius + enemy.size / 2) {
+      // For 360 degree attacks (iron sword), check distance from player instead
+      const checkDistance = (isDashShot && weaponId === 'iron_sword')
+        ? Math.sqrt((enemy.x - player.x) ** 2 + (enemy.y - player.y) ** 2)
+        : distance;
+
+      if (checkDistance <= hitbox.radius + enemy.size / 2) {
         const prevHealth = enemy.stats.health;
         enemy.takeDamage(player.getAttackDamage() * damageMultiplier);
 

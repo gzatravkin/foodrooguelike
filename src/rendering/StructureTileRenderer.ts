@@ -4,15 +4,20 @@
  */
 
 import { CanvasRenderer } from './CanvasRenderer';
+import { TileManager } from '../systems/TileManager';
+import { TileType } from '../systems/TileTypes';
 
 export class StructureTileRenderer {
   constructor(private renderer: CanvasRenderer) {}
 
   renderFloor(worldX: number, worldY: number, size: number, x: number, y: number): void {
-    // More varied floor colors based on position
+    // Get theme-based floor color
+    const baseColor = TileManager.getTileColor(TileType.FLOOR);
+
+    // Add subtle variation based on position
     const seed = x * 7 + y * 13;
-    const baseShade = 26 + (seed % 3) * 2; // Varies between #1a1a1a and #1e1e1e
-    const floorColor = `rgb(${baseShade}, ${baseShade}, ${baseShade})`;
+    const variation = (seed % 3) * 2 - 2; // Varies between -2 and +2
+    const floorColor = this.adjustBrightness(baseColor, variation);
     this.renderer.drawRect(worldX, worldY, size, size, floorColor);
 
     // Add varied decorative elements with more randomization
@@ -56,10 +61,13 @@ export class StructureTileRenderer {
   }
 
   renderWall(worldX: number, worldY: number, size: number, x: number, y: number): void {
-    // Varied wall base colors for more interesting look
+    // Get theme-based wall color
+    const baseColor = TileManager.getTileColor(TileType.WALL);
+
+    // Add subtle variation based on position
     const seed = x * 11 + y * 17;
-    const baseShade = 58 + (seed % 5) * 2;
-    const wallColor = `rgb(${baseShade}, ${baseShade}, ${baseShade})`;
+    const variation = (seed % 5) * 2 - 4; // Varies between -4 and +6
+    const wallColor = this.adjustBrightness(baseColor, variation);
     this.renderer.drawRect(worldX, worldY, size, size, wallColor);
 
     // Enhanced lighting - top highlight and bottom shadow
@@ -117,19 +125,22 @@ export class StructureTileRenderer {
   }
 
   renderCookingStation(worldX: number, worldY: number, size: number): void {
-    this.renderer.drawRect(worldX, worldY, size, size, '#1a1a1a');
+    const floorColor = TileManager.getTileColor(TileType.FLOOR);
+    this.renderer.drawRect(worldX, worldY, size, size, floorColor);
     this.renderer.drawRect(worldX + size * 0.2, worldY + size * 0.2, size * 0.6, size * 0.6, '#ff6b35');
     this.renderer.drawCircle(worldX + size / 2, worldY + size / 2, size * 0.2, '#ff9f5e');
   }
 
   renderShopTile(worldX: number, worldY: number, size: number): void {
-    this.renderer.drawRect(worldX, worldY, size, size, '#1a1a1a');
+    const floorColor = TileManager.getTileColor(TileType.FLOOR);
+    this.renderer.drawRect(worldX, worldY, size, size, floorColor);
     this.renderer.drawRect(worldX + size * 0.2, worldY + size * 0.2, size * 0.6, size * 0.6, '#4ecdc4');
     this.renderer.drawText('$', worldX + size / 2, worldY + size / 2 + 5, '#FFD700', 16, 'center');
   }
 
   renderExpeditionPortal(worldX: number, worldY: number, size: number): void {
-    this.renderer.drawRect(worldX, worldY, size, size, '#1a1a1a');
+    const floorColor = TileManager.getTileColor(TileType.FLOOR);
+    this.renderer.drawRect(worldX, worldY, size, size, floorColor);
     this.renderer.drawCircle(worldX + size / 2, worldY + size / 2, size * 0.4, '#9b59b6');
     this.renderer.drawCircle(worldX + size / 2, worldY + size / 2, size * 0.25, '#bb79d6');
     this.renderer.drawCircle(worldX + size / 2, worldY + size / 2, size * 0.1, '#e0aaff');
@@ -137,7 +148,8 @@ export class StructureTileRenderer {
 
   renderStairsDown(worldX: number, worldY: number, size: number): void {
     // Render as a return portal (similar to expedition portal but different colors)
-    this.renderer.drawRect(worldX, worldY, size, size, '#1a1a1a');
+    const floorColor = TileManager.getTileColor(TileType.FLOOR);
+    this.renderer.drawRect(worldX, worldY, size, size, floorColor);
     this.renderer.drawCircle(worldX + size / 2, worldY + size / 2, size * 0.4, '#3498db');
     this.renderer.drawCircle(worldX + size / 2, worldY + size / 2, size * 0.25, '#5dade2');
     this.renderer.drawCircle(worldX + size / 2, worldY + size / 2, size * 0.1, '#aed6f1');
@@ -145,20 +157,36 @@ export class StructureTileRenderer {
 
   renderStairsUp(worldX: number, worldY: number, size: number): void {
     // Render as entrance stairs
-    this.renderer.drawRect(worldX, worldY, size, size, '#1a1a1a');
+    const floorColor = TileManager.getTileColor(TileType.FLOOR);
+    this.renderer.drawRect(worldX, worldY, size, size, floorColor);
     this.renderer.drawCircle(worldX + size / 2, worldY + size / 2, size * 0.4, '#ecf0f1');
     this.renderer.drawCircle(worldX + size / 2, worldY + size / 2, size * 0.25, '#bdc3c7');
   }
 
   renderTrainingHall(worldX: number, worldY: number, size: number): void {
-    this.renderer.drawRect(worldX, worldY, size, size, '#1a1a1a');
+    const floorColor = TileManager.getTileColor(TileType.FLOOR);
+    this.renderer.drawRect(worldX, worldY, size, size, floorColor);
     this.renderer.drawRect(worldX + size * 0.2, worldY + size * 0.2, size * 0.6, size * 0.6, '#FFD700');
     this.renderer.drawText('⚔', worldX + size / 2, worldY + size / 2 + 5, '#000', 16, 'center');
   }
 
   renderUpgradesHall(worldX: number, worldY: number, size: number): void {
-    this.renderer.drawRect(worldX, worldY, size, size, '#1a1a1a');
+    const floorColor = TileManager.getTileColor(TileType.FLOOR);
+    this.renderer.drawRect(worldX, worldY, size, size, floorColor);
     this.renderer.drawRect(worldX + size * 0.2, worldY + size * 0.2, size * 0.6, size * 0.6, '#b19cd9');
     this.renderer.drawText('⬆', worldX + size / 2, worldY + size / 2 + 5, '#FFF', 16, 'center');
+  }
+
+  // Helper method to adjust brightness of a hex color
+  private adjustBrightness(hexColor: string, adjustment: number): string {
+    // Remove # if present
+    const hex = hexColor.replace('#', '');
+
+    // Parse RGB values
+    const r = Math.max(0, Math.min(255, parseInt(hex.substring(0, 2), 16) + adjustment));
+    const g = Math.max(0, Math.min(255, parseInt(hex.substring(2, 4), 16) + adjustment));
+    const b = Math.max(0, Math.min(255, parseInt(hex.substring(4, 6), 16) + adjustment));
+
+    return `rgb(${r}, ${g}, ${b})`;
   }
 }

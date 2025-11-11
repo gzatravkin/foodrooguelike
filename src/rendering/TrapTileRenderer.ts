@@ -4,12 +4,15 @@
  */
 
 import { CanvasRenderer } from './CanvasRenderer';
+import { TileManager } from '../systems/TileManager';
+import { TileType } from '../systems/TileTypes';
 
 export class TrapTileRenderer {
   constructor(private renderer: CanvasRenderer) {}
 
   renderSpikeTrap(worldX: number, worldY: number, size: number): void {
-    this.renderer.drawRect(worldX, worldY, size, size, '#2a2a2a');
+    const floorColor = TileManager.getTileColor(TileType.FLOOR);
+    this.renderer.drawRect(worldX, worldY, size, size, floorColor);
 
     // Draw spikes
     for (let i = 0; i < 5; i++) {
@@ -25,7 +28,8 @@ export class TrapTileRenderer {
   }
 
   renderPoisonTrap(worldX: number, worldY: number, size: number): void {
-    this.renderer.drawRect(worldX, worldY, size, size, '#2a2a2a');
+    const floorColor = TileManager.getTileColor(TileType.FLOOR);
+    this.renderer.drawRect(worldX, worldY, size, size, floorColor);
 
     // Poison pool
     this.renderer.drawCircle(worldX + size / 2, worldY + size / 2, size * 0.35, 'rgba(50, 205, 50, 0.5)');

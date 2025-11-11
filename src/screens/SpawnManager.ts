@@ -84,12 +84,15 @@ export class SpawnManager {
     const map = this.mapSystem.getCurrentMap();
     if (!map) return null;
 
+    // Increased minimum distance to give player more breathing room
+    const minDistance = 350;
+
     for (let attempts = 0; attempts < 100; attempts++) {
       const x = (2 + Math.floor(Math.random() * (map.width - 4))) * map.tileSize + map.tileSize / 2;
       const y = (2 + Math.floor(Math.random() * (map.height - 4))) * map.tileSize + map.tileSize / 2;
 
       const distFromPlayer = Math.sqrt((x - player.x) ** 2 + (y - player.y) ** 2);
-      if (this.mapSystem.canMoveTo(x, y) && distFromPlayer > 150) {
+      if (this.mapSystem.canMoveTo(x, y) && distFromPlayer > minDistance) {
         return { x, y };
       }
     }

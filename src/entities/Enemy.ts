@@ -28,6 +28,9 @@ export class Enemy extends Entity {
   private lastPlayerX: number = 0;
   private lastPlayerY: number = 0;
 
+  // Grace period - enemies don't move or attack for first few seconds
+  public gracePeriod: number = 2.0; // 2 seconds of breathing room
+
   constructor(x: number, y: number, enemyData: EnemyData, weapon: Weapon | null = null) {
     const baseSpeed = enemyData.speed || 80;
 
@@ -67,11 +70,21 @@ export class Enemy extends Entity {
   set attackCooldown(value: number) { this.attack.attackCooldown = value; }
 
   update(deltaTime: number): void {
+    // Update grace period timer
+    if (this.gracePeriod > 0) {
+      this.gracePeriod -= deltaTime;
+    }
+
     this.attack.updateTimers(deltaTime);
     this.movement.updatePatrolTimer(deltaTime);
   }
 
   updateAI(playerX: number, playerY: number, deltaTime: number, canMoveTo: (x: number, y: number) => boolean): void {
+    // Don't update AI during grace period
+    if (this.gracePeriod > 0) {
+      return;
+    }
+
     this.lastPlayerX = playerX;
     this.lastPlayerY = playerY;
 

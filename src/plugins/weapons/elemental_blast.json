@@ -1,0 +1,12 @@
+{
+  "id": "elemental_blast",
+  "name": "Elemental Blast",
+  "damage": 20,
+  "fireRate": 2.0,
+  "projectileSpeed": 350,
+  "range": 450,
+  "color": "#00CED1",
+  "size": 10,
+  "spread": 15,
+  "description": "Rapid elemental projectiles with slight spread"
+}

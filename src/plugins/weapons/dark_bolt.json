@@ -1,0 +1,12 @@
+{
+  "id": "dark_bolt",
+  "name": "Dark Bolt",
+  "damage": 25,
+  "fireRate": 1.2,
+  "projectileSpeed": 300,
+  "range": 400,
+  "color": "#9370DB",
+  "size": 8,
+  "piercing": true,
+  "description": "A bolt of dark energy that pierces through enemies"
+}

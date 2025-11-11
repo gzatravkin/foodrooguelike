@@ -15,10 +15,14 @@ import recipesRare from '../data/recipes-rare.json';
 import recipesLegendary from '../data/recipes-legendary.json';
 import upgradesData from '../data/upgrades.json';
 
+// Import plugin registries
+import { EnemyRegistry } from '../plugins/enemies';
+import { WeaponRegistry } from '../plugins/weapons';
+
 export class DataLoader {
     async loadAll(): Promise<void> {
         try {
-            // Register templates
+            // Register templates from JSON files
             entityFactory.registerTemplates(enemiesData);
             entityFactory.registerTemplates(ingredientsData);
             entityFactory.registerTemplates(cookingMethodsData);
@@ -32,6 +36,15 @@ export class DataLoader {
             entityFactory.registerTemplates(recipesLegendary);
 
             entityFactory.registerTemplates(upgradesData);
+
+            // Load plugin enemies and weapons
+            console.log('Loading plugin entities...');
+            EnemyRegistry.getAll().forEach(enemy => {
+                entityFactory.registerTemplate(enemy.id, enemy);
+            });
+            WeaponRegistry.getAll().forEach(weapon => {
+                entityFactory.registerTemplate(weapon.id, weapon);
+            });
 
             console.log('All game data loaded successfully');
         } catch (error) {

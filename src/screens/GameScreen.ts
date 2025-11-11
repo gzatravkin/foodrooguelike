@@ -193,6 +193,10 @@ export class GameScreen {
 
   loadBaseCamp(): void {
     const wasExpedition = this.gameModeManager.getMode() === 'expedition';
+
+    // Clear current expedition when returning to base
+    gameState.clearCurrentExpedition();
+
     const result = this.gameModeManager.loadBaseCamp(this.mapSystem, this.player);
 
     this.enemies = result.enemies;
@@ -218,8 +222,17 @@ export class GameScreen {
     this.tileInteractionManager.reset();
     this.tileInteractionManager.findTeleporters(this.mapSystem);
 
+    // Get current expedition info
+    const state = gameState.getState();
+    const expeditionId = state.expeditionState.currentExpeditionId;
+    const currentLevel = state.expeditionState.currentLevel || level;
+
     this.addCombatLog('=== EXPEDITION STARTED ===', '#FF6B6B');
+    if (expeditionId) {
+      this.addCombatLog(`Level ${currentLevel}`, '#4FC3F7');
+    }
     this.addCombatLog(`${this.enemies.length} enemies detected!`, '#FF6B6B');
+    this.addCombatLog('Kill all enemies to complete!', '#FFD700');
     this.addCombatLog('Press ESC to flee anytime', '#FFD700');
   }
 
@@ -330,7 +343,7 @@ export class GameScreen {
     // Check if all enemies are cleared
     const enemiesAfterDeath = this.enemies.filter(e => e.alive).length;
     if (this.gameModeManager.getMode() === 'expedition' && enemiesBeforeDeath > 0 && enemiesAfterDeath === 0) {
-      this.addCombatLog('All enemies cleared! Press E on portal to return to base', '#FFD700');
+      this.handleExpeditionVictory();
     }
     const interactionResult = this.updater.checkInteractions(this.player, this.gameModeManager.getMode(), this.combatSystem.getCorpses());
 
@@ -387,12 +400,42 @@ export class GameScreen {
 
 
 
+  private handleExpeditionVictory(): void {
+    const state = gameState.getState();
+    const expeditionId = state.expeditionState.currentExpeditionId;
+    const currentLevel = state.expeditionState.currentLevel;
+
+    if (expeditionId && currentLevel) {
+      // Complete the level
+      gameState.completeExpeditionLevel(expeditionId, currentLevel);
+
+      const progress = gameState.getExpeditionProgress(expeditionId);
+
+      this.addCombatLog('=== LEVEL COMPLETE ===', '#4CAF50');
+      this.addCombatLog(`Level ${currentLevel} cleared!`, '#4CAF50');
+
+      if (currentLevel < 50) {
+        this.addCombatLog(`Level ${currentLevel + 1} unlocked!`, '#FFD700');
+      } else {
+        this.addCombatLog('Max level reached!', '#FFD700');
+      }
+
+      this.addCombatLog('Press E on portal to return', '#90EE90');
+    } else {
+      this.addCombatLog('All enemies cleared! Press E on portal to return to base', '#FFD700');
+    }
+  }
+
   private handlePlayerDeath(): void {
     this.player.alive = true;
     this.player.stats.health = this.player.stats.maxHealth;
     const currentGold = gameState.getState().gold;
     const goldLoss = Math.floor(currentGold * 0.5);
     gameState.addGold(-goldLoss);
+
+    // Clear current expedition on death (no level completion)
+    gameState.clearCurrentExpedition();
+
     this.loadBaseCamp();
   }
 

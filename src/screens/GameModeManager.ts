@@ -9,6 +9,7 @@ import { entityFactory } from '../entities/EntityFactory';
 import { SpawnManager } from './SpawnManager';
 import { TileManager } from '../systems/TileManager';
 import { Theme } from '../systems/ThemeConfig';
+import { isBossLevel, getLevelMultipliers } from './expedition/expeditionTypes';
 
 export type GameMode = 'base' | 'expedition';
 
@@ -82,12 +83,44 @@ export class GameModeManager {
 
   private spawnExpeditionEnemies(expeditionData: any, player: Player, mapSystem: MapSystem): Enemy[] {
     const enemies: Enemy[] = [];
-    const { enemyTypes, enemyCount, lootMultiplier } = expeditionData;
+    const { enemyTypes, enemyCount, lootMultiplier, level = 1 } = expeditionData;
 
-    const numEnemies = enemyCount.min + Math.floor(Math.random() * (enemyCount.max - enemyCount.min + 1));
+    // Check if this is a boss level
+    const isBoss = isBossLevel(level);
+
+    // Get level multipliers
+    const multipliers = getLevelMultipliers(level);
+
+    // Determine enemy count
+    let numEnemies: number;
+    if (isBoss) {
+      // Boss levels: 1-3 boss enemies based on level
+      numEnemies = 1 + Math.floor(level / 20); // 1 at levels 5,15, 2 at 25,30, 3 at 50
+    } else {
+      // Normal levels: base count + level scaling
+      const baseCount = enemyCount.min + Math.floor(Math.random() * (enemyCount.max - enemyCount.min + 1));
+      numEnemies = baseCount + multipliers.count;
+    }
+
+    // Filter enemy types for boss levels
+    let availableEnemyTypes = enemyTypes;
+    if (isBoss) {
+      // Only spawn boss-type enemies on boss levels
+      const allEnemies = entityFactory.getAllOfType('enemy') as any[];
+      const bossEnemies = allEnemies.filter((e: any) => e.health >= 90); // Boss threshold
+      availableEnemyTypes = enemyTypes.filter((type: string) => {
+        const template = entityFactory.getTemplate(type) as any;
+        return template && template.health >= 90;
+      });
+
+      // If no boss enemies in the list, use all available boss enemies
+      if (availableEnemyTypes.length === 0) {
+        availableEnemyTypes = bossEnemies.map((e: any) => e.id);
+      }
+    }
 
     for (let i = 0; i < numEnemies; i++) {
-      const enemyType = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
+      const enemyType = availableEnemyTypes[Math.floor(Math.random() * availableEnemyTypes.length)];
       const enemyData = entityFactory.getTemplate(enemyType) as any;
 
       if (enemyData) {
@@ -97,11 +130,18 @@ export class GameModeManager {
           const weapon = weaponId ? entityFactory.createWeapon(weaponId) : null;
           const enemy = new Enemy(position.x, position.y, enemyData, weapon);
 
-          // Apply loot multiplier
-          if (lootMultiplier > 1) {
+          // Apply level multipliers to enemy stats
+          enemy.stats.maxHealth = Math.floor(enemy.stats.maxHealth * multipliers.health);
+          enemy.stats.health = enemy.stats.maxHealth;
+          enemy.stats.attack = Math.floor(enemy.stats.attack * multipliers.attack);
+          enemy.stats.defense = Math.floor(enemy.stats.defense * multipliers.defense);
+
+          // Apply loot multiplier (base + level scaling)
+          const totalLootMultiplier = lootMultiplier * multipliers.loot;
+          if (totalLootMultiplier > 1) {
             enemy.enemyData.lootTable = enemy.enemyData.lootTable.map((drop: any) => ({
               ...drop,
-              chance: Math.min(1, drop.chance * lootMultiplier)
+              chance: Math.min(1, drop.chance * totalLootMultiplier)
             }));
           }
 

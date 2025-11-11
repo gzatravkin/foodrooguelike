@@ -46,6 +46,11 @@ export interface SavedRecipeConfig {
     cookingTime: number;
 }
 
+export interface ExpeditionProgress {
+    currentLevel: number; // Current level player can attempt (1-50)
+    highestLevelCompleted: number; // Highest level successfully completed
+}
+
 export interface GameData {
     player: PlayerStats;
     gold: number;
@@ -74,7 +79,10 @@ export interface GameData {
         hungerTimer: number; // Time remaining in current expedition (seconds)
         maxHungerTime: number; // 60 seconds
         selectedFoodBuff?: string; // Dish ID for pre-expedition buff
+        currentExpeditionId?: string; // Currently active expedition
+        currentLevel?: number; // Current level being attempted
     };
+    expeditionProgress: { [expeditionId: string]: ExpeditionProgress }; // Level progression per expedition
 }
 
 class GameState {
@@ -115,7 +123,19 @@ class GameState {
             expeditionState: {
                 hungerTimer: 60,
                 maxHungerTime: 60,
-                selectedFoodBuff: undefined
+                selectedFoodBuff: undefined,
+                currentExpeditionId: undefined,
+                currentLevel: undefined
+            },
+            expeditionProgress: {
+                // All expeditions start at level 1
+                'forest_outskirts': { currentLevel: 1, highestLevelCompleted: 0 },
+                'dark_cave': { currentLevel: 1, highestLevelCompleted: 0 },
+                'goblin_camp': { currentLevel: 1, highestLevelCompleted: 0 },
+                'orc_stronghold': { currentLevel: 1, highestLevelCompleted: 0 },
+                'frozen_wasteland': { currentLevel: 1, highestLevelCompleted: 0 },
+                'volcano_depths': { currentLevel: 1, highestLevelCompleted: 0 },
+                'demon_realm': { currentLevel: 1, highestLevelCompleted: 0 }
             }
         };
     }
@@ -357,6 +377,39 @@ class GameState {
 
     setSelectedFoodBuff(dishId: string | undefined): void {
         this.state.expeditionState.selectedFoodBuff = dishId;
+    }
+
+    setCurrentExpedition(expeditionId: string, level: number): void {
+        this.state.expeditionState.currentExpeditionId = expeditionId;
+        this.state.expeditionState.currentLevel = level;
+    }
+
+    clearCurrentExpedition(): void {
+        this.state.expeditionState.currentExpeditionId = undefined;
+        this.state.expeditionState.currentLevel = undefined;
+    }
+
+    getExpeditionProgress(expeditionId: string): ExpeditionProgress {
+        if (!this.state.expeditionProgress[expeditionId]) {
+            this.state.expeditionProgress[expeditionId] = { currentLevel: 1, highestLevelCompleted: 0 };
+        }
+        return this.state.expeditionProgress[expeditionId];
+    }
+
+    completeExpeditionLevel(expeditionId: string, level: number): void {
+        const progress = this.getExpeditionProgress(expeditionId);
+
+        // Update highest level completed
+        if (level > progress.highestLevelCompleted) {
+            progress.highestLevelCompleted = level;
+        }
+
+        // Unlock next level if not at max (50)
+        if (level < 50 && level >= progress.currentLevel) {
+            progress.currentLevel = level + 1;
+        }
+
+        eventBus.emit('expedition:levelCompleted', { expeditionId, level });
     }
 
     spendGold(amount: number): boolean {

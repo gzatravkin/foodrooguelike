@@ -16,6 +16,7 @@ import { GameOverRenderer } from './expedition/GameOverRenderer';
 export class ExpeditionSelectionScreen extends Screen {
     private expeditions: Record<string, ExpeditionLocation> = expeditionsData;
     private selectedExpedition: string | null = null;
+    private selectedLevel: number = 1;
     private foodBuffManager: FoodBuffManager;
 
     constructor(renderer: SVGRenderer) {
@@ -50,12 +51,18 @@ export class ExpeditionSelectionScreen extends Screen {
         const listRenderer = new ExpeditionListRenderer(this.renderer, this.expeditions, state.gold);
         listRenderer.render(50, 120, this.selectedExpedition, (expeditionId) => {
             this.selectedExpedition = expeditionId;
+            // Reset selected level to current progress when changing expedition
+            if (expeditionId) {
+                const progress = gameState.getExpeditionProgress(expeditionId);
+                this.selectedLevel = progress.currentLevel;
+            }
             this.render();
         });
 
         // Render selected expedition details and food selection (right side)
         if (this.selectedExpedition) {
             const expedition = this.expeditions[this.selectedExpedition];
+            const progress = gameState.getExpeditionProgress(this.selectedExpedition);
             const detailsRenderer = new ExpeditionDetailsRenderer(
                 this.renderer,
                 expedition,
@@ -67,7 +74,13 @@ export class ExpeditionSelectionScreen extends Screen {
                 120,
                 this.foodBuffManager.getSelectedFoodBuff(),
                 () => this.handleFoodSelection(state.dishes),
-                () => this.startExpedition()
+                () => this.startExpedition(),
+                this.selectedLevel,
+                progress,
+                (newLevel) => {
+                    this.selectedLevel = newLevel;
+                    this.render();
+                }
             );
         } else {
             this.renderSelectionHint(vb.width / 2 + 250, vb.height / 2);
@@ -149,8 +162,12 @@ export class ExpeditionSelectionScreen extends Screen {
         // Reset hunger timer
         gameState.resetHungerTimer();
 
-        // Store selected expedition in a way GameScreen can access it
-        localStorage.setItem('selectedExpedition', JSON.stringify(expedition));
+        // Set current expedition and level in game state
+        gameState.setCurrentExpedition(this.selectedExpedition, this.selectedLevel);
+
+        // Store selected expedition with level in a way GameScreen can access it
+        const expeditionWithLevel = { ...expedition, level: this.selectedLevel };
+        localStorage.setItem('selectedExpedition', JSON.stringify(expeditionWithLevel));
 
         // Navigate to game screen (expedition mode)
         gameState.setScreen('game');
@@ -164,6 +181,7 @@ export class ExpeditionSelectionScreen extends Screen {
 
     cleanup(): void {
         this.selectedExpedition = null;
+        this.selectedLevel = 1;
         this.foodBuffManager.reset();
     }
 }

@@ -2,6 +2,8 @@
  * MapLocationManager - Manages map locations, their unlock states, and persistence
  */
 
+import { gameState } from '../core/GameState';
+
 export interface MapLocation {
   id: string;
   name: string;
@@ -13,6 +15,8 @@ export interface MapLocation {
   radius: number;
   color: string;
   icon: string;
+  requiredPreviousLevel?: number; // Level required in previous expedition to unlock
+  previousExpeditionId?: string; // Previous expedition to check
 }
 
 export class MapLocationManager {
@@ -25,6 +29,7 @@ export class MapLocationManager {
 
   private initializeLocations(): void {
     // Create map locations based on expeditions
+    // Each location requires completing level 10 of the previous expedition
     this.locations = [
       {
         id: 'forest_outskirts',
@@ -48,7 +53,9 @@ export class MapLocationManager {
         isUnlocked: false,
         radius: 50,
         color: '#5D4037',
-        icon: '🕳️'
+        icon: '🕳️',
+        requiredPreviousLevel: 10,
+        previousExpeditionId: 'forest_outskirts'
       },
       {
         id: 'goblin_camp',
@@ -60,7 +67,9 @@ export class MapLocationManager {
         isUnlocked: false,
         radius: 55,
         color: '#8B4513',
-        icon: '⛺'
+        icon: '⛺',
+        requiredPreviousLevel: 10,
+        previousExpeditionId: 'dark_cave'
       },
       {
         id: 'orc_stronghold',
@@ -72,7 +81,9 @@ export class MapLocationManager {
         isUnlocked: false,
         radius: 60,
         color: '#424242',
-        icon: '🏰'
+        icon: '🏰',
+        requiredPreviousLevel: 10,
+        previousExpeditionId: 'goblin_camp'
       },
       {
         id: 'frozen_wasteland',
@@ -84,7 +95,9 @@ export class MapLocationManager {
         isUnlocked: false,
         radius: 60,
         color: '#81D4FA',
-        icon: '❄️'
+        icon: '❄️',
+        requiredPreviousLevel: 10,
+        previousExpeditionId: 'orc_stronghold'
       },
       {
         id: 'volcano_depths',
@@ -96,7 +109,9 @@ export class MapLocationManager {
         isUnlocked: false,
         radius: 65,
         color: '#FF5722',
-        icon: '🌋'
+        icon: '🌋',
+        requiredPreviousLevel: 10,
+        previousExpeditionId: 'frozen_wasteland'
       },
       {
         id: 'demon_realm',
@@ -108,7 +123,9 @@ export class MapLocationManager {
         isUnlocked: false,
         radius: 70,
         color: '#9C27B0',
-        icon: '👹'
+        icon: '👹',
+        requiredPreviousLevel: 10,
+        previousExpeditionId: 'volcano_depths'
       }
     ];
   }
@@ -139,5 +156,47 @@ export class MapLocationManager {
 
   findLocationById(id: string): MapLocation | undefined {
     return this.locations.find(loc => loc.id === id);
+  }
+
+  canUnlockLocation(location: MapLocation): { canUnlock: boolean; reason?: string } {
+    // Already unlocked
+    if (location.isUnlocked) {
+      return { canUnlock: true };
+    }
+
+    // Check if previous expedition level requirement is met
+    if (location.requiredPreviousLevel && location.previousExpeditionId) {
+      const previousProgress = gameState.getExpeditionProgress(location.previousExpeditionId);
+
+      if (previousProgress.highestLevelCompleted < location.requiredPreviousLevel) {
+        return {
+          canUnlock: false,
+          reason: `Complete level ${location.requiredPreviousLevel} of the previous location first`
+        };
+      }
+    }
+
+    return { canUnlock: true };
+  }
+
+  getUnlockRequirementText(location: MapLocation): string {
+    if (location.isUnlocked) {
+      return 'Unlocked';
+    }
+
+    const parts: string[] = [];
+
+    if (location.unlockCost > 0) {
+      parts.push(`${location.unlockCost} gold`);
+    }
+
+    if (location.requiredPreviousLevel && location.previousExpeditionId) {
+      const prevLocation = this.locations.find(loc => loc.expeditionId === location.previousExpeditionId);
+      if (prevLocation) {
+        parts.push(`Level ${location.requiredPreviousLevel} in ${prevLocation.name}`);
+      }
+    }
+
+    return parts.join(' + ');
   }
 }

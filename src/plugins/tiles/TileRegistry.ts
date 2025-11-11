@@ -1,0 +1,76 @@
+/**
+ * TileRegistry - Automatic tile registration system
+ * Add a new tile by creating a file in src/plugins/tiles/definitions/
+ */
+
+import { PluginRegistry, Plugin } from '../../core/PluginRegistry';
+import { Player } from '../../entities/Player';
+import { MapSystem } from '../../systems/MapSystem';
+
+export interface TileInteraction {
+  canInteract: (player: Player, tileX: number, tileY: number, mapSystem: MapSystem) => boolean;
+  onInteract: (player: Player, tileX: number, tileY: number, mapSystem: MapSystem, onLog: (text: string, color: string) => void, context?: any) => void;
+  onStepOn?: (player: Player, tileX: number, tileY: number, deltaTime: number, onLog: (text: string, color: string) => void) => void;
+  update?: (deltaTime: number, player: Player, tileX: number, tileY: number) => void;
+}
+
+export interface TileRendering {
+  render: (ctx: CanvasRenderingContext2D, worldX: number, worldY: number, size: number) => void;
+}
+
+export interface TilePlugin extends Plugin {
+  id: string; // Unique identifier (e.g., 'floor', 'wall', 'cooking_station')
+  name: string; // Display name
+  color: string; // Fallback color if no custom renderer
+  walkable: boolean;
+  blocksLight?: boolean;
+
+  // Optional custom rendering
+  rendering?: TileRendering;
+
+  // Optional interactions
+  interaction?: TileInteraction;
+
+  // Optional dungeon generation settings
+  dungeon?: {
+    canSpawnInRoom?: boolean;
+    spawnWeight?: number; // 0-1, probability modifier
+    requiresRoomType?: string[]; // e.g., ['treasure', 'normal']
+  };
+}
+
+class TileRegistryClass extends PluginRegistry<TilePlugin> {
+  private tileIdToIndex: Map<string, number> = new Map();
+  private indexToTileId: Map<number, string> = new Map();
+  private nextIndex: number = 0;
+
+  register(plugin: TilePlugin): void {
+    super.register(plugin);
+
+    // Assign numeric index for compatibility
+    if (!this.tileIdToIndex.has(plugin.id)) {
+      this.tileIdToIndex.set(plugin.id, this.nextIndex);
+      this.indexToTileId.set(this.nextIndex, plugin.id);
+      this.nextIndex++;
+    }
+  }
+
+  getTileIndex(id: string): number {
+    return this.tileIdToIndex.get(id) ?? 0;
+  }
+
+  getTileById(id: string): TilePlugin | undefined {
+    return this.get(id);
+  }
+
+  getTileByIndex(index: number): TilePlugin | undefined {
+    const id = this.indexToTileId.get(index);
+    return id ? this.get(id) : undefined;
+  }
+
+  getTileId(index: number): string {
+    return this.indexToTileId.get(index) || 'floor';
+  }
+}
+
+export const TileRegistry = new TileRegistryClass();

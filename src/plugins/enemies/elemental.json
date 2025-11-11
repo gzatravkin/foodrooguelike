@@ -1,0 +1,25 @@
+{
+  "id": "elemental",
+  "name": "Elemental",
+  "hp": 120,
+  "attack": 30,
+  "defense": 20,
+  "speed": 100,
+  "xp": 120,
+  "color": "#00CED1",
+  "size": 28,
+  "weaponId": "elemental_blast",
+  "ai": {
+    "type": "ranged",
+    "chaseRange": 350,
+    "attackRange": 300,
+    "fleeThreshold": 30
+  },
+  "loot": {
+    "ingredients": [
+      { "id": "mana_crystal", "chance": 0.4 },
+      { "id": "elemental_core", "chance": 0.2 }
+    ],
+    "gold": { "min": 60, "max": 100 }
+  }
+}

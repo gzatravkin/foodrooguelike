@@ -1,0 +1,11 @@
+{
+  "id": "battle_axe",
+  "name": "Battle Axe",
+  "damage": 50,
+  "fireRate": 0.5,
+  "projectileSpeed": 200,
+  "range": 80,
+  "color": "#A9A9A9",
+  "size": 16,
+  "description": "A massive axe that deals devastating close-range damage"
+}

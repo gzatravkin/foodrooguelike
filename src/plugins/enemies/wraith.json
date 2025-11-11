@@ -1,0 +1,24 @@
+{
+  "id": "wraith",
+  "name": "Wraith",
+  "hp": 80,
+  "attack": 25,
+  "defense": 5,
+  "speed": 140,
+  "xp": 100,
+  "color": "#9370DB",
+  "size": 24,
+  "weaponId": "dark_bolt",
+  "ai": {
+    "type": "aggressive",
+    "chaseRange": 400,
+    "attackRange": 250
+  },
+  "loot": {
+    "ingredients": [
+      { "id": "shadow_essence", "chance": 0.3 },
+      { "id": "ghost_pepper", "chance": 0.5 }
+    ],
+    "gold": { "min": 40, "max": 80 }
+  }
+}

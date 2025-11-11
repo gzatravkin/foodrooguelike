@@ -19,6 +19,7 @@ import { TrainingScreen } from './screens/TrainingScreen';
 import { UpgradesScreen } from './screens/UpgradesScreen';
 import { ExpeditionSelectionScreen } from './screens/ExpeditionSelectionScreen';
 import { GlobalMapScreen } from './screens/GlobalMapScreen';
+import { initializeAllPlugins } from './plugins';
 
 class Game {
     private renderer: CanvasRenderer;
@@ -85,6 +86,9 @@ class Game {
     }
 
     async init(): Promise<void> {
+        console.log('🎮 Initializing plugin system...');
+        initializeAllPlugins();
+
         console.log('Loading game data...');
         await dataLoader.loadAll();
 

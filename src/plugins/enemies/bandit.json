@@ -1,0 +1,25 @@
+{
+  "id": "bandit",
+  "name": "Bandit",
+  "hp": 60,
+  "attack": 18,
+  "defense": 8,
+  "speed": 110,
+  "xp": 50,
+  "color": "#8B0000",
+  "size": 20,
+  "weaponId": "crossbow",
+  "ai": {
+    "type": "ambusher",
+    "chaseRange": 350,
+    "attackRange": 280,
+    "patrolRadius": 150
+  },
+  "loot": {
+    "ingredients": [
+      { "id": "bread", "chance": 0.7 },
+      { "id": "cheese", "chance": 0.6 }
+    ],
+    "gold": { "min": 20, "max": 50 }
+  }
+}

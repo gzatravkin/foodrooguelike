@@ -1,0 +1,11 @@
+{
+  "id": "crossbow",
+  "name": "Crossbow",
+  "damage": 30,
+  "fireRate": 0.8,
+  "projectileSpeed": 500,
+  "range": 500,
+  "color": "#8B4513",
+  "size": 6,
+  "description": "Accurate long-range weapon with moderate fire rate"
+}

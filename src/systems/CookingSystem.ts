@@ -23,6 +23,19 @@ export class CookingSystem {
         // Discover recipe if it's a good match and not yet discovered
         if (recipe && quality >= 0.7 && !gameState.getState().discoveredRecipes.includes(recipe.id)) {
             gameState.discoverRecipe(recipe.id);
+
+            // Save recipe configuration for quick-select
+            const ingredientTemplates = ingredientIds.map(id => {
+                const template = entityFactory.getTemplate(id);
+                return template?.id || id;
+            });
+            gameState.saveRecipeConfig({
+                recipeId: recipe.id,
+                recipeName: recipe.name,
+                ingredientTemplates: ingredientTemplates,
+                methodId: cookingMethodId,
+                cookingTime: cookingTime
+            });
         }
 
         // Create the dish

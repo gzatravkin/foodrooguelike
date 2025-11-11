@@ -196,7 +196,7 @@ export class UpgradesScreen extends Screen {
         return Math.floor(upgrade.baseCost * Math.pow(upgrade.costMultiplier, currentLevel));
     }
 
-    private formatEffect(effects: Record<string, number>): string {
+    private formatEffect(effects: Record<string, any>): string {
         const effectNames: Record<string, string> = {
             bakingQualityBonus: 'Baking Quality',
             grillingQualityBonus: 'Grilling Quality',
@@ -212,7 +212,8 @@ export class UpgradesScreen extends Screen {
             defenseBonus: 'Defense',
             buffDurationMultiplier: 'Buff Duration',
             dropRateMultiplier: 'Drop Rate',
-            dashCooldownReduction: 'Dash Cooldown'
+            dashCooldownReduction: 'Dash Cooldown',
+            unlockMethod: 'Unlocks Cooking Method'
         };
 
         const entries = Object.entries(effects);
@@ -220,6 +221,11 @@ export class UpgradesScreen extends Screen {
 
         const [key, value] = entries[0];
         const name = effectNames[key] || key;
+
+        // Handle cooking method unlocks
+        if (key === 'unlockMethod') {
+            return `Unlocks: ${value}`;
+        }
 
         // Percentages
         if (
@@ -252,7 +258,20 @@ export class UpgradesScreen extends Screen {
                 gameState.recalculatePlayerStats();
             }
 
+            // Unlock cooking method if this is a method unlock upgrade
+            if (upgrade.type === 'cookingMethodUnlock' && upgrade.effects.unlockMethod) {
+                this.unlockCookingMethod(upgrade.effects.unlockMethod as string);
+            }
+
             this.render();
+        }
+    }
+
+    private unlockCookingMethod(methodId: string): void {
+        const { entityFactory } = require('../entities/EntityFactory');
+        const method = entityFactory.getTemplate(methodId);
+        if (method && method.type === 'cookingMethod') {
+            (method as any).unlocked = true;
         }
     }
 

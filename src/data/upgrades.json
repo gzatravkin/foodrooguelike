@@ -193,5 +193,44 @@
     "effects": {
       "dashCooldownReduction": 0.1
     }
+  },
+  "unlock_frying": {
+    "id": "unlock_frying",
+    "type": "cookingMethodUnlock",
+    "category": "kitchen",
+    "name": "Unlock Frying",
+    "description": "Unlocks the Fry cooking method (+10% quality)",
+    "maxLevel": 1,
+    "baseCost": 150,
+    "costMultiplier": 1.0,
+    "effects": {
+      "unlockMethod": "fry"
+    }
+  },
+  "unlock_grilling": {
+    "id": "unlock_grilling",
+    "type": "cookingMethodUnlock",
+    "category": "kitchen",
+    "name": "Unlock Grilling",
+    "description": "Unlocks the Grill cooking method (+20% quality)",
+    "maxLevel": 1,
+    "baseCost": 250,
+    "costMultiplier": 1.0,
+    "effects": {
+      "unlockMethod": "grill"
+    }
+  },
+  "unlock_baking": {
+    "id": "unlock_baking",
+    "type": "cookingMethodUnlock",
+    "category": "kitchen",
+    "name": "Unlock Baking",
+    "description": "Unlocks the Bake cooking method (+30% quality)",
+    "maxLevel": 1,
+    "baseCost": 400,
+    "costMultiplier": 1.0,
+    "effects": {
+      "unlockMethod": "bake"
+    }
   }
 }

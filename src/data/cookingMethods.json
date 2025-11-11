@@ -13,8 +13,8 @@
     "type": "cookingMethod",
     "name": "Fry",
     "description": "Cook in hot oil",
-    "unlocked": true,
-    "cost": 0,
+    "unlocked": false,
+    "cost": 150,
     "qualityModifier": 1.1
   },
   "grill": {
@@ -22,8 +22,8 @@
     "type": "cookingMethod",
     "name": "Grill",
     "description": "Cook over open flame",
-    "unlocked": true,
-    "cost": 50,
+    "unlocked": false,
+    "cost": 250,
     "qualityModifier": 1.2
   },
   "bake": {
@@ -31,8 +31,8 @@
     "type": "cookingMethod",
     "name": "Bake",
     "description": "Cook in an oven",
-    "unlocked": true,
-    "cost": 100,
+    "unlocked": false,
+    "cost": 400,
     "qualityModifier": 1.3
   }
 }

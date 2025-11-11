@@ -38,12 +38,21 @@ export interface ExpeditionLocation {
     lootMultiplier: number;
 }
 
+export interface SavedRecipeConfig {
+    recipeId: string;
+    recipeName: string;
+    ingredientTemplates: string[]; // Template IDs, not instance IDs
+    methodId: string;
+    cookingTime: number;
+}
+
 export interface GameData {
     player: PlayerStats;
     gold: number;
     inventory: string[];
     dishes: string[]; // IDs of cooked dishes available to sell/eat
     discoveredRecipes: string[];
+    savedRecipeConfigs: SavedRecipeConfig[]; // Quick-select recipe configurations
     currentScreen: 'base' | 'shop' | 'cooking' | 'settings' | 'restaurant' | 'upgrades' | 'recipebook' | 'game' | 'training' | 'expedition' | 'worldmap';
     equipment: {
         weapon?: string;
@@ -73,6 +82,7 @@ class GameState {
 
     constructor() {
         this.state = this.getInitialState();
+        this.initializeDefaultRecipes();
     }
 
     private getInitialState(): GameData {
@@ -87,6 +97,7 @@ class GameState {
             inventory: [],
             dishes: [],
             discoveredRecipes: [],
+            savedRecipeConfigs: [],
             currentScreen: 'game',
             equipment: {},
             activeBuffs: [],
@@ -142,6 +153,65 @@ class GameState {
         if (!this.state.discoveredRecipes.includes(recipeId)) {
             this.state.discoveredRecipes.push(recipeId);
             eventBus.emit('recipe:discovered', recipeId);
+        }
+    }
+
+    saveRecipeConfig(config: SavedRecipeConfig): void {
+        // Check if this recipe config already exists
+        const exists = this.state.savedRecipeConfigs.some(c => c.recipeId === config.recipeId);
+        if (!exists) {
+            this.state.savedRecipeConfigs.push(config);
+            eventBus.emit('recipe:saved', config);
+        }
+    }
+
+    getSavedRecipeConfigs(): SavedRecipeConfig[] {
+        return this.state.savedRecipeConfigs;
+    }
+
+    private initializeDefaultRecipes(): void {
+        // Add 5 default recipes for boil (the initially available cooking method)
+        const defaultRecipes: SavedRecipeConfig[] = [
+            {
+                recipeId: 'slime_pudding',
+                recipeName: 'Slime Pudding',
+                ingredientTemplates: ['jelly', 'sugar'],
+                methodId: 'boil',
+                cookingTime: 30
+            },
+            {
+                recipeId: 'mushroom_soup',
+                recipeName: 'Mushroom Soup',
+                ingredientTemplates: ['mushroom', 'herb', 'salt'],
+                methodId: 'boil',
+                cookingTime: 45
+            },
+            {
+                recipeId: 'fried_rice',
+                recipeName: 'Fried Rice',
+                ingredientTemplates: ['rice', 'egg', 'onion', 'garlic'],
+                methodId: 'fry',
+                cookingTime: 40
+            },
+            {
+                recipeId: 'grilled_meat',
+                recipeName: 'Grilled Meat',
+                ingredientTemplates: ['meat', 'salt', 'herb'],
+                methodId: 'grill',
+                cookingTime: 60
+            },
+            {
+                recipeId: 'herb_bread',
+                recipeName: 'Herb Bread',
+                ingredientTemplates: ['flour', 'herb', 'salt'],
+                methodId: 'bake',
+                cookingTime: 90
+            }
+        ];
+
+        // Only add if savedRecipeConfigs is empty (first time initialization)
+        if (this.state.savedRecipeConfigs.length === 0) {
+            this.state.savedRecipeConfigs = defaultRecipes;
         }
     }
 

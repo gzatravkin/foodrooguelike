@@ -44,13 +44,13 @@ export class ShopPurchaseHandler {
 
     sellDish(dish: Dish): void {
         shopSystem.sellDish(dish);
-        gameState.removeFromInventory(dish.id);
+        gameState.removeDish(dish.id);
         this.stateManager.showMessage(`Sold ${dish.name} for ${dish.value}g!`);
     }
 
     eatDish(dish: Dish): void {
         shopSystem.eatDish(dish);
-        gameState.removeFromInventory(dish.id);
+        gameState.removeDish(dish.id);
 
         let msg = `Ate ${dish.name}!`;
         if (dish.effects?.health) {

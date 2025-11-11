@@ -5,6 +5,7 @@
 import { gameState } from '../core/GameState';
 import { cookingSystem } from '../systems/CookingSystem';
 import { eventBus } from '../core/EventBus';
+import { entityFactory } from '../entities/EntityFactory';
 import { CookingState, Section } from './CookingState';
 
 export class CookingInputHandler {
@@ -95,7 +96,7 @@ export class CookingInputHandler {
     }
 
     private cycleSection(): void {
-        const sections: Section[] = ['ingredients', 'methods', 'time'];
+        const sections: Section[] = ['ingredients', 'methods', 'time', 'quickselect'];
         const currentIndex = sections.indexOf(this.state.getCurrentSection());
         this.state.setCurrentSection(sections[(currentIndex + 1) % sections.length]);
     }
@@ -104,8 +105,8 @@ export class CookingInputHandler {
         const currentSection = this.state.getCurrentSection();
 
         if (currentSection === 'ingredients') {
-            const ingredients = cookingSystem.getAvailableIngredients().slice(0, 8);
-            const newCursor = Math.max(0, Math.min(ingredients.length - 1, this.state.getIngredientCursor() + delta));
+            const stackedIngredients = this.getStackedIngredients();
+            const newCursor = Math.max(0, Math.min(stackedIngredients.length - 1, this.state.getIngredientCursor() + delta));
             this.state.setIngredientCursor(newCursor);
         } else if (currentSection === 'methods') {
             const methods = cookingSystem.getAvailableMethods();
@@ -115,17 +116,50 @@ export class CookingInputHandler {
             const newCursor = Math.max(0, Math.min(this.state.timePresets.length - 1, this.state.getTimeCursor() + delta));
             this.state.setTimeCursor(newCursor);
             this.state.setCookingTime(this.state.timePresets[newCursor]);
+        } else if (currentSection === 'quickselect') {
+            const savedRecipes = gameState.getSavedRecipeConfigs();
+            const newCursor = Math.max(0, Math.min(savedRecipes.length - 1, this.state.getQuickSelectCursor() + delta));
+            this.state.setQuickSelectCursor(newCursor);
         }
+    }
+
+    private getStackedIngredients(): Array<{template: any, ids: string[], count: number}> {
+        const allIngredients = cookingSystem.getAvailableIngredients();
+        const ingredientStacks = new Map<string, {template: any, ids: string[], count: number}>();
+        allIngredients.forEach(id => {
+            const template = entityFactory.getTemplate(id);
+            if (template) {
+                const templateId = template.id;
+                if (!ingredientStacks.has(templateId)) {
+                    ingredientStacks.set(templateId, {
+                        template: template,
+                        ids: [],
+                        count: 0
+                    });
+                }
+                const stack = ingredientStacks.get(templateId)!;
+                stack.ids.push(id);
+                stack.count++;
+            }
+        });
+        return Array.from(ingredientStacks.values()).slice(0, 8);
     }
 
     private selectCurrentItem(): void {
         const currentSection = this.state.getCurrentSection();
 
         if (currentSection === 'ingredients') {
-            const ingredients = cookingSystem.getAvailableIngredients().slice(0, 8);
-            const ingredientId = ingredients[this.state.getIngredientCursor()];
-            if (ingredientId) {
-                this.state.toggleIngredient(ingredientId);
+            const stackedIngredients = this.getStackedIngredients();
+            const stack = stackedIngredients[this.state.getIngredientCursor()];
+            if (stack) {
+                // Find first unselected ingredient of this type, or toggle first one
+                const unselected = stack.ids.find(id => !this.state.getSelectedIngredients().includes(id));
+                if (unselected) {
+                    this.state.toggleIngredient(unselected);
+                } else {
+                    // All selected, toggle the first one off
+                    this.state.toggleIngredient(stack.ids[0]);
+                }
             }
         } else if (currentSection === 'methods') {
             const methods = cookingSystem.getAvailableMethods();
@@ -135,6 +169,22 @@ export class CookingInputHandler {
             }
         } else if (currentSection === 'time') {
             this.state.setCookingTime(this.state.timePresets[this.state.getTimeCursor()]);
+        } else if (currentSection === 'quickselect') {
+            const savedRecipes = gameState.getSavedRecipeConfigs();
+            const recipe = savedRecipes[this.state.getQuickSelectCursor()];
+            if (recipe) {
+                const availableIngredients = cookingSystem.getAvailableIngredients();
+                const success = this.state.loadRecipeConfig(
+                    recipe.ingredientTemplates,
+                    recipe.methodId,
+                    recipe.cookingTime,
+                    availableIngredients
+                );
+                if (!success) {
+                    // Show a message or indicator that ingredients are missing
+                    console.log('Missing ingredients for recipe:', recipe.recipeName);
+                }
+            }
         }
     }
 }

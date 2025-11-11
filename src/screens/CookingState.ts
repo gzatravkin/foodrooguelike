@@ -2,7 +2,7 @@
  * CookingState - Manages cooking screen state
  */
 
-export type Section = 'ingredients' | 'methods' | 'time';
+export type Section = 'ingredients' | 'methods' | 'time' | 'quickselect';
 
 export class CookingState {
     private selectedIngredients: string[] = [];
@@ -14,6 +14,7 @@ export class CookingState {
     private ingredientCursor: number = 0;
     private methodCursor: number = 0;
     private timeCursor: number = 3; // Default to 60s (index 3)
+    private quickSelectCursor: number = 0;
 
     public readonly timePresets: number[] = [15, 30, 45, 60, 90, 120, 150, 180];
 
@@ -50,6 +51,10 @@ export class CookingState {
         return this.timeCursor;
     }
 
+    getQuickSelectCursor(): number {
+        return this.quickSelectCursor;
+    }
+
     // Setters
     setSelectedMethod(method: string): void {
         this.selectedMethod = method;
@@ -79,6 +84,10 @@ export class CookingState {
         this.timeCursor = cursor;
     }
 
+    setQuickSelectCursor(cursor: number): void {
+        this.quickSelectCursor = cursor;
+    }
+
     // State operations
     toggleIngredient(id: string): void {
         const index = this.selectedIngredients.indexOf(id);
@@ -103,6 +112,7 @@ export class CookingState {
         this.ingredientCursor = 0;
         this.methodCursor = 0;
         this.timeCursor = 3;
+        this.quickSelectCursor = 0;
     }
 
     clearSelection(): void {
@@ -110,5 +120,38 @@ export class CookingState {
         this.selectedMethod = '';
         this.cookingTime = 60;
         this.timeCursor = 3;
+    }
+
+    loadRecipeConfig(ingredientTemplates: string[], methodId: string, cookingTime: number, availableIngredients: string[]): boolean {
+        // Clear current selection
+        this.selectedIngredients = [];
+
+        // Try to find actual ingredient instances for each template
+        const { entityFactory } = require('../entities/EntityFactory');
+        for (const templateId of ingredientTemplates) {
+            const found = availableIngredients.find(id => {
+                const template = entityFactory.getTemplate(id);
+                return template && template.id === templateId && !this.selectedIngredients.includes(id);
+            });
+            if (found) {
+                this.selectedIngredients.push(found);
+            } else {
+                // Missing ingredient, can't load recipe
+                this.selectedIngredients = [];
+                return false;
+            }
+        }
+
+        // Set method and time
+        this.selectedMethod = methodId;
+        this.cookingTime = cookingTime;
+
+        // Update time cursor to match
+        const timeIndex = this.timePresets.indexOf(cookingTime);
+        if (timeIndex >= 0) {
+            this.timeCursor = timeIndex;
+        }
+
+        return true;
     }
 }

@@ -66,9 +66,11 @@ export class ShopStateManager {
     }
 
     getDishes(): Dish[] {
-        return this.state.inventory
+        // Get dishes from gameState.dishes array, not inventory
+        const gameData = gameState.getState();
+        return gameData.dishes
             .map(id => entityFactory.getTemplate(id))
-            .filter(item => item?.type === 'dish') as Dish[];
+            .filter(item => item !== null) as Dish[];
     }
 
     updateGoldDisplay(): void {
@@ -92,6 +94,14 @@ export class ShopStateManager {
 
         eventBus.on('inventory:changed', () => {
             this.state.inventory = [...gameState.getState().inventory];
+            this.onRender();
+        });
+
+        eventBus.on('dish:added', () => {
+            this.onRender();
+        });
+
+        eventBus.on('dish:removed', () => {
             this.onRender();
         });
     }

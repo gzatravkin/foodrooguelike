@@ -451,6 +451,14 @@ export class DungeonGenerator {
       'teleporter': TileType.TELEPORTER,
       'spike_trap': TileType.SPIKE_TRAP,
       'poison_trap': TileType.POISON_TRAP,
+      // Harvestable items
+      'berry_bush': TileType.BERRY_BUSH,
+      'herb_plant': TileType.HERB_PLANT,
+      'mushroom_patch': TileType.MUSHROOM_PATCH,
+      'crystal_formation': TileType.CRYSTAL_FORMATION,
+      'fire_plant': TileType.FIRE_PLANT,
+      'void_plant': TileType.VOID_PLANT,
+      'ancient_tree': TileType.ANCIENT_TREE,
     };
     return mapping[tileId] || null;
   }

@@ -23,6 +23,14 @@ export enum TileType {
   SPIKE_TRAP = 17,
   POISON_TRAP = 18,
   UPGRADES_HALL = 19,
+  // Harvestable items
+  BERRY_BUSH = 20,
+  HERB_PLANT = 21,
+  MUSHROOM_PATCH = 22,
+  CRYSTAL_FORMATION = 23,
+  FIRE_PLANT = 24,
+  VOID_PLANT = 25,
+  ANCIENT_TREE = 26,
 }
 
 export type Tile = {

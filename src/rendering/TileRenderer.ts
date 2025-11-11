@@ -91,6 +91,29 @@ export class TileRenderer {
       case TileType.POISON_TRAP:
         this.trapRenderer.renderPoisonTrap(worldX, worldY, size);
         break;
+
+      // Harvestable items
+      case TileType.BERRY_BUSH:
+        this.interactiveRenderer.renderBerryBush(worldX, worldY, size);
+        break;
+      case TileType.HERB_PLANT:
+        this.interactiveRenderer.renderHerbPlant(worldX, worldY, size);
+        break;
+      case TileType.MUSHROOM_PATCH:
+        this.interactiveRenderer.renderMushroomPatch(worldX, worldY, size);
+        break;
+      case TileType.CRYSTAL_FORMATION:
+        this.interactiveRenderer.renderCrystalFormation(worldX, worldY, size);
+        break;
+      case TileType.FIRE_PLANT:
+        this.interactiveRenderer.renderFirePlant(worldX, worldY, size);
+        break;
+      case TileType.VOID_PLANT:
+        this.interactiveRenderer.renderVoidPlant(worldX, worldY, size);
+        break;
+      case TileType.ANCIENT_TREE:
+        this.interactiveRenderer.renderAncientTree(worldX, worldY, size);
+        break;
     }
   }
 }

@@ -7,6 +7,8 @@ import { Enemy } from '../entities/Enemy';
 import { Trap } from '../entities/Trap';
 import { entityFactory } from '../entities/EntityFactory';
 import { SpawnManager } from './SpawnManager';
+import { TileManager } from '../systems/TileManager';
+import { Theme } from '../systems/ThemeConfig';
 
 export type GameMode = 'base' | 'expedition';
 
@@ -24,6 +26,10 @@ export class GameModeManager {
 
   loadBaseCamp(mapSystem: MapSystem, player: Player): { enemies: Enemy[]; traps: Trap[] } {
     this.mode = 'base';
+
+    // Reset theme for base camp
+    TileManager.setTheme(null);
+
     const baseCamp = MapSystem.createBaseCamp();
     mapSystem.loadMap(baseCamp);
 
@@ -52,7 +58,13 @@ export class GameModeManager {
       console.error('Failed to load expedition data:', error);
     }
 
-    const dungeon = MapSystem.createDungeon(expeditionData?.difficulty || level);
+    // Set theme based on expedition data
+    const theme = expeditionData?.theme as Theme | undefined;
+    if (theme) {
+      TileManager.setTheme(theme);
+    }
+
+    const dungeon = MapSystem.createDungeon(expeditionData?.difficulty || level, theme);
     mapSystem.loadMap(dungeon);
 
     player.x = dungeon.spawnX || 3 * 32 + 16;

@@ -6,6 +6,7 @@ import { TileType, GameMap } from './TileTypes';
 import { TileManager } from './TileManager';
 import { BaseCampGenerator } from './BaseCampGenerator';
 import { DungeonGenerator } from './DungeonGenerator';
+import { Theme } from './ThemeConfig';
 
 // Re-export types for backwards compatibility
 export { TileType, GameMap } from './TileTypes';
@@ -69,7 +70,7 @@ export class MapSystem {
     return BaseCampGenerator.generate();
   }
 
-  static createDungeon(level: number = 1): GameMap {
-    return DungeonGenerator.generate(level);
+  static createDungeon(level: number = 1, theme?: Theme): GameMap {
+    return DungeonGenerator.generate(level, theme);
   }
 }

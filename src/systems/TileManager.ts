@@ -3,9 +3,11 @@
  */
 
 import { TileType } from './TileTypes';
+import { Theme, ThemeConfigs } from './ThemeConfig';
 
 export class TileManager {
   private static tileColors: Map<TileType, string> = new Map();
+  private static currentTheme: Theme | null = null;
 
   static {
     // Initialize tile colors when the class is loaded
@@ -35,7 +37,24 @@ export class TileManager {
     this.tileColors.set(TileType.POISON_TRAP, '#32cd32');
   }
 
+  static setTheme(theme: Theme | null): void {
+    this.currentTheme = theme;
+  }
+
   static getTileColor(type: TileType): string {
+    // Use theme-specific colors for floor and wall if a theme is active
+    if (this.currentTheme) {
+      const themeConfig = ThemeConfigs[this.currentTheme];
+      if (themeConfig) {
+        if (type === TileType.FLOOR) {
+          return themeConfig.colors.floor;
+        }
+        if (type === TileType.WALL) {
+          return themeConfig.colors.wall;
+        }
+      }
+    }
+
     return this.tileColors.get(type) || '#000';
   }
 

@@ -22,6 +22,7 @@ export enum TileType {
   SHRINE = 16,
   SPIKE_TRAP = 17,
   POISON_TRAP = 18,
+  UPGRADES_HALL = 19,
 }
 
 export type Tile = {

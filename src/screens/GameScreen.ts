@@ -261,6 +261,8 @@ export class GameScreen {
           gameState.setScreen('cooking');
         } else if (tileType === TileType.TRAINING_HALL) {
           gameState.setScreen('training');
+        } else if (tileType === TileType.UPGRADES_HALL) {
+          gameState.setScreen('upgrades');
         }
       } else if (this.gameModeManager.getMode() === 'expedition' && tileType) {
         if (tileType === TileType.STAIRS_DOWN) {

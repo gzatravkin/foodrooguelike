@@ -9,6 +9,7 @@ import { Corpse } from '../entities/Corpse';
 import { MapSystem, TileType } from '../systems/MapSystem';
 import { CombatSystem } from './CombatSystem';
 import { ParticleSystem } from '../entities/Particle';
+import { TileRegistry } from '../plugins/tiles/TileRegistry';
 
 export class GameScreenUpdater {
   private deadEnemiesSet = new Set<Enemy>();
@@ -176,14 +177,50 @@ export class GameScreenUpdater {
         showPrompt = true;
         promptText = 'Press E to enter Upgrades Hall';
       }
-    } else if (mode === 'expedition' && tileType) {
+    } else if (mode === 'expedition' && tileType !== null) {
       if (tileType === TileType.STAIRS_DOWN) {
         showPrompt = true;
         promptText = 'Press E to return to Base Camp';
+      } else {
+        // Check if the tile has interactive capabilities via TileRegistry
+        const tileId = this.getTileIdFromType(tileType);
+        if (tileId) {
+          const tilePlugin = TileRegistry.getTileById(tileId);
+          if (tilePlugin?.interaction) {
+            const map = mapSystem.getCurrentMap();
+            if (map) {
+              const tileX = Math.floor(player.x / map.tileSize);
+              const tileY = Math.floor(player.y / map.tileSize);
+
+              if (tilePlugin.interaction.canInteract(player, tileX, tileY, mapSystem)) {
+                showPrompt = true;
+                promptText = `Press E to interact with ${tilePlugin.name}`;
+              }
+            }
+          }
+        }
       }
     }
 
     return { showPrompt, promptText };
+  }
+
+  private getTileIdFromType(tileType: TileType): string | null {
+    // Map TileType enum to tile plugin IDs
+    const tileTypeMap: Record<number, string> = {
+      [TileType.HEALTH_FOUNTAIN]: 'health_fountain',
+      [TileType.TREASURE_CHEST]: 'treasure_chest',
+      [TileType.SHRINE]: 'shrine',
+      [TileType.TELEPORTER]: 'teleporter',
+      [TileType.BERRY_BUSH]: 'berry_bush',
+      [TileType.HERB_PLANT]: 'herb_plant',
+      [TileType.MUSHROOM_PATCH]: 'mushroom_patch',
+      [TileType.CRYSTAL_FORMATION]: 'crystal_formation',
+      [TileType.FIRE_PLANT]: 'fire_plant',
+      [TileType.VOID_PLANT]: 'void_plant',
+      [TileType.ANCIENT_TREE]: 'ancient_tree',
+    };
+    return tileTypeMap[tileType] || null;
   }
 
   updateCamera(player: Player, renderer: any): void {

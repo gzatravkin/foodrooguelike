@@ -21,6 +21,11 @@ export class CookingInputHandler {
     }
 
     setup(): void {
+        // Don't add duplicate listeners
+        if (this.keyListener) {
+            return;
+        }
+
         this.keyListener = (e: KeyboardEvent) => {
             // Don't handle if not visible
             if (gameState.getState().currentScreen !== 'cooking') return;

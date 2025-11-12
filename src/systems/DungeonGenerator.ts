@@ -29,7 +29,7 @@ export class DungeonGenerator {
 
   private static validate(map: GameMap): boolean {
     // Check that spawn position exists and is valid
-    if (!map.spawnX || !map.spawnY) return false;
+    if (typeof map.spawnX !== 'number' || typeof map.spawnY !== 'number') return false;
 
     const spawnTileX = Math.floor(map.spawnX / map.tileSize);
     const spawnTileY = Math.floor(map.spawnY / map.tileSize);

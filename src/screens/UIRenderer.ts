@@ -64,6 +64,22 @@ export class UIRenderer {
       this.renderer.drawUIRect(100, 123, dashBarWidth, 14, '#4CAF50');
     }
 
+    // Weapon cooldown
+    const weaponCooldownMax = player.weapon?.attackSpeed || 0.5;
+    const weaponCooldownPercent = Math.max(0, Math.min(1, player.attackCooldown / weaponCooldownMax));
+    const weaponColor = player.canAttack() ? '#FFD700' : '#666';
+    const weaponIcon = player.isRangedWeapon() ? '🔫' : '⚔️';
+    this.renderer.drawUIText(`${weaponIcon} Weapon:`, 200, 135, weaponColor, 14);
+
+    const weaponBarWidth = 80;
+    this.renderer.drawUIRect(285, 123, weaponBarWidth, 14, '#222');
+    if (!player.canAttack()) {
+      const fillWidth = weaponBarWidth * (1 - weaponCooldownPercent);
+      this.renderer.drawUIRect(285, 123, fillWidth, 14, '#FFD700');
+    } else {
+      this.renderer.drawUIRect(285, 123, weaponBarWidth, 14, '#FFD700');
+    }
+
     // Mode indicator
     this.renderer.drawUIText(mode === 'base' ? 'BASE CAMP' : 'EXPEDITION', canvas.width / 2, 30, '#fff', 24, 'center');
 

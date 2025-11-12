@@ -76,7 +76,7 @@ export class GameScreenUpdater {
   }
 
   handleBaseHealing(player: Player, mode: 'base' | 'expedition', baseHealTimer: number, deltaTime: number): number {
-    if (mode === 'base' && player.alive && player.stats.health < player.stats.maxHealth) {
+    if (player.alive && player.stats.health < player.stats.maxHealth) {
       baseHealTimer += deltaTime;
       const healInterval = 0.5;
       const healAmount = 1;
@@ -88,8 +88,6 @@ export class GameScreenUpdater {
         );
         baseHealTimer = 0;
       }
-    } else if (mode !== 'base') {
-      baseHealTimer = 0;
     }
 
     return baseHealTimer;

@@ -11,6 +11,8 @@ export class CookingState {
     private selectedMethod: string = '';
     private cookingTime: number = 60;
     private lastDish: any = null;
+    private message: string | null = null;
+    private messageTimeout: number | null = null;
 
     private currentSection: Section = 'ingredients';
     private ingredientCursor: number = 0;
@@ -57,6 +59,10 @@ export class CookingState {
         return this.quickSelectCursor;
     }
 
+    getMessage(): string | null {
+        return this.message;
+    }
+
     // Setters
     setSelectedMethod(method: string): void {
         this.selectedMethod = method;
@@ -88,6 +94,25 @@ export class CookingState {
 
     setQuickSelectCursor(cursor: number): void {
         this.quickSelectCursor = cursor;
+    }
+
+    setMessage(message: string, durationMs: number = 3000): void {
+        this.message = message;
+        if (this.messageTimeout) {
+            clearTimeout(this.messageTimeout);
+        }
+        this.messageTimeout = window.setTimeout(() => {
+            this.message = null;
+            this.messageTimeout = null;
+        }, durationMs);
+    }
+
+    clearMessage(): void {
+        this.message = null;
+        if (this.messageTimeout) {
+            clearTimeout(this.messageTimeout);
+            this.messageTimeout = null;
+        }
     }
 
     // State operations

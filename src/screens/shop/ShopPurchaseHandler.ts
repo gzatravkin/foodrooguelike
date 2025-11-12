@@ -53,11 +53,22 @@ export class ShopPurchaseHandler {
         gameState.removeDish(dish.id);
 
         let msg = `Ate ${dish.name}!`;
+        const effects: string[] = [];
+
         if (dish.effects?.health) {
-            msg += ` +${dish.effects.health} HP`;
+            effects.push(`+${dish.effects.health} HP`);
         }
-        if (dish.effects?.attack || dish.effects?.defense) {
-            msg += ' Buffs applied!';
+        if (dish.effects?.attack) {
+            const duration = dish.effects.duration ? `${Math.floor(dish.effects.duration)}s` : '';
+            effects.push(`+${dish.effects.attack} Attack ${duration}`);
+        }
+        if (dish.effects?.defense) {
+            const duration = dish.effects.duration ? `${Math.floor(dish.effects.duration)}s` : '';
+            effects.push(`+${dish.effects.defense} Defense ${duration}`);
+        }
+
+        if (effects.length > 0) {
+            msg += ` ${effects.join(', ')}`;
         }
 
         this.stateManager.showMessage(msg);

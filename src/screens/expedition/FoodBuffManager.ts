@@ -41,15 +41,27 @@ export class FoodBuffManager {
         if (dish && 'effects' in dish) {
             const effects = dish.effects;
             if (effects) {
-                gameState.addBuff({
-                    name: dish.name,
-                    duration: effects.duration || 60,
-                    effects: {
-                        health: effects.health,
-                        attack: effects.attack,
-                        defense: effects.defense
-                    }
-                });
+                // Apply instant health restoration
+                if (effects.health && effects.health > 0) {
+                    const state = gameState.getState();
+                    const newHealth = Math.min(
+                        state.player.maxHealth,
+                        state.player.health + effects.health
+                    );
+                    gameState.updatePlayer({ health: newHealth });
+                }
+
+                // Apply buffs for attack/defense
+                if (effects.attack || effects.defense) {
+                    gameState.addBuff({
+                        name: dish.name,
+                        duration: effects.duration || 60,
+                        effects: {
+                            attack: effects.attack,
+                            defense: effects.defense
+                        }
+                    });
+                }
             }
         }
 

@@ -21,19 +21,28 @@ export class CookingRenderer {
         this.renderer.clear();
         const vb = this.renderer.getViewBox();
 
-        // Title
-        const title = this.renderer.createText(vb.width / 2, 50, 'COOKING', 36, '#FFA500');
+        // Dark background overlay
+        const bgOverlay = this.renderer.createRect(0, 0, vb.width, vb.height, 'rgba(10, 15, 30, 0.95)');
+        this.renderer.append(bgOverlay);
+
+        // Title with shadow effect
+        const titleShadow = this.renderer.createText(vb.width / 2 + 2, 52, '👨‍🍳 COOKING', 38, 'rgba(255, 165, 0, 0.3)');
+        titleShadow.setAttribute('text-anchor', 'middle');
+        titleShadow.setAttribute('font-weight', 'bold');
+        this.renderer.append(titleShadow);
+
+        const title = this.renderer.createText(vb.width / 2, 50, '👨‍🍳 COOKING', 38, '#FFA500');
         title.setAttribute('text-anchor', 'middle');
         title.setAttribute('font-weight', 'bold');
         this.renderer.append(title);
 
         // Controls help
-        this.renderControls(vb.width / 2, 90);
+        this.renderControls(vb.width / 2, 95);
 
-        // Three columns layout
-        this.renderIngredientsColumn(100, 140);
-        this.renderMethodsColumn(400, 140);
-        this.renderTimeColumn(700, 140);
+        // Three columns layout with better spacing
+        this.renderIngredientsColumn(80, 150);
+        this.renderMethodsColumn(380, 150);
+        this.renderTimeColumn(680, 150);
 
         // Quick select panel (if there are saved recipes)
         const savedRecipes = gameState.getSavedRecipeConfigs();
@@ -60,15 +69,28 @@ export class CookingRenderer {
     }
 
     private renderControls(cx: number, y: number): void {
-        const controls = 'TAB: Switch Section | ARROWS/WASD: Navigate | ENTER/SPACE: Select | 1-8: Quick Time | C/E: Cook | R: Recipes | ESC: Back';
-        const text = this.renderer.createText(cx, y, controls, 14, '#AAA');
+        const controls = '⌨️ TAB: Switch | ⬆️⬇️: Navigate | ↵: Select | 1-8: Time | C/E: Cook | R: Recipes | ESC: Back';
+
+        // Controls background
+        const controlsBg = this.renderer.createRect(cx - 430, y - 15, 860, 28, 'rgba(30, 30, 40, 0.8)');
+        controlsBg.setAttribute('rx', '6');
+        this.renderer.append(controlsBg);
+
+        const text = this.renderer.createText(cx, y + 3, controls, 14, '#B0BEC5');
         text.setAttribute('text-anchor', 'middle');
         this.renderer.append(text);
     }
 
     private renderIngredientsColumn(x: number, y: number): void {
         const isActive = this.state.getCurrentSection() === 'ingredients';
-        const titleColor = isActive ? '#FFD700' : '#888';
+        const titleColor = isActive ? '#FFD700' : '#666';
+
+        // Section header background
+        const headerBg = this.renderer.createRect(x - 10, y - 20, 280, 50, isActive ? 'rgba(255, 215, 0, 0.15)' : 'rgba(40, 40, 50, 0.6)');
+        headerBg.setAttribute('rx', '10');
+        headerBg.setAttribute('stroke', isActive ? '#FFD700' : '#555');
+        headerBg.setAttribute('stroke-width', '2');
+        this.renderer.append(headerBg);
 
         // Section title
         const title = this.renderer.createText(x, y, '📦 INGREDIENTS', 22, titleColor);
@@ -76,7 +98,7 @@ export class CookingRenderer {
         this.renderer.append(title);
 
         if (isActive) {
-            const hint = this.renderer.createText(x, y + 25, '[Active - Use ↑↓ to navigate]', 12, '#90EE90');
+            const hint = this.renderer.createText(x, y + 22, '⬆️⬇️ Navigate', 12, '#8BC34A');
             this.renderer.append(hint);
         }
 
@@ -137,7 +159,14 @@ export class CookingRenderer {
 
     private renderMethodsColumn(x: number, y: number): void {
         const isActive = this.state.getCurrentSection() === 'methods';
-        const titleColor = isActive ? '#FFD700' : '#888';
+        const titleColor = isActive ? '#FFD700' : '#666';
+
+        // Section header background
+        const headerBg = this.renderer.createRect(x - 10, y - 20, 280, 50, isActive ? 'rgba(255, 215, 0, 0.15)' : 'rgba(40, 40, 50, 0.6)');
+        headerBg.setAttribute('rx', '10');
+        headerBg.setAttribute('stroke', isActive ? '#FFD700' : '#555');
+        headerBg.setAttribute('stroke-width', '2');
+        this.renderer.append(headerBg);
 
         // Section title
         const title = this.renderer.createText(x, y, '🔥 METHODS', 22, titleColor);
@@ -145,7 +174,7 @@ export class CookingRenderer {
         this.renderer.append(title);
 
         if (isActive) {
-            const hint = this.renderer.createText(x, y + 25, '[Active - Use ↑↓ to navigate]', 12, '#90EE90');
+            const hint = this.renderer.createText(x, y + 22, '⬆️⬇️ Navigate', 12, '#8BC34A');
             this.renderer.append(hint);
         }
 
@@ -181,7 +210,14 @@ export class CookingRenderer {
 
     private renderTimeColumn(x: number, y: number): void {
         const isActive = this.state.getCurrentSection() === 'time';
-        const titleColor = isActive ? '#FFD700' : '#888';
+        const titleColor = isActive ? '#FFD700' : '#666';
+
+        // Section header background
+        const headerBg = this.renderer.createRect(x - 10, y - 20, 280, 50, isActive ? 'rgba(255, 215, 0, 0.15)' : 'rgba(40, 40, 50, 0.6)');
+        headerBg.setAttribute('rx', '10');
+        headerBg.setAttribute('stroke', isActive ? '#FFD700' : '#555');
+        headerBg.setAttribute('stroke-width', '2');
+        this.renderer.append(headerBg);
 
         // Section title
         const title = this.renderer.createText(x, y, '⏱️  TIME', 22, titleColor);
@@ -189,7 +225,7 @@ export class CookingRenderer {
         this.renderer.append(title);
 
         if (isActive) {
-            const hint = this.renderer.createText(x, y + 25, '[Active - Use ↔ or 1-8 keys]', 12, '#90EE90');
+            const hint = this.renderer.createText(x, y + 22, '⬅️➡️ or 1-8 keys', 12, '#8BC34A');
             this.renderer.append(hint);
         }
 
@@ -267,11 +303,19 @@ export class CookingRenderer {
     private renderStatusBar(y: number): void {
         const canCook = this.state.canCook();
         const statusText = canCook
-            ? '✓ Ready to cook! Press C or E to start cooking'
-            : 'Select ingredients and method to cook';
-        const statusColor = canCook ? '#90EE90' : '#FF6B6B';
+            ? '✅ Ready to cook! Press C or E to start cooking'
+            : '⚠️ Select ingredients and method to cook';
+        const statusColor = canCook ? '#8BC34A' : '#FF6B6B';
 
-        const status = this.renderer.createText(50, y, statusText, 18, statusColor);
+        // Status bar background
+        const statusBg = this.renderer.createRect(30, y - 20, 940, 35, 'rgba(30, 30, 40, 0.9)');
+        statusBg.setAttribute('rx', '8');
+        statusBg.setAttribute('stroke', canCook ? '#8BC34A' : '#FF6B6B');
+        statusBg.setAttribute('stroke-width', '2');
+        this.renderer.append(statusBg);
+
+        const status = this.renderer.createText(500, y, statusText, 18, statusColor);
+        status.setAttribute('text-anchor', 'middle');
         status.setAttribute('font-weight', 'bold');
         this.renderer.append(status);
     }

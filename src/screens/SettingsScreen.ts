@@ -48,26 +48,58 @@ export class SettingsScreen extends Screen {
         this.renderer.clear();
         const vb = this.renderer.getViewBox();
 
-        // Title
-        const title = this.renderer.createText(vb.width / 2, 60, 'SETTINGS', 36, '#FFD700');
+        // Semi-transparent dark background overlay
+        const bgOverlay = this.renderer.createRect(0, 0, vb.width, vb.height, 'rgba(10, 15, 30, 0.95)');
+        this.renderer.append(bgOverlay);
+
+        // Title with shadow effect
+        const titleShadow = this.renderer.createText(vb.width / 2 + 2, 62, '⚙️ SETTINGS', 38, 'rgba(255, 215, 0, 0.3)');
+        titleShadow.setAttribute('text-anchor', 'middle');
+        titleShadow.setAttribute('font-weight', 'bold');
+        this.renderer.append(titleShadow);
+
+        const title = this.renderer.createText(vb.width / 2, 60, '⚙️ SETTINGS', 38, '#FFD700');
         title.setAttribute('text-anchor', 'middle');
         title.setAttribute('font-weight', 'bold');
         this.renderer.append(title);
 
-        // Settings panel
-        const panelY = 120;
-        this.volumeControl.render(vb.width / 2 - 300, panelY);
-        this.animationToggle.render(vb.width / 2 - 300, panelY + 120);
-        this.soundToggle.render(vb.width / 2 - 300, panelY + 220);
-        this.resetButton.render(vb.width / 2 - 150, panelY + 340);
+        // Main settings panel with background
+        const panelY = 140;
+        const panelWidth = 700;
+        const panelHeight = 500;
+        const panelX = vb.width / 2 - panelWidth / 2;
 
-        // ESC instruction
+        // Panel shadow
+        const panelShadow = this.renderer.createRect(panelX + 4, panelY + 4, panelWidth, panelHeight, 'rgba(0, 0, 0, 0.5)');
+        panelShadow.setAttribute('rx', '15');
+        this.renderer.append(panelShadow);
+
+        // Panel background
+        const panelBg = this.renderer.createRect(panelX, panelY, panelWidth, panelHeight, 'rgba(30, 35, 45, 0.95)');
+        panelBg.setAttribute('rx', '15');
+        panelBg.setAttribute('stroke', '#4FC3F7');
+        panelBg.setAttribute('stroke-width', '2');
+        this.renderer.append(panelBg);
+
+        // Settings content
+        const contentX = panelX + 50;
+        const contentStartY = panelY + 60;
+        this.volumeControl.render(contentX, contentStartY);
+        this.animationToggle.render(contentX, contentStartY + 130);
+        this.soundToggle.render(contentX, contentStartY + 240);
+        this.resetButton.render(vb.width / 2 - 150, contentStartY + 360);
+
+        // ESC instruction with better styling
+        const escBg = this.renderer.createRect(vb.width / 2 - 120, vb.height - 80, 240, 35, 'rgba(30, 30, 40, 0.8)');
+        escBg.setAttribute('rx', '8');
+        this.renderer.append(escBg);
+
         const escText = this.renderer.createText(
             vb.width / 2,
-            vb.height - 60,
-            'Press ESC to close',
+            vb.height - 55,
+            '⌨️ Press ESC to close',
             18,
-            '#AAA'
+            '#B0BEC5'
         );
         escText.setAttribute('text-anchor', 'middle');
         this.renderer.append(escText);

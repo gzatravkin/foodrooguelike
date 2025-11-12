@@ -22,8 +22,17 @@ export class RecipeBookScreen extends Screen {
 
         const vb = this.renderer.getViewBox();
 
-        // Title
-        const title = this.renderer.createText(vb.width / 2, 60, '📖 RECIPE BOOK', 36, '#FFA500');
+        // Semi-transparent dark background overlay
+        const bgOverlay = this.renderer.createRect(0, 0, vb.width, vb.height, 'rgba(15, 15, 25, 0.95)');
+        this.renderer.append(bgOverlay);
+
+        // Title with gradient-like effect using multiple text elements
+        const titleShadow = this.renderer.createText(vb.width / 2 + 2, 62, '📖 RECIPE BOOK', 38, 'rgba(255, 165, 0, 0.3)');
+        titleShadow.setAttribute('text-anchor', 'middle');
+        titleShadow.setAttribute('font-weight', 'bold');
+        this.renderer.append(titleShadow);
+
+        const title = this.renderer.createText(vb.width / 2, 60, '📖 RECIPE BOOK', 38, '#FFA500');
         title.setAttribute('text-anchor', 'middle');
         title.setAttribute('font-weight', 'bold');
         this.renderer.append(title);
@@ -49,36 +58,54 @@ export class RecipeBookScreen extends Screen {
         discovered.sort((a, b) => rarityOrder[a.rarity] - rarityOrder[b.rarity]);
         undiscovered.sort((a, b) => rarityOrder[a.rarity] - rarityOrder[b.rarity]);
 
-        // Stats
+        // Stats panel with background
+        const statsBg = this.renderer.createRect(vb.width / 2 - 150, 85, 300, 35, 'rgba(30, 30, 40, 0.8)');
+        statsBg.setAttribute('rx', '8');
+        statsBg.setAttribute('stroke', '#90EE90');
+        statsBg.setAttribute('stroke-width', '2');
+        this.renderer.append(statsBg);
+
         const statsText = `Discovered: ${discovered.length} / ${allRecipes.length}`;
-        const stats = this.renderer.createText(vb.width / 2, 100, statsText, 18, '#90EE90');
+        const stats = this.renderer.createText(vb.width / 2, 108, statsText, 18, '#90EE90');
         stats.setAttribute('text-anchor', 'middle');
+        stats.setAttribute('font-weight', 'bold');
         this.renderer.append(stats);
 
         // Render discovered recipes
-        let yPos = 140;
+        let yPos = 150;
 
         if (discovered.length > 0) {
-            const header1 = this.renderer.createText(100, yPos, 'DISCOVERED RECIPES', 24, '#FFD700');
+            // Section header with background
+            const headerBg = this.renderer.createRect(80, yPos - 20, 840, 40, 'rgba(255, 215, 0, 0.15)');
+            headerBg.setAttribute('rx', '8');
+            this.renderer.append(headerBg);
+
+            const header1 = this.renderer.createText(100, yPos + 5, '✨ DISCOVERED RECIPES', 24, '#FFD700');
             header1.setAttribute('font-weight', 'bold');
             this.renderer.append(header1);
-            yPos += 40;
+            yPos += 50;
 
             for (const recipe of discovered) {
-                yPos = this.renderRecipeCard(recipe, 50, yPos, true);
+                yPos = this.renderRecipeCard(recipe, 80, yPos, true);
             }
         }
 
         // Render undiscovered recipes (hints)
         if (undiscovered.length > 0) {
             yPos += 20;
-            const header2 = this.renderer.createText(100, yPos, 'UNDISCOVERED RECIPES', 24, '#888');
+
+            // Section header with background
+            const headerBg = this.renderer.createRect(80, yPos - 20, 840, 40, 'rgba(136, 136, 136, 0.15)');
+            headerBg.setAttribute('rx', '8');
+            this.renderer.append(headerBg);
+
+            const header2 = this.renderer.createText(100, yPos + 5, '🔒 UNDISCOVERED RECIPES', 24, '#999');
             header2.setAttribute('font-weight', 'bold');
             this.renderer.append(header2);
-            yPos += 40;
+            yPos += 50;
 
             for (const recipe of undiscovered) {
-                yPos = this.renderRecipeCard(recipe, 50, yPos, false);
+                yPos = this.renderRecipeCard(recipe, 80, yPos, false);
             }
         }
 
@@ -105,85 +132,123 @@ export class RecipeBookScreen extends Screen {
 
     private renderRecipeCard(recipe: Recipe, x: number, y: number, discovered: boolean): number {
         const vb = this.renderer.getViewBox();
-        const cardHeight = discovered ? 120 : 80;
-        const cardWidth = vb.width - 100;
+        const cardHeight = discovered ? 130 : 90;
+        const cardWidth = vb.width - 160;
 
         // Adjust for scroll
         const displayY = y - this.scrollOffset;
 
         // Skip if off-screen
         if (displayY + cardHeight < 100 || displayY > vb.height - 100) {
-            return y + cardHeight + 20;
+            return y + cardHeight + 25;
         }
 
-        // Card background
+        // Enhanced card background with rarity colors
         const rarityColors = {
-            common: '#4A4A4A',
-            uncommon: '#2E5CB8',
-            rare: '#8B35C1',
-            legendary: '#CC8800'
+            common: { bg: 'rgba(74, 74, 74, 0.9)', border: '#6B6B6B', glow: 'rgba(107, 107, 107, 0.3)' },
+            uncommon: { bg: 'rgba(33, 150, 243, 0.25)', border: '#2196F3', glow: 'rgba(33, 150, 243, 0.4)' },
+            rare: { bg: 'rgba(156, 39, 176, 0.25)', border: '#9C27B0', glow: 'rgba(156, 39, 176, 0.4)' },
+            legendary: { bg: 'rgba(255, 152, 0, 0.3)', border: '#FF9800', glow: 'rgba(255, 152, 0, 0.5)' }
         };
 
-        const bgColor = discovered ? rarityColors[recipe.rarity] : '#2A2A2A';
-        const rect = this.renderer.createRect(x, displayY, cardWidth, cardHeight, bgColor);
-        rect.setAttribute('stroke', discovered ? '#FFD700' : '#555');
-        rect.setAttribute('stroke-width', '2');
-        rect.setAttribute('rx', '8');
+        const colors = discovered ? rarityColors[recipe.rarity] :
+            { bg: 'rgba(42, 42, 50, 0.8)', border: '#555', glow: 'rgba(85, 85, 85, 0.2)' };
+
+        // Drop shadow effect
+        const shadow = this.renderer.createRect(x + 4, displayY + 4, cardWidth, cardHeight, 'rgba(0, 0, 0, 0.4)');
+        shadow.setAttribute('rx', '12');
+        this.renderer.append(shadow);
+
+        // Glow effect for discovered recipes
+        if (discovered) {
+            const glow = this.renderer.createRect(x - 2, displayY - 2, cardWidth + 4, cardHeight + 4, colors.glow);
+            glow.setAttribute('rx', '14');
+            this.renderer.append(glow);
+        }
+
+        // Main card background
+        const rect = this.renderer.createRect(x, displayY, cardWidth, cardHeight, colors.bg);
+        rect.setAttribute('stroke', colors.border);
+        rect.setAttribute('stroke-width', discovered ? '3' : '2');
+        rect.setAttribute('rx', '12');
         this.renderer.append(rect);
 
         if (discovered) {
-            // Recipe name
-            const nameColor = recipe.rarity === 'legendary' ? '#FFD700' : '#FFF';
-            const name = this.renderer.createText(x + 20, displayY + 30, recipe.name || recipe.id, 20, nameColor);
+            // Recipe name with icon
+            const nameColor = recipe.rarity === 'legendary' ? '#FFD700' : '#FFFFFF';
+            const name = this.renderer.createText(x + 25, displayY + 32, `🍽️ ${recipe.name || recipe.id}`, 22, nameColor);
             name.setAttribute('font-weight', 'bold');
             this.renderer.append(name);
 
-            // Rarity badge
+            // Rarity badge with background
             const rarityText = recipe.rarity.toUpperCase();
-            const rarityBadge = this.renderer.createText(x + cardWidth - 20, displayY + 30, rarityText, 14, '#FFD700');
-            rarityBadge.setAttribute('text-anchor', 'end');
+            const rarityColors = {
+                common: '#8BC34A',
+                uncommon: '#2196F3',
+                rare: '#9C27B0',
+                legendary: '#FFD700'
+            };
+            const rarityColor = rarityColors[recipe.rarity] || '#888';
+
+            const badgeWidth = 100;
+            const badgeBg = this.renderer.createRect(x + cardWidth - badgeWidth - 15, displayY + 15, badgeWidth, 25, 'rgba(0, 0, 0, 0.5)');
+            badgeBg.setAttribute('rx', '12');
+            this.renderer.append(badgeBg);
+
+            const rarityBadge = this.renderer.createText(x + cardWidth - 65, displayY + 32, rarityText, 14, rarityColor);
+            rarityBadge.setAttribute('text-anchor', 'middle');
+            rarityBadge.setAttribute('font-weight', 'bold');
             this.renderer.append(rarityBadge);
 
-            // Ingredients
+            // Ingredients with better formatting
             const ingredients = entityFactory.getIngredients(recipe.ingredients);
             const ingredientNames = ingredients.map(ing => ing.name).join(', ');
-            const ingText = this.renderer.createText(x + 20, displayY + 55, `Ingredients: ${ingredientNames}`, 14, '#90EE90');
+            const ingText = this.renderer.createText(x + 25, displayY + 62, `🥗 ${ingredientNames}`, 15, '#90EE90');
             this.renderer.append(ingText);
 
-            // Method and time
-            const methodText = `Method: ${recipe.cookingMethod} | Time: ${recipe.cookingTime}s`;
-            const method = this.renderer.createText(x + 20, displayY + 75, methodText, 14, '#4FC3F7');
+            // Method and time with icons
+            const methodText = `🔥 ${recipe.cookingMethod} | ⏱️ ${recipe.cookingTime}s`;
+            const method = this.renderer.createText(x + 25, displayY + 85, methodText, 15, '#4FC3F7');
             this.renderer.append(method);
 
-            // Buff type
+            // Buff type with better visual
             const buffEmoji = recipe.buffType === 'health' ? '❤️' : recipe.buffType === 'attack' ? '⚔️' : '🛡️';
-            const buffText = this.renderer.createText(x + 20, displayY + 95, `${buffEmoji} Buff: ${recipe.buffType}`, 14, '#FFA500');
+            const buffColors = { health: '#F44336', attack: '#FF9800', defense: '#2196F3' };
+            const buffColor = buffColors[recipe.buffType as keyof typeof buffColors] || '#FFA500';
+            const buffText = this.renderer.createText(x + 25, displayY + 108, `${buffEmoji} ${recipe.buffType.toUpperCase()} Buff`, 15, buffColor);
+            buffText.setAttribute('font-weight', 'bold');
             this.renderer.append(buffText);
 
         } else {
-            // Mysterious recipe (hints only)
-            const questionMarks = '???';
-            const hintName = this.renderer.createText(x + 20, displayY + 30, questionMarks, 20, '#666');
+            // Mysterious recipe (hints only) with better styling
+            const questionMarks = '❓ ??? ❓';
+            const hintName = this.renderer.createText(x + 25, displayY + 32, questionMarks, 20, '#777');
             hintName.setAttribute('font-weight', 'bold');
             this.renderer.append(hintName);
 
-            // Rarity hint
+            // Rarity hint with badge
             const rarityHint = recipe.rarity.toUpperCase();
-            const rarityText = this.renderer.createText(x + cardWidth - 20, displayY + 30, rarityHint, 14, '#666');
-            rarityText.setAttribute('text-anchor', 'end');
+            const badgeWidth = 100;
+            const badgeBg = this.renderer.createRect(x + cardWidth - badgeWidth - 15, displayY + 15, badgeWidth, 25, 'rgba(0, 0, 0, 0.5)');
+            badgeBg.setAttribute('rx', '12');
+            this.renderer.append(badgeBg);
+
+            const rarityText = this.renderer.createText(x + cardWidth - 65, displayY + 32, rarityHint, 14, '#777');
+            rarityText.setAttribute('text-anchor', 'middle');
+            rarityText.setAttribute('font-weight', 'bold');
             this.renderer.append(rarityText);
 
             // Ingredient count hint
-            const hint = this.renderer.createText(x + 20, displayY + 55, `Requires ${recipe.ingredients.length} ingredients`, 14, '#666');
+            const hint = this.renderer.createText(x + 25, displayY + 60, `🔒 Requires ${recipe.ingredients.length} ingredients`, 15, '#777');
             this.renderer.append(hint);
 
-            // Discovery hint
-            const discoveryHint = this.renderer.createText(x + 20, displayY + 75, 'Cook with 70%+ quality to discover', 12, '#888');
+            // Discovery hint with better styling
+            const discoveryHint = this.renderer.createText(x + 25, displayY + 80, '💡 Cook with 70%+ quality to discover this recipe', 13, '#999');
             discoveryHint.setAttribute('font-style', 'italic');
             this.renderer.append(discoveryHint);
         }
 
-        return y + cardHeight + 20;
+        return y + cardHeight + 25;
     }
 
     handleInput(event: MouseEvent | TouchEvent | KeyboardEvent): void {

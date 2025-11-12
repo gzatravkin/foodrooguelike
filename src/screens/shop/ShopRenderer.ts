@@ -27,12 +27,17 @@ export class ShopRenderer {
         this.renderer.clear();
         const vb = this.renderer.getViewBox();
 
+        // Dark background overlay
+        const bgOverlay = this.renderer.createRect(0, 0, vb.width, vb.height, 'rgba(10, 15, 30, 0.95)');
+        this.renderer.append(bgOverlay);
+
         this.renderHeader(vb.width);
 
-        const colWidth = (vb.width - 80) / 3;
-        this.renderWeaponsSection(40, 120, colWidth);
-        this.renderEquipmentSection(40 + colWidth + 20, 120, colWidth);
-        this.renderDishesSection(40 + (colWidth + 20) * 2, 120, colWidth);
+        const colWidth = (vb.width - 120) / 3;
+        const colSpacing = 30;
+        this.renderWeaponsSection(60, 150, colWidth);
+        this.renderEquipmentSection(60 + colWidth + colSpacing, 150, colWidth);
+        this.renderDishesSection(60 + (colWidth + colSpacing) * 2, 150, colWidth);
 
         if (messageText && messageTimer > 0) {
             this.renderMessage(vb.width, vb.height, messageText);
@@ -42,14 +47,28 @@ export class ShopRenderer {
     }
 
     private renderHeader(width: number): void {
-        const title = this.renderer.createText(width / 2, 40, 'SHOP', 36, '#FFD700');
+        // Title with shadow effect
+        const titleShadow = this.renderer.createText(width / 2 + 2, 47, '🏪 SHOP', 38, 'rgba(255, 215, 0, 0.3)');
+        titleShadow.setAttribute('text-anchor', 'middle');
+        titleShadow.setAttribute('font-weight', 'bold');
+        this.renderer.append(titleShadow);
+
+        const title = this.renderer.createText(width / 2, 45, '🏪 SHOP', 38, '#FFD700');
         title.setAttribute('text-anchor', 'middle');
         title.setAttribute('font-weight', 'bold');
         this.renderer.append(title);
 
-        const gold = this.renderer.createText(width / 2, 80, `Gold: ${this.getState().gold}`, 24, '#FFD700');
+        // Gold display with background
+        const goldPanelBg = this.renderer.createRect(width / 2 - 120, 65, 240, 40, 'rgba(30, 30, 40, 0.9)');
+        goldPanelBg.setAttribute('rx', '8');
+        goldPanelBg.setAttribute('stroke', '#FFD700');
+        goldPanelBg.setAttribute('stroke-width', '2');
+        this.renderer.append(goldPanelBg);
+
+        const gold = this.renderer.createText(width / 2, 90, `💰 ${this.getState().gold} Gold`, 22, '#FFD700');
         gold.id = 'shop-gold';
         gold.setAttribute('text-anchor', 'middle');
+        gold.setAttribute('font-weight', 'bold');
         this.renderer.append(gold);
     }
 
@@ -57,7 +76,14 @@ export class ShopRenderer {
         const weapons = shopSystem.getWeaponInventory();
         const state = this.getState();
 
-        const title = this.renderer.createText(x + width / 2, y, 'Weapons', 22, '#FFD700');
+        // Section header with background
+        const headerBg = this.renderer.createRect(x, y - 20, width, 40, 'rgba(255, 69, 0, 0.2)');
+        headerBg.setAttribute('rx', '10');
+        headerBg.setAttribute('stroke', '#FF6B35');
+        headerBg.setAttribute('stroke-width', '2');
+        this.renderer.append(headerBg);
+
+        const title = this.renderer.createText(x + width / 2, y + 5, '⚔️ WEAPONS', 22, '#FF6B35');
         title.setAttribute('text-anchor', 'middle');
         title.setAttribute('font-weight', 'bold');
         this.renderer.append(title);
@@ -87,42 +113,67 @@ export class ShopRenderer {
 
     private renderWeaponItem(weapon: Weapon, x: number, y: number, width: number): void {
         const rarityColors: Record<string, string> = {
-            legendary: '#FF6B00',
+            legendary: '#FF9800',
             rare: '#9C27B0',
             uncommon: '#2196F3',
-            common: '#888'
+            common: '#78909C'
         };
 
         const color = rarityColors[weapon.rarity] || '#888';
         const icon = weapon.weaponType === 'ranged' ? '🔫' : '⚔️';
 
+        // Item background card
+        const cardBg = this.renderer.createRect(x, y, width - 10, 70, 'rgba(30, 35, 45, 0.9)');
+        cardBg.setAttribute('rx', '8');
+        cardBg.setAttribute('stroke', color);
+        cardBg.setAttribute('stroke-width', '2');
+        this.renderer.append(cardBg);
+
         const btn = this.renderer.createButton(
-            x,
-            y,
-            width - 10,
-            35,
+            x + 5,
+            y + 5,
+            width - 20,
+            30,
             `${icon} ${weapon.name}`,
             () => this.onBuyWeapon(weapon)
         );
         btn.style.borderColor = color;
         btn.style.borderWidth = '2px';
+        btn.style.backgroundColor = 'rgba(76, 175, 80, 0.8)';
         this.renderer.append(btn);
 
         const stats = this.renderer.createText(
-            x + 5,
-            y + 50,
-            `DMG: ${weapon.damage} | SPD: ${weapon.attackSpeed.toFixed(1)}s | ${weapon.cost}g`,
+            x + 10,
+            y + 52,
+            `⚡ ${weapon.damage} DMG | ⏱️ ${weapon.attackSpeed.toFixed(1)}s`,
             11,
-            '#aaa'
+            '#B0BEC5'
         );
         this.renderer.append(stats);
+
+        const cost = this.renderer.createText(
+            x + 10,
+            y + 65,
+            `💰 ${weapon.cost}g`,
+            11,
+            '#FFD700'
+        );
+        cost.setAttribute('font-weight', 'bold');
+        this.renderer.append(cost);
     }
 
     private renderEquipmentSection(x: number, y: number, width: number): void {
         const equipment = shopSystem.getShopInventory();
         const state = this.getState();
 
-        const title = this.renderer.createText(x + width / 2, y, 'Equipment', 22, '#FFD700');
+        // Section header with background
+        const headerBg = this.renderer.createRect(x, y - 20, width, 40, 'rgba(33, 150, 243, 0.2)');
+        headerBg.setAttribute('rx', '10');
+        headerBg.setAttribute('stroke', '#2196F3');
+        headerBg.setAttribute('stroke-width', '2');
+        this.renderer.append(headerBg);
+
+        const title = this.renderer.createText(x + width / 2, y + 5, '🛡️ EQUIPMENT', 22, '#4FC3F7');
         title.setAttribute('text-anchor', 'middle');
         title.setAttribute('font-weight', 'bold');
         this.renderer.append(title);
@@ -177,7 +228,14 @@ export class ShopRenderer {
         const dishes = this.getDishes();
         const state = this.getState();
 
-        const title = this.renderer.createText(x + width / 2, y, 'Your Dishes', 22, '#FFD700');
+        // Section header with background
+        const headerBg = this.renderer.createRect(x, y - 20, width, 40, 'rgba(76, 175, 80, 0.2)');
+        headerBg.setAttribute('rx', '10');
+        headerBg.setAttribute('stroke', '#4CAF50');
+        headerBg.setAttribute('stroke-width', '2');
+        this.renderer.append(headerBg);
+
+        const title = this.renderer.createText(x + width / 2, y + 5, '🍽️ YOUR DISHES', 22, '#8BC34A');
         title.setAttribute('text-anchor', 'middle');
         title.setAttribute('font-weight', 'bold');
         this.renderer.append(title);
@@ -311,12 +369,17 @@ export class ShopRenderer {
     }
 
     private renderFooter(width: number, height: number): void {
+        // Footer with background
+        const footerBg = this.renderer.createRect(width / 2 - 150, height - 60, 300, 35, 'rgba(30, 30, 40, 0.8)');
+        footerBg.setAttribute('rx', '8');
+        this.renderer.append(footerBg);
+
         const escText = this.renderer.createText(
             width / 2,
-            height - 40,
-            'Press ESC to close shop',
+            height - 37,
+            '⌨️ Press ESC to close shop',
             18,
-            '#AAA'
+            '#B0BEC5'
         );
         escText.setAttribute('text-anchor', 'middle');
         this.renderer.append(escText);

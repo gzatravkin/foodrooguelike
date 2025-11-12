@@ -27,14 +27,14 @@ export class ExpeditionSelectionScreen extends Screen {
         const vb = this.renderer.getViewBox();
         const state = gameState.getState();
 
-        // Add semi-transparent background to catch all clicks and prevent interaction with elements below
-        const background = this.renderer.createRect(0, 0, vb.width, vb.height, 'rgba(0, 0, 0, 0.85)');
+        // Enhanced background with darker overlay
+        const background = this.renderer.createRect(0, 0, vb.width, vb.height, 'rgba(10, 10, 20, 0.95)');
         this.renderer.append(background);
 
         // Check if coming from world map with preselected expedition
         this.handlePreselectedExpedition();
 
-        // Render header
+        // Render header with better styling
         this.renderHeader(vb.width / 2, state.gold);
 
         // Check for game over
@@ -98,15 +98,27 @@ export class ExpeditionSelectionScreen extends Screen {
     }
 
     private renderHeader(cx: number, gold: number): void {
-        // Title
-        const title = this.renderer.createText(cx, 50, '⚔️ EXPEDITION CENTER ⚔️', 32, '#FFD700');
+        // Title with shadow effect
+        const titleShadow = this.renderer.createText(cx + 2, 52, '⚔️ EXPEDITION CENTER ⚔️', 36, 'rgba(255, 215, 0, 0.3)');
+        titleShadow.setAttribute('text-anchor', 'middle');
+        titleShadow.setAttribute('font-weight', 'bold');
+        this.renderer.append(titleShadow);
+
+        const title = this.renderer.createText(cx, 50, '⚔️ EXPEDITION CENTER ⚔️', 36, '#FFD700');
         title.setAttribute('text-anchor', 'middle');
         title.setAttribute('font-weight', 'bold');
         this.renderer.append(title);
 
-        // Gold display
-        const goldText = this.renderer.createText(cx, 85, `Gold: ${gold}`, 18, '#FFD700');
+        // Gold display with background
+        const goldPanelBg = this.renderer.createRect(cx - 100, 70, 200, 35, 'rgba(30, 30, 40, 0.9)');
+        goldPanelBg.setAttribute('rx', '8');
+        goldPanelBg.setAttribute('stroke', '#FFD700');
+        goldPanelBg.setAttribute('stroke-width', '2');
+        this.renderer.append(goldPanelBg);
+
+        const goldText = this.renderer.createText(cx, 93, `💰 ${gold} Gold`, 18, '#FFD700');
         goldText.setAttribute('text-anchor', 'middle');
+        goldText.setAttribute('font-weight', 'bold');
         this.renderer.append(goldText);
     }
 

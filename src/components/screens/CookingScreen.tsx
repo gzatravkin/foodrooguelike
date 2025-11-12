@@ -2,12 +2,17 @@
  * CookingScreen - Preact component for cooking
  */
 
-import { useState, useEffect } from 'preact/hooks';
+import { useState } from 'preact/hooks';
 import { useGameState } from '../../hooks/useGameState';
 import { gameState } from '../../core/GameState';
 import { cookingSystem } from '../../systems/CookingSystem';
 import { entityFactory } from '../../entities/EntityFactory';
 import type { Ingredient, CookingMethod, Dish } from '../../entities/types';
+import { ScreenContainer, ContentWrapper, GridLayout, ScreenHeader } from '../common/Layout';
+import { SectionTitle } from '../common/Display';
+import { CloseButton, ActionButton } from '../common/Button';
+import { Card, CardTitle, CardEffect } from '../common/Card';
+import { colors, commonStyles } from '../../styles/theme';
 
 export function CookingScreen() {
     const inventory = useGameState(state => state.inventory);
@@ -22,18 +27,6 @@ export function CookingScreen() {
 
     const methods = (entityFactory.getAllOfType('cookingMethod') as CookingMethod[])
         .filter(method => method.unlocked !== false);
-
-    useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') {
-                e.preventDefault();
-                gameState.setScreen('game');
-            }
-        };
-
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, []);
 
     const toggleIngredient = (ingredientId: string) => {
         if (selectedIngredients.includes(ingredientId)) {
@@ -64,70 +57,66 @@ export function CookingScreen() {
     };
 
     return (
-        <div class="screen">
-            <h1>🍳 COOKING</h1>
+        <ScreenContainer>
+            <ScreenHeader title="COOKING" emoji="🍳" />
 
             {lastDish && (
-                <div class="card" style="background: #2E7D32; border-color: #4CAF50; margin-bottom: 20px;">
-                    <h3>✓ Cooked: {lastDish.name}</h3>
+                <Card style={`background: #2E7D32; border-color: ${colors.success}; margin-bottom: 20px;`}>
+                    <CardTitle>✓ Cooked: {lastDish.name}</CardTitle>
                     <p>{lastDish.description}</p>
-                    <p class="effect">
+                    <CardEffect>
                         Quality: {lastDish.quality} | HP: +{lastDish.effects?.health || 0}, ATK: +{lastDish.effects?.attack || 0}, DEF: +{lastDish.effects?.defense || 0}
-                    </p>
-                </div>
+                    </CardEffect>
+                </Card>
             )}
 
-            <div style="width: 100%; max-width: 1200px;">
+            <ContentWrapper>
                 {/* Ingredients Selection */}
-                <h2 style="color: #FFD700;">Select Ingredients (Max 5)</h2>
-                <p style="color: #AAA; margin-bottom: 10px;">
+                <SectionTitle>Select Ingredients (Max 5)</SectionTitle>
+                <p style={`color: ${colors.textMuted}; margin-bottom: 10px;`}>
                     Selected: {selectedIngredients.length}/5
                 </p>
-                <div class="grid-2col">
+                <GridLayout>
                     {ingredients.map(ingredient => {
                         const isSelected = selectedIngredients.includes(ingredient.id);
                         return (
-                            <div
+                            <Card
                                 key={ingredient.id}
-                                class="card"
+                                isSelected={isSelected}
                                 onClick={() => toggleIngredient(ingredient.id)}
-                                style={`cursor: pointer; ${isSelected ? 'border-color: #4CAF50; background: #1a3a1a;' : ''}`}
                             >
-                                <h3>{ingredient.name}</h3>
+                                <CardTitle>{ingredient.name}</CardTitle>
                                 <p>{ingredient.description}</p>
-                                <p class="effect">
+                                <CardEffect>
                                     Rarity: {ingredient.rarity} | Value: {ingredient.baseValue}
-                                </p>
-                            </div>
+                                </CardEffect>
+                            </Card>
                         );
                     })}
-                </div>
+                </GridLayout>
 
                 {ingredients.length === 0 && (
-                    <p style="color: #AAA; text-align: center; padding: 40px;">
+                    <p style={`color: ${colors.textMuted}; text-align: center; padding: 40px;`}>
                         No ingredients available. Go on expeditions to gather ingredients!
                     </p>
                 )}
 
                 {/* Cooking Method Selection */}
-                <h2 style="color: #FFD700; margin-top: 30px;">Select Cooking Method</h2>
+                <SectionTitle>Select Cooking Method</SectionTitle>
                 <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                     {methods.map(method => (
-                        <button
+                        <ActionButton
                             key={method.id}
-                            class="button"
                             onClick={() => setSelectedMethod(method.id)}
-                            style={selectedMethod === method.id
-                                ? 'background: #FFD700; color: #000;'
-                                : ''}
+                            style={selectedMethod === method.id ? commonStyles.activeTab : ''}
                         >
                             {method.name}
-                        </button>
+                        </ActionButton>
                     ))}
                 </div>
 
                 {/* Cooking Time */}
-                <h2 style="color: #FFD700; margin-top: 30px;">Cooking Time</h2>
+                <SectionTitle>Cooking Time</SectionTitle>
                 <input
                     type="range"
                     min="10"
@@ -147,17 +136,11 @@ export function CookingScreen() {
                 >
                     🍳 COOK! 🍳
                 </button>
-            </div>
+            </ContentWrapper>
 
-            <button
-                class="button"
-                onClick={() => gameState.setScreen('game')}
-                style="margin-top: 30px;"
-            >
-                ✕ CLOSE
-            </button>
+            <CloseButton />
 
-            <p style="color: #AAA; margin-top: 20px;">Press ESC to close</p>
-        </div>
+            <p style={`color: ${colors.textMuted}; margin-top: 20px;`}>Press ESC to close</p>
+        </ScreenContainer>
     );
 }

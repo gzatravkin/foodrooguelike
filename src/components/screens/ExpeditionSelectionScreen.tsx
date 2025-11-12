@@ -2,11 +2,17 @@
  * ExpeditionSelectionScreen - Preact component for expedition selection
  */
 
-import { useState, useEffect } from 'preact/hooks';
-import { useGold, useDishes, useGameState } from '../../hooks/useGameState';
+import { useState } from 'preact/hooks';
+import { useGold, useDishes } from '../../hooks/useGameState';
 import { gameState } from '../../core/GameState';
 import expeditionsData from '../../data/expeditions.json';
 import type { ExpeditionLocation } from '../../types/expedition';
+import { ScreenContainer, ScreenHeader } from '../common/Layout';
+import { GoldDisplay, SectionTitle } from '../common/Display';
+import { CloseButton, ActionButton } from '../common/Button';
+import { Card, CardTitle, CardEffect } from '../common/Card';
+import { formatGold } from '../../utils/formatting';
+import { colors } from '../../styles/theme';
 
 export function ExpeditionSelectionScreen() {
     const gold = useGold();
@@ -19,24 +25,16 @@ export function ExpeditionSelectionScreen() {
     const expedition = selectedExpedition ? expeditions[selectedExpedition] : null;
     const progress = expedition ? gameState.getExpeditionProgress(expedition.id) : null;
 
-    // Handle escape key to close screen
-    useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') {
-                e.preventDefault();
-                gameState.setScreen('game');
-            }
-        };
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, []);
+    const getCost = (level: number) => {
+        if (!expedition) return 0;
+        const levelMultiplier = 1 + (level - 1) * 0.1;
+        return Math.floor(expedition.cost * levelMultiplier);
+    };
 
     const startExpedition = () => {
         if (!expedition) return;
 
-        const baseCost = expedition.cost;
-        const levelMultiplier = 1 + (selectedLevel - 1) * 0.1;
-        const cost = Math.floor(baseCost * levelMultiplier);
+        const cost = getCost(selectedLevel);
 
         if (gold >= cost && gameState.spendGold(cost)) {
             if (selectedFoodBuff) {
@@ -49,44 +47,39 @@ export function ExpeditionSelectionScreen() {
         }
     };
 
-    const getCost = (level: number) => {
-        if (!expedition) return 0;
-        const levelMultiplier = 1 + (level - 1) * 0.1;
-        return Math.floor(expedition.cost * levelMultiplier);
-    };
-
     return (
-        <div class="screen">
-            <h1>⚔️ EXPEDITIONS</h1>
-            <p>Gold: {gold}</p>
+        <ScreenContainer>
+            <ScreenHeader title="EXPEDITIONS" emoji="⚔️" />
+            <GoldDisplay />
 
             <div style="display: flex; width: 100%; max-width: 1200px; gap: 20px; margin-top: 30px;">
                 {/* Expeditions List */}
                 <div style="flex: 1;">
-                    <h2 style="color: #FFD700;">Select Expedition</h2>
+                    <SectionTitle>Select Expedition</SectionTitle>
                     {Object.values(expeditions).map(exp => {
                         const expProgress = gameState.getExpeditionProgress(exp.id);
                         const cost = getCost(expProgress.currentLevel);
                         const canAfford = gold >= cost;
+                        const isSelected = selectedExpedition === exp.id;
 
                         return (
-                            <div
+                            <Card
                                 key={exp.id}
-                                class="card"
+                                isSelected={isSelected}
                                 onClick={() => {
                                     setSelectedExpedition(exp.id);
                                     setSelectedLevel(expProgress.currentLevel);
                                 }}
-                                style={`cursor: pointer; ${selectedExpedition === exp.id ? 'border-color: #FFD700;' : ''}`}
+                                style={isSelected ? `border-color: ${colors.gold};` : ''}
                             >
-                                <h3>{exp.name}</h3>
+                                <CardTitle>{exp.name}</CardTitle>
                                 <p>{exp.description}</p>
-                                <p style="color: #90EE90;">Difficulty: {exp.difficulty}</p>
-                                <p style="color: #AAA;">Current Level: {expProgress.currentLevel}</p>
-                                <p style={canAfford ? 'color: #FFD700;' : 'color: #D32F2F;'}>
-                                    Cost: {cost}g
+                                <CardEffect>Difficulty: {exp.difficulty}</CardEffect>
+                                <p style={`color: ${colors.textMuted};`}>Current Level: {expProgress.currentLevel}</p>
+                                <p style={canAfford ? `color: ${colors.gold};` : `color: ${colors.danger};`}>
+                                    Cost: {formatGold(cost)}
                                 </p>
-                            </div>
+                            </Card>
                         );
                     })}
                 </div>
@@ -94,15 +87,15 @@ export function ExpeditionSelectionScreen() {
                 {/* Expedition Details */}
                 {expedition && progress && (
                     <div style="flex: 1;">
-                        <h2 style="color: #FFD700;">Expedition Details</h2>
-                        <div class="card">
-                            <h3>{expedition.name}</h3>
+                        <SectionTitle>Expedition Details</SectionTitle>
+                        <Card>
+                            <CardTitle>{expedition.name}</CardTitle>
                             <p>{expedition.description}</p>
-                            <p style="color: #90EE90;">Difficulty: {expedition.difficulty}</p>
-                            <p style="color: #AAA;">
+                            <CardEffect>Difficulty: {expedition.difficulty}</CardEffect>
+                            <p style={`color: ${colors.textMuted};`}>
                                 Progress: Level {selectedLevel} / 50
                             </p>
-                            <p style="color: #AAA;">
+                            <p style={`color: ${colors.textMuted};`}>
                                 Highest Completed: Level {progress.highestLevelCompleted}
                             </p>
 
@@ -116,7 +109,7 @@ export function ExpeditionSelectionScreen() {
                                     onInput={(e) => setSelectedLevel(parseInt((e.target as HTMLInputElement).value))}
                                     style="width: 100%; margin-top: 10px;"
                                 />
-                                <p>Level: {selectedLevel} (Cost: {getCost(selectedLevel)}g)</p>
+                                <p>Level: {selectedLevel} (Cost: {formatGold(getCost(selectedLevel))})</p>
                             </div>
 
                             {dishes.length > 0 && (
@@ -125,7 +118,7 @@ export function ExpeditionSelectionScreen() {
                                     <select
                                         value={selectedFoodBuff || ''}
                                         onChange={(e) => setSelectedFoodBuff((e.target as HTMLSelectElement).value || undefined)}
-                                        style="width: 100%; padding: 10px; margin-top: 10px; background: #2a2a2a; color: white; border: 1px solid #444; border-radius: 5px;"
+                                        style={`width: 100%; padding: 10px; margin-top: 10px; background: ${colors.bgMedium}; color: white; border: 1px solid ${colors.borderDark}; border-radius: 5px;`}
                                     >
                                         <option value="">None</option>
                                         {dishes.map(dishId => (
@@ -135,26 +128,19 @@ export function ExpeditionSelectionScreen() {
                                 </div>
                             )}
 
-                            <button
-                                class="button"
+                            <ActionButton
                                 onClick={startExpedition}
                                 disabled={gold < getCost(selectedLevel)}
                                 style="width: 100%; margin-top: 20px;"
                             >
-                                START EXPEDITION ({getCost(selectedLevel)}g)
-                            </button>
-                        </div>
+                                START EXPEDITION ({formatGold(getCost(selectedLevel))})
+                            </ActionButton>
+                        </Card>
                     </div>
                 )}
             </div>
 
-            <button
-                class="button"
-                onClick={() => gameState.setScreen('game')}
-                style="margin-top: 30px;"
-            >
-                ✕ CLOSE
-            </button>
-        </div>
+            <CloseButton />
+        </ScreenContainer>
     );
 }

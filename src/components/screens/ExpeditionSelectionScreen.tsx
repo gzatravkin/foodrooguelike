@@ -42,6 +42,13 @@ export function ExpeditionSelectionScreen() {
                 gameState.removeDish(selectedFoodBuff);
             }
 
+            // Store expedition data to localStorage so GameModeManager can load it
+            const expeditionData = {
+                ...expedition,
+                level: selectedLevel
+            };
+            localStorage.setItem('selectedExpedition', JSON.stringify(expeditionData));
+
             gameState.setCurrentExpedition(expedition.id, selectedLevel);
             gameState.setScreen('game');
         }

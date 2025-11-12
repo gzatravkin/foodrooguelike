@@ -151,6 +151,9 @@ export class CombatSystem {
           impactColor = '#00ACC1';
           break;
       }
+
+      // Apply dash training damage bonus
+      damageMultiplier *= (1 + player.dashDamageBonus);
     }
 
     const projectile = new Projectile(

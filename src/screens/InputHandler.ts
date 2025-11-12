@@ -242,6 +242,9 @@ export class InputHandler {
           damageMultiplier = 2.5;
           break;
       }
+
+      // Apply dash training damage bonus
+      damageMultiplier *= (1 + player.dashDamageBonus);
     }
 
     // Calculate hitbox with potentially modified range

@@ -36,16 +36,12 @@ export class CookingInputHandler {
 
             // Go back with Escape - close the UI and return to gameplay
             if (e.key === 'Escape') {
-                const currentState = gameState.getState();
-                if (currentState.currentScreen === 'cooking') {
-                    (gameState as any).state.currentScreen = 'game';
-                    eventBus.emit('screen:changed', 'game');
-                }
+                gameState.setCurrentScreen('game');
                 return;
             }
 
-            // Cook with C key
-            if (e.key === 'c' || e.key === 'C') {
+            // Cook with C or E key
+            if (e.key === 'c' || e.key === 'C' || e.key === 'e' || e.key === 'E') {
                 if (this.state.canCook()) {
                     this.onCook();
                 }

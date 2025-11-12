@@ -2,11 +2,17 @@
  * UpgradesScreen - Preact component for upgrades
  */
 
-import { useState, useEffect } from 'preact/hooks';
+import { useState } from 'preact/hooks';
 import { useGold, useGameState } from '../../hooks/useGameState';
 import { gameState } from '../../core/GameState';
 import { entityFactory } from '../../entities/EntityFactory';
 import upgradesData from '../../data/upgrades.json';
+import { ScreenContainer, ScreenHeader, GridLayout, FlexRow } from '../common/Layout';
+import { GoldDisplay } from '../common/Display';
+import { CloseButton, ActionButton } from '../common/Button';
+import { Card, CardTitle, CardEffect } from '../common/Card';
+import { formatEffect, calculateUpgradeCost } from '../../utils/formatting';
+import { colors, commonStyles } from '../../styles/theme';
 
 interface UpgradeData {
     id: string;
@@ -30,53 +36,9 @@ function UpgradeCard({ upgrade }: UpgradeCardProps) {
     const gold = useGold();
     const upgrades = useGameState(state => state.upgrades);
     const currentLevel = gameState.getUpgradeLevel(upgrade.category, upgrade.id);
-    const cost = Math.floor(upgrade.baseCost * Math.pow(upgrade.costMultiplier, currentLevel));
+    const cost = calculateUpgradeCost(upgrade.baseCost, currentLevel, upgrade.costMultiplier);
     const canAfford = gold >= cost;
     const isMaxLevel = currentLevel >= upgrade.maxLevel;
-
-    const formatEffect = (effects: Record<string, any>): string => {
-        const effectNames: Record<string, string> = {
-            bakingQualityBonus: 'Baking Quality',
-            grillingQualityBonus: 'Grilling Quality',
-            fryingQualityBonus: 'Frying Quality',
-            globalQualityBonus: 'All Cooking Quality',
-            ingredientSaveChance: 'Save Ingredients',
-            sellPriceMultiplier: 'Sell Price',
-            reputationMultiplier: 'Reputation',
-            rareDropRateBonus: 'Rare Drop Rate',
-            cookingTimeReduction: 'Cooking Time',
-            maxHealthBonus: 'Max Health',
-            attackBonus: 'Attack',
-            defenseBonus: 'Defense',
-            buffDurationMultiplier: 'Buff Duration',
-            dropRateMultiplier: 'Drop Rate',
-            dashCooldownReduction: 'Dash Cooldown',
-            unlockMethod: 'Unlocks Cooking Method'
-        };
-
-        const entries = Object.entries(effects);
-        if (entries.length === 0) return '';
-
-        const [key, value] = entries[0];
-        const name = effectNames[key] || key;
-
-        if (key === 'unlockMethod') {
-            return `Unlocks: ${value}`;
-        }
-
-        if (
-            key.includes('Bonus') ||
-            key.includes('Multiplier') ||
-            key.includes('Chance') ||
-            key.includes('Reduction') ||
-            key.includes('Rate')
-        ) {
-            const sign = key.includes('Reduction') ? '-' : '+';
-            return `${sign}${(Number(value) * 100).toFixed(0)}% ${name}`;
-        }
-
-        return `+${value} ${name}`;
-    };
 
     const purchaseUpgrade = () => {
         if (canAfford && !isMaxLevel && gameState.spendGold(cost)) {
@@ -96,11 +58,13 @@ function UpgradeCard({ upgrade }: UpgradeCardProps) {
     };
 
     return (
-        <div class={`card ${isMaxLevel ? 'max-level' : ''}`}>
-            <h3>{upgrade.name} (Lv {currentLevel}/{upgrade.maxLevel})</h3>
+        <Card isMaxLevel={isMaxLevel}>
+            <CardTitle level={{ current: currentLevel, max: upgrade.maxLevel }}>
+                {upgrade.name}
+            </CardTitle>
             <p>{upgrade.description}</p>
-            <p class="effect">{formatEffect(upgrade.effects)}</p>
-            <div class="flex-row">
+            <CardEffect>{formatEffect(upgrade.effects)}</CardEffect>
+            <FlexRow>
                 <div></div>
                 {isMaxLevel ? (
                     <span class="max-badge">MAX</span>
@@ -113,13 +77,12 @@ function UpgradeCard({ upgrade }: UpgradeCardProps) {
                         {cost}g
                     </button>
                 )}
-            </div>
-        </div>
+            </FlexRow>
+        </Card>
     );
 }
 
 export function UpgradesScreen() {
-    const gold = useGold();
     const [currentTab, setCurrentTab] = useState<TabType>('kitchen');
 
     const categoryMap: Record<TabType, 'kitchen' | 'restaurantUpgrades' | 'characterPerks'> = {
@@ -138,51 +101,30 @@ export function UpgradesScreen() {
         { type: 'character', label: 'CHARACTER' }
     ];
 
-    // Handle escape key to close screen
-    useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') {
-                e.preventDefault();
-                gameState.setScreen('game');
-            }
-        };
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, []);
-
     return (
-        <div class="screen">
-            <h1>⭐ UPGRADES ⭐</h1>
-            <p>Gold: {gold}</p>
+        <ScreenContainer>
+            <ScreenHeader title="UPGRADES" emoji="⭐" />
+            <GoldDisplay />
 
             <div style="display: flex; gap: 10px; margin: 20px 0;">
                 {tabs.map(tab => (
-                    <button
+                    <ActionButton
                         key={tab.type}
-                        class="button"
                         onClick={() => setCurrentTab(tab.type)}
-                        style={currentTab === tab.type
-                            ? 'background: #FFD700; color: #000;'
-                            : ''}
+                        style={currentTab === tab.type ? commonStyles.activeTab : ''}
                     >
                         {tab.label}
-                    </button>
+                    </ActionButton>
                 ))}
             </div>
 
-            <div class="grid-2col">
+            <GridLayout>
                 {upgrades.map(upgrade => (
                     <UpgradeCard key={upgrade.id} upgrade={upgrade} />
                 ))}
-            </div>
+            </GridLayout>
 
-            <button
-                class="button"
-                onClick={() => gameState.setScreen('game')}
-                style="margin-top: 30px;"
-            >
-                ✕ CLOSE
-            </button>
-        </div>
+            <CloseButton />
+        </ScreenContainer>
     );
 }

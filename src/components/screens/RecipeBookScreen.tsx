@@ -2,12 +2,15 @@
  * RecipeBookScreen - Preact component for recipe book
  */
 
-import { useEffect } from 'preact/hooks';
-import { useGameState } from '../../hooks/useGameState';
 import { gameState } from '../../core/GameState';
 import { cookingSystem } from '../../systems/CookingSystem';
 import { entityFactory } from '../../entities/EntityFactory';
 import type { Recipe } from '../../entities/types';
+import { ScreenContainer, ScreenHeader, GridLayout } from '../common/Layout';
+import { SectionTitle } from '../common/Display';
+import { CloseButton } from '../common/Button';
+import { Card, CardTitle } from '../common/Card';
+import { colors } from '../../styles/theme';
 
 interface RecipeCardProps {
     recipe: Recipe;
@@ -16,21 +19,21 @@ interface RecipeCardProps {
 
 function RecipeCard({ recipe, discovered }: RecipeCardProps) {
     const rarityColors: Record<string, string> = {
-        common: '#AAA',
-        uncommon: '#90EE90',
+        common: colors.textMuted,
+        uncommon: colors.successLight,
         rare: '#4AA5FF',
-        legendary: '#FFD700'
+        legendary: colors.gold
     };
 
-    const color = rarityColors[recipe.rarity] || '#AAA';
+    const color = rarityColors[recipe.rarity] || colors.textMuted;
 
     if (!discovered) {
         return (
-            <div class="card" style="opacity: 0.5;">
+            <Card style="opacity: 0.5;">
                 <h3 style={`color: ${color};`}>???</h3>
                 <p>Rarity: {recipe.rarity}</p>
                 <p style="font-style: italic;">Ingredients: ???</p>
-            </div>
+            </Card>
         );
     }
 
@@ -39,15 +42,15 @@ function RecipeCard({ recipe, discovered }: RecipeCardProps) {
         .join(', ');
 
     return (
-        <div class="card">
+        <Card>
             <h3 style={`color: ${color};`}>{recipe.name}</h3>
             <p>{recipe.description}</p>
-            <p style="color: #90EE90;">Ingredients: {ingredients}</p>
-            <p style="color: #AAA;">Method: {recipe.cookingMethod}</p>
-            <p style="color: #FFD700;">
+            <p style={`color: ${colors.successLight};`}>Ingredients: {ingredients}</p>
+            <p style={`color: ${colors.textMuted};`}>Method: {recipe.cookingMethod}</p>
+            <p style={`color: ${colors.gold};`}>
                 Buff Type: {recipe.buffType} | Rarity: {recipe.rarity}
             </p>
-        </div>
+        </Card>
     );
 }
 
@@ -70,54 +73,36 @@ export function RecipeBookScreen() {
     discovered.sort((a, b) => rarityOrder[a.rarity] - rarityOrder[b.rarity]);
     undiscovered.sort((a, b) => rarityOrder[a.rarity] - rarityOrder[b.rarity]);
 
-    // Handle escape key to close screen
-    useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') {
-                e.preventDefault();
-                gameState.setScreen('game');
-            }
-        };
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, []);
-
     return (
-        <div class="screen">
-            <h1>📖 RECIPE BOOK</h1>
-            <p style="color: #90EE90;">
+        <ScreenContainer>
+            <ScreenHeader title="RECIPE BOOK" emoji="📖" />
+            <p style={`color: ${colors.successLight};`}>
                 Discovered: {discovered.length} / {allRecipes.length}
             </p>
 
             {discovered.length > 0 && (
                 <>
-                    <h2 style="color: #FFD700; margin-top: 30px;">DISCOVERED RECIPES</h2>
-                    <div class="grid-2col">
+                    <SectionTitle>DISCOVERED RECIPES</SectionTitle>
+                    <GridLayout>
                         {discovered.map(recipe => (
                             <RecipeCard key={recipe.id} recipe={recipe} discovered={true} />
                         ))}
-                    </div>
+                    </GridLayout>
                 </>
             )}
 
             {undiscovered.length > 0 && (
                 <>
-                    <h2 style="color: #888; margin-top: 30px;">UNDISCOVERED RECIPES</h2>
-                    <div class="grid-2col">
+                    <SectionTitle style={`color: ${colors.textDark};`}>UNDISCOVERED RECIPES</SectionTitle>
+                    <GridLayout>
                         {undiscovered.map(recipe => (
                             <RecipeCard key={recipe.id} recipe={recipe} discovered={false} />
                         ))}
-                    </div>
+                    </GridLayout>
                 </>
             )}
 
-            <button
-                class="button"
-                onClick={() => gameState.setScreen('game')}
-                style="margin-top: 30px;"
-            >
-                ✕ CLOSE
-            </button>
-        </div>
+            <CloseButton />
+        </ScreenContainer>
     );
 }

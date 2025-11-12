@@ -2,10 +2,14 @@
  * TrainingScreen - Preact component for the Training Academy
  */
 
-import { useEffect } from 'preact/hooks';
-import { useGold, useGameState } from '../../hooks/useGameState';
+import { useGold } from '../../hooks/useGameState';
 import { gameState } from '../../core/GameState';
 import trainingData from '../../data/training.json';
+import { ScreenContainer, ScreenHeader, GridLayout, FlexRow } from '../common/Layout';
+import { GoldDisplay } from '../common/Display';
+import { CloseButton } from '../common/Button';
+import { Card, CardTitle, CardEffect } from '../common/Card';
+import { formatEffect, calculateUpgradeCost } from '../../utils/formatting';
 
 interface TrainingSkill {
     id: string;
@@ -27,30 +31,9 @@ interface SkillCardProps {
 function SkillCard({ skill }: SkillCardProps) {
     const gold = useGold();
     const currentLevel = gameState.getTrainingSkillLevel(skill.id);
-    const cost = Math.floor(skill.baseCost * Math.pow(skill.costMultiplier, currentLevel));
+    const cost = calculateUpgradeCost(skill.baseCost, currentLevel, skill.costMultiplier);
     const canAfford = gold >= cost;
     const isMaxLevel = currentLevel >= skill.maxLevel;
-
-    const formatEffect = (effect: { stat: string; amount: number }): string => {
-        const statNames: Record<string, string> = {
-            attack: 'Attack',
-            defense: 'Defense',
-            maxHealth: 'Max HP',
-            speed: 'Speed',
-            lootChance: 'Loot Chance',
-            cookingBonus: 'Cooking Quality',
-            sellBonus: 'Sell Value',
-            expeditionDiscount: 'Expedition Cost'
-        };
-
-        const statName = statNames[effect.stat] || effect.stat;
-
-        if (effect.stat.includes('Chance') || effect.stat.includes('Bonus') || effect.stat.includes('Discount')) {
-            return `+${(effect.amount * 100).toFixed(0)}% ${statName}`;
-        }
-
-        return `+${effect.amount} ${statName}`;
-    };
 
     const purchaseSkill = () => {
         if (canAfford && !isMaxLevel && gameState.spendGold(cost)) {
@@ -65,11 +48,13 @@ function SkillCard({ skill }: SkillCardProps) {
     };
 
     return (
-        <div class={`card ${isMaxLevel ? 'max-level' : ''}`}>
-            <h3>{skill.name} (Lv {currentLevel}/{skill.maxLevel})</h3>
+        <Card isMaxLevel={isMaxLevel}>
+            <CardTitle level={{ current: currentLevel, max: skill.maxLevel }}>
+                {skill.name}
+            </CardTitle>
             <p>{skill.description}</p>
-            <p class="effect">{formatEffect(skill.effect)}</p>
-            <div class="flex-row">
+            <CardEffect>{formatEffect(skill.effect)}</CardEffect>
+            <FlexRow>
                 <div></div>
                 {isMaxLevel ? (
                     <span class="max-badge">MAX</span>
@@ -82,48 +67,30 @@ function SkillCard({ skill }: SkillCardProps) {
                         {cost}g
                     </button>
                 )}
-            </div>
-        </div>
+            </FlexRow>
+        </Card>
     );
 }
 
 export function TrainingScreen() {
-    const gold = useGold();
     const skills = Object.values(trainingData as Record<string, TrainingSkill>);
 
-    // Handle escape key to close screen
-    useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') {
-                e.preventDefault();
-                gameState.setScreen('game');
-            }
-        };
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, []);
-
     return (
-        <div class="screen">
-            <h1>⚔️ TRAINING ACADEMY ⚔️</h1>
-            <p>Gold: {gold}</p>
-            <p style="color: #AAA; margin-bottom: 20px;">
-                Spend gold to permanently improve your abilities
-            </p>
+        <ScreenContainer>
+            <ScreenHeader
+                title="TRAINING ACADEMY"
+                emoji="⚔️"
+                subtitle="Spend gold to permanently improve your abilities"
+            />
+            <GoldDisplay />
 
-            <div class="grid-2col">
+            <GridLayout>
                 {skills.map(skill => (
                     <SkillCard key={skill.id} skill={skill} />
                 ))}
-            </div>
+            </GridLayout>
 
-            <button
-                class="button"
-                onClick={() => gameState.setScreen('game')}
-                style="margin-top: 30px;"
-            >
-                ✕ CLOSE
-            </button>
-        </div>
+            <CloseButton />
+        </ScreenContainer>
     );
 }

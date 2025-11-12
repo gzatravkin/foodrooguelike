@@ -2,27 +2,17 @@
  * SettingsScreen - Preact component for game settings
  */
 
-import { useState, useEffect } from 'preact/hooks';
+import { useState } from 'preact/hooks';
 import { gameState } from '../../core/GameState';
 import { settingsManager } from '../../core/SettingsManager';
+import { ScreenContainer, ScreenHeader } from '../common/Layout';
+import { CloseButton } from '../common/Button';
+import { colors, fontSize } from '../../styles/theme';
 
 export function SettingsScreen() {
     const [volume, setVolume] = useState(settingsManager.getVolume());
     const [animationsEnabled, setAnimationsEnabled] = useState(settingsManager.areAnimationsEnabled());
     const [soundEnabled, setSoundEnabled] = useState(settingsManager.isSoundEnabled());
-
-    // Handle ESC key to close
-    useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') {
-                e.preventDefault();
-                gameState.setScreen('game');
-            }
-        };
-
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, []);
 
     const handleVolumeChange = (e: Event) => {
         const value = parseFloat((e.target as HTMLInputElement).value);
@@ -50,12 +40,12 @@ export function SettingsScreen() {
     };
 
     return (
-        <div class="screen">
-            <h1>SETTINGS</h1>
+        <ScreenContainer>
+            <ScreenHeader title="SETTINGS" />
 
             <div style="width: 600px; margin: 20px 0;">
                 <div style="margin: 30px 0;">
-                    <label style="display: block; margin-bottom: 10px; font-size: 18px;">
+                    <label style={`display: block; margin-bottom: 10px; font-size: ${fontSize.md};`}>
                         Volume: {Math.round(volume * 100)}%
                     </label>
                     <input
@@ -70,7 +60,7 @@ export function SettingsScreen() {
                 </div>
 
                 <div style="margin: 30px 0;">
-                    <label style="display: flex; align-items: center; font-size: 18px; cursor: pointer;">
+                    <label style={`display: flex; align-items: center; font-size: ${fontSize.md}; cursor: pointer;`}>
                         <input
                             type="checkbox"
                             checked={animationsEnabled}
@@ -82,7 +72,7 @@ export function SettingsScreen() {
                 </div>
 
                 <div style="margin: 30px 0;">
-                    <label style="display: flex; align-items: center; font-size: 18px; cursor: pointer;">
+                    <label style={`display: flex; align-items: center; font-size: ${fontSize.md}; cursor: pointer;`}>
                         <input
                             type="checkbox"
                             checked={soundEnabled}
@@ -96,13 +86,13 @@ export function SettingsScreen() {
                 <button
                     class="button"
                     onClick={handleReset}
-                    style="background: #D32F2F; margin-top: 40px;"
+                    style={`background: ${colors.danger}; margin-top: 40px;`}
                 >
                     RESET GAME
                 </button>
             </div>
 
-            <p style="color: #AAA; margin-top: 40px;">Press ESC to close</p>
-        </div>
+            <p style={`color: ${colors.textMuted}; margin-top: 40px;`}>Press ESC to close</p>
+        </ScreenContainer>
     );
 }

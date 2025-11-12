@@ -2,7 +2,7 @@
  * ExpeditionSelectionScreen - Preact component for expedition selection
  */
 
-import { useState } from 'preact/hooks';
+import { useState, useEffect } from 'preact/hooks';
 import { useGold, useDishes, useGameState } from '../../hooks/useGameState';
 import { gameState } from '../../core/GameState';
 import expeditionsData from '../../data/expeditions.json';
@@ -18,6 +18,18 @@ export function ExpeditionSelectionScreen() {
 
     const expedition = selectedExpedition ? expeditions[selectedExpedition] : null;
     const progress = expedition ? gameState.getExpeditionProgress(expedition.id) : null;
+
+    // Handle escape key to close screen
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                gameState.setScreen('game');
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
 
     const startExpedition = () => {
         if (!expedition) return;
@@ -138,10 +150,10 @@ export function ExpeditionSelectionScreen() {
 
             <button
                 class="button"
-                onClick={() => gameState.setScreen('base')}
+                onClick={() => gameState.setScreen('game')}
                 style="margin-top: 30px;"
             >
-                BACK TO BASE
+                ✕ CLOSE
             </button>
         </div>
     );

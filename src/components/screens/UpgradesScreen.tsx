@@ -2,7 +2,7 @@
  * UpgradesScreen - Preact component for upgrades
  */
 
-import { useState } from 'preact/hooks';
+import { useState, useEffect } from 'preact/hooks';
 import { useGold, useGameState } from '../../hooks/useGameState';
 import { gameState } from '../../core/GameState';
 import { entityFactory } from '../../entities/EntityFactory';
@@ -138,6 +138,18 @@ export function UpgradesScreen() {
         { type: 'character', label: 'CHARACTER' }
     ];
 
+    // Handle escape key to close screen
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                gameState.setScreen('game');
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
+
     return (
         <div class="screen">
             <h1>⭐ UPGRADES ⭐</h1>
@@ -166,10 +178,10 @@ export function UpgradesScreen() {
 
             <button
                 class="button"
-                onClick={() => gameState.setScreen('base')}
+                onClick={() => gameState.setScreen('game')}
                 style="margin-top: 30px;"
             >
-                BACK TO BASE
+                ✕ CLOSE
             </button>
         </div>
     );

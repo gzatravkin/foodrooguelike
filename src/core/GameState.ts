@@ -58,7 +58,7 @@ export interface GameData {
     dishes: string[]; // IDs of cooked dishes available to sell/eat
     discoveredRecipes: string[];
     savedRecipeConfigs: SavedRecipeConfig[]; // Quick-select recipe configurations
-    currentScreen: 'base' | 'shop' | 'cooking' | 'settings' | 'restaurant' | 'upgrades' | 'recipebook' | 'game' | 'training' | 'expedition' | 'worldmap';
+    currentScreen: 'menu' | 'shop' | 'cooking' | 'settings' | 'restaurant' | 'upgrades' | 'recipebook' | 'game' | 'training' | 'expedition' | 'worldmap';
     equipment: {
         weapon?: string;
         armor?: string;

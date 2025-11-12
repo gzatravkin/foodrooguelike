@@ -14,8 +14,8 @@
         }
 
         body {
-            font-family: 'Arial', sans-serif;
-            background: #1a1a1a;
+            font-family: 'Segoe UI', 'Arial', sans-serif;
+            background: #0f0f0f;
             color: #fff;
             overflow: hidden;
             touch-action: none;
@@ -45,13 +45,24 @@
             pointer-events: none;
             z-index: 10;
             display: none;
-            background: rgba(0, 0, 0, 0.95);
-            font-family: 'Arial', sans-serif;
+            background: rgba(0, 0, 0, 0.96);
+            font-family: 'Segoe UI', 'Arial', sans-serif;
+            backdrop-filter: blur(4px);
         }
 
         #game-ui.active {
             display: flex;
             pointer-events: all;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
         }
 
         .screen {
@@ -65,83 +76,133 @@
         }
 
         .screen h1 {
-            font-size: 36px;
-            color: #FFD700;
+            font-size: 42px;
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             margin-bottom: 20px;
             text-align: center;
+            font-weight: 700;
+            text-shadow: 0 2px 10px rgba(255, 215, 0, 0.3);
         }
 
         .screen p {
-            font-size: 20px;
+            font-size: 18px;
             margin: 10px 0;
+            color: #ccc;
         }
 
         .button {
-            background: #4CAF50;
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
             color: white;
             border: none;
             padding: 15px 30px;
             font-size: 18px;
-            border-radius: 5px;
+            border-radius: 8px;
             cursor: pointer;
             margin: 10px;
-            transition: background 0.2s;
+            transition: all 0.3s ease;
             min-width: 200px;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .button:hover::before {
+            left: 100%;
         }
 
         .button:hover {
-            background: #66BB6A;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
         }
 
         .button:active {
-            background: #2E7D32;
+            transform: translateY(0);
+            box-shadow: 0 2px 10px rgba(76, 175, 80, 0.3);
         }
 
         .button:disabled {
-            background: #666;
+            background: linear-gradient(135deg, #555 0%, #444 100%);
             cursor: not-allowed;
-            opacity: 0.5;
+            opacity: 0.6;
+            transform: none;
+            box-shadow: none;
         }
 
         .card {
-            background: #2a2a2a;
-            border: 2px solid #444;
-            border-radius: 8px;
-            padding: 15px;
+            background: linear-gradient(145deg, #2a2a2a 0%, #1f1f1f 100%);
+            border: 2px solid #3a3a3a;
+            border-radius: 12px;
+            padding: 20px;
             margin: 10px;
             min-width: 450px;
             max-width: 600px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            border-color: #4a4a4a;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
         }
 
         .card.max-level {
             border-color: #FFD700;
+            background: linear-gradient(145deg, #2a2a2a 0%, #2d2416 100%);
+            box-shadow: 0 4px 20px rgba(255, 215, 0, 0.2);
+        }
+
+        .card.max-level:hover {
+            box-shadow: 0 8px 30px rgba(255, 215, 0, 0.3);
         }
 
         .card h3 {
             color: #FFF;
-            font-size: 18px;
-            margin-bottom: 8px;
+            font-size: 20px;
+            margin-bottom: 10px;
+            font-weight: 600;
         }
 
         .card.max-level h3 {
-            color: #FFD700;
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .card p {
             color: #AAA;
-            font-size: 14px;
-            margin: 5px 0;
+            font-size: 15px;
+            margin: 8px 0;
+            line-height: 1.4;
         }
 
         .card .effect {
             color: #90EE90;
-            font-size: 14px;
+            font-size: 15px;
+            font-weight: 600;
+            margin-top: 12px;
         }
 
         .grid-2col {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
-            gap: 15px;
+            gap: 20px;
             width: 100%;
             max-width: 1200px;
         }
@@ -152,12 +213,35 @@
             align-items: center;
             justify-content: space-between;
             gap: 10px;
+            margin-top: 12px;
         }
 
         .max-badge {
-            color: #FFD700;
-            font-size: 20px;
-            font-weight: bold;
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 22px;
+            font-weight: 700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        /* Scrollbar styling */
+        .screen::-webkit-scrollbar {
+            width: 12px;
+        }
+
+        .screen::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+
+        .screen::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #4CAF50 0%, #45a049 100%);
+            border-radius: 6px;
+        }
+
+        .screen::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, #66BB6A 0%, #4CAF50 100%);
         }
     </style>
 </head>

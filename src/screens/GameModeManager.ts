@@ -9,7 +9,7 @@ import { entityFactory } from '../entities/EntityFactory';
 import { SpawnManager } from './SpawnManager';
 import { TileManager } from '../systems/TileManager';
 import { Theme } from '../systems/ThemeConfig';
-import { isBossLevel, getLevelMultipliers } from './expedition/expeditionTypes';
+import { isBossLevel, getLevelMultipliers } from '../types/expedition';
 
 export type GameMode = 'base' | 'expedition';
 

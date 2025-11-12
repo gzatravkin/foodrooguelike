@@ -2,6 +2,7 @@
  * Main entry point - Initializes and starts the game (2D Top-View Roguelike)
  */
 
+import { render, h } from 'preact';
 import { GameLoop } from './core/GameLoop';
 import { gameState } from './core/GameState';
 import { eventBus } from './core/EventBus';
@@ -9,17 +10,9 @@ import { dataLoader } from './core/DataLoader';
 import { CanvasRenderer } from './rendering/CanvasRenderer';
 import { InputManager } from './core/InputManager';
 import { GameScreen } from './screens/GameScreen';
-import { SVGRenderer } from './rendering/SVGRenderer';
-import { ScreenManager } from './rendering/ScreenManager';
-import { CookingScreen } from './screens/CookingScreen';
-import { ShopScreen } from './screens/ShopScreen';
-import { RecipeBookScreen } from './screens/RecipeBookScreen';
-import { SettingsScreen } from './screens/SettingsScreen';
-import { TrainingScreen } from './screens/TrainingScreen';
-import { UpgradesScreen } from './screens/UpgradesScreen';
-import { ExpeditionSelectionScreen } from './screens/ExpeditionSelectionScreen';
 import { GlobalMapScreen } from './screens/GlobalMapScreen';
 import { initializeAllPlugins } from './plugins';
+import { App } from './components/App';
 
 class Game {
     private renderer: CanvasRenderer;
@@ -28,9 +21,7 @@ class Game {
     private globalMapScreen!: GlobalMapScreen;
     private gameLoop: GameLoop;
     private lastTime: number = 0;
-    private svgRenderer: SVGRenderer;
-    private screenManager: ScreenManager;
-    private svgElement: SVGSVGElement;
+    private uiElement: HTMLDivElement;
     private currentCanvasScreen: 'game' | 'worldmap' = 'game';
 
     constructor() {
@@ -39,47 +30,38 @@ class Game {
             throw new Error('Canvas element not found');
         }
 
-        const svgEl = document.getElementById('game-ui');
-        if (!svgEl || !(svgEl instanceof SVGSVGElement)) {
-            throw new Error('SVG UI element not found');
+        const uiEl = document.getElementById('game-ui');
+        if (!uiEl || !(uiEl instanceof HTMLDivElement)) {
+            throw new Error('UI element not found');
         }
-        this.svgElement = svgEl;
+        this.uiElement = uiEl;
 
         this.renderer = new CanvasRenderer(canvasElement);
         this.input = new InputManager();
         this.gameLoop = new GameLoop();
-        this.svgRenderer = new SVGRenderer(this.svgElement);
-        this.screenManager = new ScreenManager();
 
-        this.setupScreens();
+        this.setupPreact();
         this.setupEventListeners();
     }
 
-    private setupScreens(): void {
-        // Register all SVG-based UI overlay screens
-        this.screenManager.registerScreen('cooking', new CookingScreen(this.svgRenderer));
-        this.screenManager.registerScreen('shop', new ShopScreen(this.svgRenderer));
-        this.screenManager.registerScreen('recipebook', new RecipeBookScreen(this.svgRenderer));
-        this.screenManager.registerScreen('settings', new SettingsScreen(this.svgRenderer));
-        this.screenManager.registerScreen('training', new TrainingScreen(this.svgRenderer));
-        this.screenManager.registerScreen('upgrades', new UpgradesScreen(this.svgRenderer));
-        this.screenManager.registerScreen('expedition', new ExpeditionSelectionScreen(this.svgRenderer));
+    private setupPreact(): void {
+        // Render Preact app into UI container
+        render(h(App, null), this.uiElement);
 
         // Listen to screen changes from gameState
         eventBus.on('screen:changed', (screenName: string) => {
-            // Hide canvas and show SVG for UI overlay screens
-            const uiScreens = ['cooking', 'shop', 'recipebook', 'settings', 'restaurant', 'upgrades', 'training', 'expedition'];
+            // Show/hide UI overlay for UI screens
+            const uiScreens = ['base', 'cooking', 'shop', 'recipebook', 'settings', 'restaurant', 'upgrades', 'training', 'expedition'];
             if (uiScreens.includes(screenName)) {
-                this.svgElement.classList.add('active');
-                this.screenManager.switchTo(screenName);
+                this.uiElement.classList.add('active');
             } else {
-                this.svgElement.classList.remove('active');
+                this.uiElement.classList.remove('active');
             }
 
             // Switch canvas screen for game/worldmap
             if (screenName === 'worldmap') {
                 this.currentCanvasScreen = 'worldmap';
-            } else if (screenName === 'game' || screenName === 'base') {
+            } else if (screenName === 'game') {
                 this.currentCanvasScreen = 'game';
             }
         });

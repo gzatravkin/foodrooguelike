@@ -54,7 +54,7 @@ export class CookingRenderer {
     }
 
     private renderControls(cx: number, y: number): void {
-        const controls = 'TAB: Switch Section | ARROWS/WASD: Navigate | ENTER/SPACE: Select | 1-8: Quick Time | C: Cook | R: Recipes | ESC: Back';
+        const controls = 'TAB: Switch Section | ARROWS/WASD: Navigate | ENTER/SPACE: Select | 1-8: Quick Time | C/E: Cook | R: Recipes | ESC: Back';
         const text = this.renderer.createText(cx, y, controls, 14, '#AAA');
         text.setAttribute('text-anchor', 'middle');
         this.renderer.append(text);
@@ -261,7 +261,7 @@ export class CookingRenderer {
     private renderStatusBar(y: number): void {
         const canCook = this.state.canCook();
         const statusText = canCook
-            ? '✓ Ready to cook! Press C to start cooking'
+            ? '✓ Ready to cook! Press C or E to start cooking'
             : 'Select ingredients and method to cook';
         const statusColor = canCook ? '#90EE90' : '#FF6B6B';
 

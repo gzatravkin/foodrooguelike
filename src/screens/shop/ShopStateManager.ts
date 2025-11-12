@@ -70,7 +70,7 @@ export class ShopStateManager {
         const gameData = gameState.getState();
         return gameData.dishes
             .map(id => entityFactory.getTemplate(id))
-            .filter(item => item !== null) as Dish[];
+            .filter(item => item != null) as Dish[]; // Filters both null and undefined
     }
 
     updateGoldDisplay(): void {

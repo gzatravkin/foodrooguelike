@@ -50,11 +50,14 @@ export class ExpeditionSelectionScreen extends Screen {
         // Render expedition locations (left side)
         const listRenderer = new ExpeditionListRenderer(this.renderer, this.expeditions, state.gold);
         listRenderer.render(50, 120, this.selectedExpedition, (expeditionId) => {
-            this.selectedExpedition = expeditionId;
-            // Reset selected level to current progress when changing expedition
-            if (expeditionId) {
-                const progress = gameState.getExpeditionProgress(expeditionId);
-                this.selectedLevel = progress.currentLevel;
+            // Only reset level when switching to a DIFFERENT expedition
+            if (expeditionId !== this.selectedExpedition) {
+                this.selectedExpedition = expeditionId;
+                // Reset selected level to current progress when changing expedition
+                if (expeditionId) {
+                    const progress = gameState.getExpeditionProgress(expeditionId);
+                    this.selectedLevel = progress.currentLevel;
+                }
             }
             this.render();
         });

@@ -178,11 +178,13 @@ export class GameScreen {
   private setupCheatPanelInput(): void {
     window.addEventListener('keydown', (e) => {
       const currentScreen = gameState.getState().currentScreen;
-      if (e.key === 'Escape' && this.gameModeManager.getMode() === 'expedition' && currentScreen === 'game' && !this.cheatPanel.isVisible()) {
+
+      // Handle escape key to open menu (when in game and not in cheat panel)
+      if (e.key === 'Escape' && currentScreen === 'game' && !this.cheatPanel.isVisible()) {
         e.preventDefault();
         e.stopPropagation();
-        console.log('Fleeing expedition, returning to base...');
-        this.loadBaseCamp();
+        console.log('Opening in-game menu...');
+        gameState.setScreen('menu');
         return;
       }
 

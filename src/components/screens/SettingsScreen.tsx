@@ -15,7 +15,8 @@ export function SettingsScreen() {
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === 'Escape') {
-                gameState.setScreen('base');
+                e.preventDefault();
+                gameState.setScreen('game');
             }
         };
 
@@ -44,7 +45,7 @@ export function SettingsScreen() {
     const handleReset = () => {
         if (confirm('Are you sure you want to reset the game? All progress will be lost!')) {
             gameState.reset();
-            gameState.setScreen('base');
+            gameState.setScreen('game');
         }
     };
 

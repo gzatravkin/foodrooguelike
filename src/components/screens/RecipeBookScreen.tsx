@@ -2,6 +2,7 @@
  * RecipeBookScreen - Preact component for recipe book
  */
 
+import { useEffect } from 'preact/hooks';
 import { useGameState } from '../../hooks/useGameState';
 import { gameState } from '../../core/GameState';
 import { cookingSystem } from '../../systems/CookingSystem';
@@ -69,6 +70,18 @@ export function RecipeBookScreen() {
     discovered.sort((a, b) => rarityOrder[a.rarity] - rarityOrder[b.rarity]);
     undiscovered.sort((a, b) => rarityOrder[a.rarity] - rarityOrder[b.rarity]);
 
+    // Handle escape key to close screen
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                gameState.setScreen('game');
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
+
     return (
         <div class="screen">
             <h1>📖 RECIPE BOOK</h1>
@@ -100,10 +113,10 @@ export function RecipeBookScreen() {
 
             <button
                 class="button"
-                onClick={() => gameState.setScreen('base')}
+                onClick={() => gameState.setScreen('game')}
                 style="margin-top: 30px;"
             >
-                BACK
+                ✕ CLOSE
             </button>
         </div>
     );

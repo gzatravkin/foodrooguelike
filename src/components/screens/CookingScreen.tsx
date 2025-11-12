@@ -26,7 +26,8 @@ export function CookingScreen() {
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === 'Escape') {
-                gameState.setScreen('base');
+                e.preventDefault();
+                gameState.setScreen('game');
             }
         };
 
@@ -150,10 +151,10 @@ export function CookingScreen() {
 
             <button
                 class="button"
-                onClick={() => gameState.setScreen('base')}
+                onClick={() => gameState.setScreen('game')}
                 style="margin-top: 30px;"
             >
-                BACK TO BASE
+                ✕ CLOSE
             </button>
 
             <p style="color: #AAA; margin-top: 20px;">Press ESC to close</p>

@@ -2,7 +2,7 @@
  * ShopScreen - Preact component for the shop
  */
 
-import { useState } from 'preact/hooks';
+import { useState, useEffect } from 'preact/hooks';
 import { useGold, useDishes, useGameState } from '../../hooks/useGameState';
 import { gameState } from '../../core/GameState';
 import { entityFactory } from '../../entities/EntityFactory';
@@ -14,6 +14,18 @@ export function ShopScreen() {
     const [message, setMessage] = useState('');
     const [weaponPage, setWeaponPage] = useState(0);
     const [equipmentPage, setEquipmentPage] = useState(0);
+
+    // Handle escape key to close screen
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                gameState.setScreen('game');
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
 
     const dishes = dishIds
         .map(id => entityFactory.getTemplate(id))
@@ -192,10 +204,10 @@ export function ShopScreen() {
 
             <button
                 class="button"
-                onClick={() => gameState.setScreen('base')}
+                onClick={() => gameState.setScreen('game')}
                 style="margin-top: 30px;"
             >
-                BACK TO BASE
+                ✕ CLOSE
             </button>
         </div>
     );

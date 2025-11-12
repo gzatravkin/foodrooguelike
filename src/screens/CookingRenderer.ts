@@ -51,6 +51,12 @@ export class CookingRenderer {
 
         // Status bar at bottom
         this.renderStatusBar(vb.height - 50);
+
+        // Message display
+        const message = this.state.getMessage();
+        if (message) {
+            this.renderMessage(vb.width / 2, vb.height - 80, message);
+        }
     }
 
     private renderControls(cx: number, y: number): void {
@@ -268,6 +274,16 @@ export class CookingRenderer {
         const status = this.renderer.createText(50, y, statusText, 18, statusColor);
         status.setAttribute('font-weight', 'bold');
         this.renderer.append(status);
+    }
+
+    private renderMessage(cx: number, y: number, message: string): void {
+        const isError = message.includes('✗');
+        const color = isError ? '#FF6B6B' : '#90EE90';
+
+        const text = this.renderer.createText(cx, y, message, 16, color);
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('font-weight', 'bold');
+        this.renderer.append(text);
     }
 
     private renderResultCard(centerX: number, centerY: number): void {

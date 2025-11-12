@@ -10,18 +10,15 @@ import type { ExpeditionLocation } from './expedition/expeditionTypes';
 import { getExpeditionCost, canAffordAnyExpedition } from './expedition/expeditionUtils';
 import { ExpeditionListRenderer } from './expedition/ExpeditionListRenderer';
 import { ExpeditionDetailsRenderer } from './expedition/ExpeditionDetailsRenderer';
-import { FoodBuffManager } from './expedition/FoodBuffManager';
 import { GameOverRenderer } from './expedition/GameOverRenderer';
 
 export class ExpeditionSelectionScreen extends Screen {
     private expeditions: Record<string, ExpeditionLocation> = expeditionsData;
     private selectedExpedition: string | null = null;
     private selectedLevel: number = 1;
-    private foodBuffManager: FoodBuffManager;
 
     constructor(renderer: SVGRenderer) {
         super(renderer);
-        this.foodBuffManager = new FoodBuffManager();
     }
 
     render(): void {
@@ -75,8 +72,6 @@ export class ExpeditionSelectionScreen extends Screen {
             detailsRenderer.render(
                 vb.width / 2 + 50,
                 120,
-                this.foodBuffManager.getSelectedFoodBuff(),
-                () => this.handleFoodSelection(state.dishes),
                 () => this.startExpedition(),
                 this.selectedLevel,
                 progress,
@@ -142,11 +137,6 @@ export class ExpeditionSelectionScreen extends Screen {
         this.renderer.append(backBtn);
     }
 
-    private handleFoodSelection(dishes: string[]): void {
-        this.foodBuffManager.selectNextDish(dishes);
-        this.render();
-    }
-
     private startExpedition(): void {
         if (!this.selectedExpedition) return;
 
@@ -158,9 +148,6 @@ export class ExpeditionSelectionScreen extends Screen {
 
         // Spend gold
         if (!gameState.spendGold(cost)) return;
-
-        // Apply food buff if selected
-        this.foodBuffManager.applySelectedBuff();
 
         // Reset hunger timer
         gameState.resetHungerTimer();
@@ -185,6 +172,5 @@ export class ExpeditionSelectionScreen extends Screen {
     cleanup(): void {
         this.selectedExpedition = null;
         this.selectedLevel = 1;
-        this.foodBuffManager.reset();
     }
 }

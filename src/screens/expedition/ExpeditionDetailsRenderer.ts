@@ -19,8 +19,6 @@ export class ExpeditionDetailsRenderer {
     render(
         x: number,
         y: number,
-        selectedFoodBuff: string | null,
-        onSelectFood: () => void,
         onStartExpedition: () => void,
         selectedLevel: number = 1,
         progress?: ExpeditionProgress,
@@ -31,8 +29,8 @@ export class ExpeditionDetailsRenderer {
         const multipliers = getLevelMultipliers(selectedLevel);
         const isBoss = isBossLevel(selectedLevel);
 
-        // Details box (taller to fit level selection)
-        const bg = this.renderer.createRect(x, y, 480, 400, '#2a2a2a');
+        // Details box
+        const bg = this.renderer.createRect(x, y, 480, 350, '#2a2a2a');
         bg.setAttribute('rx', '8');
         bg.setAttribute('stroke', '#FFD700');
         bg.setAttribute('stroke-width', '2');
@@ -73,11 +71,8 @@ export class ExpeditionDetailsRenderer {
             this.renderer.append(detailText);
         });
 
-        // Food buff selection
-        this.renderFoodSelection(x, y + 300, selectedFoodBuff, onSelectFood);
-
         // Start expedition button
-        this.renderStartButton(x, y + 380, canAfford, onStartExpedition);
+        this.renderStartButton(x, y + 300, canAfford, onStartExpedition);
     }
 
     private renderLevelSelection(
@@ -157,43 +152,6 @@ export class ExpeditionDetailsRenderer {
                 () => onLevelChange(Math.min(progress.currentLevel, selectedLevel + 1))
             );
             this.renderer.append(nextBtn);
-        }
-    }
-
-    private renderFoodSelection(
-        x: number,
-        foodY: number,
-        selectedFoodBuff: string | null,
-        onSelectFood: () => void
-    ): void {
-        const foodTitle = this.renderer.createText(x + 15, foodY, 'Pre-Expedition Food:', 16, '#FFF');
-        foodTitle.setAttribute('font-weight', 'bold');
-        this.renderer.append(foodTitle);
-
-        if (this.dishes.length === 0) {
-            const noDishesText = this.renderer.createText(x + 15, foodY + 25, 'No dishes available', 12, '#888');
-            this.renderer.append(noDishesText);
-        } else {
-            const foodBtn = this.renderer.createButton(
-                x + 15,
-                foodY + 10,
-                200,
-                40,
-                selectedFoodBuff ? 'Change Food' : 'Select Food',
-                onSelectFood
-            );
-            this.renderer.append(foodBtn);
-
-            if (selectedFoodBuff) {
-                const selectedText = this.renderer.createText(
-                    x + 225,
-                    foodY + 35,
-                    `Selected: ${selectedFoodBuff}`,
-                    12,
-                    '#90EE90'
-                );
-                this.renderer.append(selectedText);
-            }
         }
     }
 

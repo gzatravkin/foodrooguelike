@@ -181,9 +181,10 @@ export class CookingInputHandler {
                     recipe.cookingTime,
                     availableIngredients
                 );
-                if (!success) {
-                    // Show a message or indicator that ingredients are missing
-                    console.log('Missing ingredients for recipe:', recipe.recipeName);
+                if (success) {
+                    this.state.setMessage(`✓ Loaded recipe: ${recipe.recipeName}`);
+                } else {
+                    this.state.setMessage(`✗ Missing ingredients for: ${recipe.recipeName}`);
                 }
             }
         }

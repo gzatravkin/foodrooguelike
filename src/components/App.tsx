@@ -3,6 +3,7 @@
  */
 
 import { useCurrentScreen } from '../hooks/useGameState';
+import { BaseScreen } from './screens/BaseScreen';
 import { TrainingScreen } from './screens/TrainingScreen';
 import { ShopScreen } from './screens/ShopScreen';
 import { CookingScreen } from './screens/CookingScreen';
@@ -16,6 +17,8 @@ export function App() {
 
     // Render the appropriate screen based on currentScreen
     switch (currentScreen) {
+        case 'base':
+            return <BaseScreen />;
         case 'training':
             return <TrainingScreen />;
         case 'shop':
@@ -31,6 +34,6 @@ export function App() {
         case 'expedition':
             return <ExpeditionSelectionScreen />;
         default:
-            return null; // No UI overlay for game/base/worldmap screens
+            return null; // No UI overlay for game/worldmap screens
     }
 }

@@ -9,10 +9,10 @@ export interface ExpeditionLocation {
     cost: number;
     difficulty: number;
     enemyTypes: string[];
-    enemyCount: { min: number; max: number };
+    enemyCount?: { min: number; max: number };
     lootMultiplier: number;
-    theme: string;
-    level?: number; // Current level being attempted (1-50)
+    theme?: string;
+    level?: number;
 }
 
 /**
@@ -33,10 +33,10 @@ export function getLevelMultipliers(level: number): {
     loot: number;
 } {
     return {
-        health: 1.0 + (level - 1) * 0.05, // +5% per level, max 3.45x at level 50
-        attack: 1.0 + (level - 1) * 0.04, // +4% per level, max 2.96x at level 50
-        defense: 1.0 + (level - 1) * 0.03, // +3% per level, max 2.47x at level 50
-        count: Math.floor((level - 1) / 5), // +1 enemy every 5 levels
-        loot: 1.0 + level * 0.02 // +2% per level, max 2.0x at level 50
+        health: 1.0 + (level - 1) * 0.05,
+        attack: 1.0 + (level - 1) * 0.04,
+        defense: 1.0 + (level - 1) * 0.03,
+        count: Math.floor((level - 1) / 5),
+        loot: 1.0 + level * 0.02
     };
 }

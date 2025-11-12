@@ -6,7 +6,7 @@ import { useState } from 'preact/hooks';
 import { useGold, useDishes, useGameState } from '../../hooks/useGameState';
 import { gameState } from '../../core/GameState';
 import expeditionsData from '../../data/expeditions.json';
-import type { ExpeditionLocation } from '../../../src/screens/expedition/expeditionTypes';
+import type { ExpeditionLocation } from '../../types/expedition';
 
 export function ExpeditionSelectionScreen() {
     const gold = useGold();

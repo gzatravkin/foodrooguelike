@@ -51,7 +51,7 @@ class Game {
         // Listen to screen changes from gameState
         eventBus.on('screen:changed', (screenName: string) => {
             // Show/hide UI overlay for UI screens
-            const uiScreens = ['cooking', 'shop', 'recipebook', 'settings', 'restaurant', 'upgrades', 'training', 'expedition'];
+            const uiScreens = ['base', 'cooking', 'shop', 'recipebook', 'settings', 'restaurant', 'upgrades', 'training', 'expedition'];
             if (uiScreens.includes(screenName)) {
                 this.uiElement.classList.add('active');
             } else {
@@ -61,7 +61,7 @@ class Game {
             // Switch canvas screen for game/worldmap
             if (screenName === 'worldmap') {
                 this.currentCanvasScreen = 'worldmap';
-            } else if (screenName === 'game' || screenName === 'base') {
+            } else if (screenName === 'game') {
                 this.currentCanvasScreen = 'game';
             }
         });

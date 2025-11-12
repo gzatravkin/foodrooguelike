@@ -94,5 +94,65 @@
       "stat": "expeditionDiscount",
       "amount": 0.1
     }
+  },
+  "dash_recharge": {
+    "id": "dash_recharge",
+    "name": "Dash Recharge",
+    "description": "Reduces dash cooldown by 8% per level",
+    "baseCost": 50,
+    "costMultiplier": 1.7,
+    "maxLevel": 5,
+    "effect": {
+      "stat": "dashCooldownReduction",
+      "amount": 0.08
+    }
+  },
+  "dash_control": {
+    "id": "dash_control",
+    "name": "Dash Control",
+    "description": "Reduces slowdown time after dashing by 15% per level",
+    "baseCost": 45,
+    "costMultiplier": 1.6,
+    "maxLevel": 5,
+    "effect": {
+      "stat": "dashSlowdownReduction",
+      "amount": 0.15
+    }
+  },
+  "dash_distance": {
+    "id": "dash_distance",
+    "name": "Dash Distance",
+    "description": "Increases dash distance by 10% per level",
+    "baseCost": 55,
+    "costMultiplier": 1.8,
+    "maxLevel": 5,
+    "effect": {
+      "stat": "dashDistanceBonus",
+      "amount": 0.1
+    }
+  },
+  "dash_strike": {
+    "id": "dash_strike",
+    "name": "Dash Strike",
+    "description": "Increases weapon power during dash by 15% per level",
+    "baseCost": 60,
+    "costMultiplier": 1.9,
+    "maxLevel": 5,
+    "effect": {
+      "stat": "dashDamageBonus",
+      "amount": 0.15
+    }
+  },
+  "double_dash": {
+    "id": "double_dash",
+    "name": "Double Dash",
+    "description": "Unlock the ability to perform two quick dashes in succession",
+    "baseCost": 300,
+    "costMultiplier": 1.0,
+    "maxLevel": 1,
+    "effect": {
+      "stat": "doubleDash",
+      "amount": 1
+    }
   }
 }

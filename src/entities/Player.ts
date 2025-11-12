@@ -18,6 +18,14 @@ export class Player extends Entity {
   public slowedDuration: number = 0; // Duration of slow effect after dash
   public slowMultiplier: number = 0.3; // Move at 30% speed when slowed
 
+  // Dash training bonuses
+  public dashCooldownReduction: number = 0; // Percentage reduction (0-1)
+  public dashSlowdownReduction: number = 0; // Percentage reduction (0-1)
+  public dashDistanceBonus: number = 0; // Percentage increase (0-1)
+  public dashDamageBonus: number = 0; // Percentage increase (0-1)
+  public hasDoubleDash: boolean = false; // Unlockable once
+  public dashCharges: number = 0; // Number of dashes available (for double dash)
+
   constructor(x: number, y: number, initialWeapon?: Weapon) {
     const stats: EntityStats = {
       maxHealth: 100,
@@ -29,6 +37,9 @@ export class Player extends Entity {
 
     super(EntityType.PLAYER, x, y, 24, stats, '#4CAF50');
     this.weapon = initialWeapon || null;
+
+    // Initialize with 1 dash charge
+    this.dashCharges = 1;
   }
 
   update(deltaTime: number): void {
@@ -40,6 +51,11 @@ export class Player extends Entity {
     // Update dash cooldown
     if (this.dashCooldown > 0) {
       this.dashCooldown -= deltaTime;
+
+      // When cooldown is complete, restore dash charges
+      if (this.dashCooldown <= 0) {
+        this.dashCharges = this.hasDoubleDash ? 2 : 1;
+      }
     }
 
     // Update dash duration
@@ -50,7 +66,9 @@ export class Player extends Entity {
       // When dash ends, apply slow effect
       if (this.dashDuration <= 0) {
         this.isDashing = false;
-        this.slowedDuration = 1.0; // Slow for 1 second after dash
+        // Apply slowdown with training reduction
+        const baseSlowdown = 1.0;
+        this.slowedDuration = baseSlowdown * (1 - this.dashSlowdownReduction);
       }
     } else {
       this.isDashing = false;
@@ -88,7 +106,7 @@ export class Player extends Entity {
   }
 
   canDash(): boolean {
-    return this.dashCooldown <= 0 && !this.isDashing;
+    return this.dashCharges > 0 && !this.isDashing;
   }
 
   dash(dx: number, dy: number): void {
@@ -103,9 +121,20 @@ export class Player extends Entity {
       y: dy / magnitude,
     };
 
-    this.dashDuration = 0.15; // Dash lasts 0.15 seconds
-    this.dashCooldown = 1.0; // 1 second cooldown
+    // Apply training bonuses
+    const baseDuration = 0.15;
+    const baseCooldown = 1.0;
+
+    this.dashDuration = baseDuration * (1 + this.dashDistanceBonus);
     this.isDashing = true;
+
+    // Consume a dash charge
+    this.dashCharges--;
+
+    // If we're out of charges, start cooldown
+    if (this.dashCharges === 0) {
+      this.dashCooldown = baseCooldown * (1 - this.dashCooldownReduction);
+    }
   }
 
   canAttack(): boolean {
@@ -211,5 +240,27 @@ export class Player extends Entity {
       x: this.x + Math.cos(this.facingAngle) * offsetDistance,
       y: this.y + Math.sin(this.facingAngle) * offsetDistance,
     };
+  }
+
+  // Apply dash training bonuses from game state
+  applyDashTrainingBonuses(trainingLevels: { [key: string]: number }): void {
+    // Calculate dash training bonuses
+    this.dashCooldownReduction = (trainingLevels['dash_recharge'] || 0) * 0.08;
+    this.dashSlowdownReduction = (trainingLevels['dash_control'] || 0) * 0.15;
+    this.dashDistanceBonus = (trainingLevels['dash_distance'] || 0) * 0.1;
+    this.dashDamageBonus = (trainingLevels['dash_strike'] || 0) * 0.15;
+    this.hasDoubleDash = (trainingLevels['double_dash'] || 0) >= 1;
+
+    // Update dash charges based on double dash unlock
+    if (this.dashCooldown <= 0) {
+      this.dashCharges = this.hasDoubleDash ? 2 : 1;
+    }
+  }
+
+  // Get total dash attack damage multiplier (base + training bonus)
+  getDashDamageMultiplier(): number {
+    // Base dash damage multiplier for ranged weapons is 2.5x
+    const baseDashMultiplier = 2.5;
+    return baseDashMultiplier * (1 + this.dashDamageBonus);
   }
 }

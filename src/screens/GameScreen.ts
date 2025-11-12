@@ -79,6 +79,14 @@ export class GameScreen {
     const startingWeapon = entityFactory.createWeapon('pistol');
     this.player = new Player(320, 240, startingWeapon || undefined);
 
+    // Apply initial dash training bonuses from saved state
+    const initialState = gameState.getState();
+    const trainingLevels: { [key: string]: number } = {};
+    initialState.trainingSkills.forEach(skill => {
+      trainingLevels[skill.id] = skill.level;
+    });
+    this.player.applyDashTrainingBonuses(trainingLevels);
+
     // Initialize mobile controls if on mobile device
     if (this.input.isMobileDevice()) {
       const canvas = renderer.getCanvas();
@@ -141,6 +149,16 @@ export class GameScreen {
         this.player.stats.health = playerStats.health;
         this.player.stats.attack = playerStats.attack;
         this.player.stats.defense = playerStats.defense;
+      });
+
+      // Listen for training purchases to apply dash bonuses
+      eventBus.on('training:purchased', () => {
+        const state = gameState.getState();
+        const trainingLevels: { [key: string]: number } = {};
+        state.trainingSkills.forEach(skill => {
+          trainingLevels[skill.id] = skill.level;
+        });
+        this.player.applyDashTrainingBonuses(trainingLevels);
       });
 
       // Listen for screen changes to handle expedition starts

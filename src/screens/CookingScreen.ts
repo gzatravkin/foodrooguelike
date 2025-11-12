@@ -42,6 +42,8 @@ export class CookingScreen extends Screen {
     }
 
     render(): void {
+        // Re-setup keyboard controls if they were cleaned up
+        this.inputHandler.setup();
         this.cookingRenderer.render();
     }
 

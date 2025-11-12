@@ -122,11 +122,14 @@ export class Player extends Entity {
     };
 
     // Apply training bonuses
-    const baseDuration = 0.15;
+    const baseDuration = 0.1725; // Increased by 15% (was 0.15)
     const baseCooldown = 1.0;
 
     this.dashDuration = baseDuration * (1 + this.dashDistanceBonus);
     this.isDashing = true;
+
+    // Reset weapon cooldown immediately
+    this.attackCooldown = 0;
 
     // Consume a dash charge
     this.dashCharges--;

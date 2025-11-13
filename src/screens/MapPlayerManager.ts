@@ -20,21 +20,10 @@ export class MapPlayerManager {
   }
 
   update(deltaTime: number, input: InputManager): void {
-    let dx = 0;
-    let dy = 0;
-
-    // WASD or Arrow keys for movement
-    if (input.isKeyPressed('w') || input.isKeyPressed('ArrowUp')) dy -= 1;
-    if (input.isKeyPressed('s') || input.isKeyPressed('ArrowDown')) dy += 1;
-    if (input.isKeyPressed('a') || input.isKeyPressed('ArrowLeft')) dx -= 1;
-    if (input.isKeyPressed('d') || input.isKeyPressed('ArrowRight')) dx += 1;
-
-    // Normalize diagonal movement
-    if (dx !== 0 && dy !== 0) {
-      const length = Math.sqrt(dx * dx + dy * dy);
-      dx /= length;
-      dy /= length;
-    }
+    // Get movement from keyboard or virtual joystick (mobile)
+    const movement = input.getMovementVector();
+    const dx = movement.x;
+    const dy = movement.y;
 
     // Update player angle for visual
     if (dx !== 0 || dy !== 0) {

@@ -22,9 +22,21 @@ export function CookingScreen() {
     const [lastDish, setLastDish] = useState<Dish | null>(null);
     const [selectedRecipe, setSelectedRecipe] = useState<string>('');
 
-    const ingredients = inventory
-        .map(id => entityFactory.getTemplate(id))
-        .filter(item => item?.type === 'ingredient') as Ingredient[];
+    // Group ingredients by ID and count them
+    const ingredientCounts = inventory.reduce((acc, id) => {
+        const template = entityFactory.getTemplate(id);
+        if (template?.type === 'ingredient') {
+            acc[id] = (acc[id] || 0) + 1;
+        }
+        return acc;
+    }, {} as Record<string, number>);
+
+    const ingredients = Object.keys(ingredientCounts)
+        .map(id => ({
+            ...entityFactory.getTemplate(id) as Ingredient,
+            count: ingredientCounts[id]
+        }))
+        .filter(item => item) as (Ingredient & { count: number })[];
 
     const methods = (entityFactory.getAllOfType('cookingMethod') as CookingMethod[])
         .filter(method => method.unlocked !== false);
@@ -119,11 +131,16 @@ export function CookingScreen() {
                                 key={ingredient.id}
                                 isSelected={isSelected}
                                 onClick={() => toggleIngredient(ingredient.id)}
-                                style="padding: 10px; cursor: pointer; min-width: 0;"
+                                style="padding: 10px; cursor: pointer; min-width: 0; position: relative;"
                             >
                                 <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
                                     {ingredient.icon && <span style="font-size: 20px;">{ingredient.icon}</span>}
                                     <CardTitle style="font-size: 14px; margin: 0;">{ingredient.name}</CardTitle>
+                                    {ingredient.count > 1 && (
+                                        <span style="font-size: 13px; color: #FFD700; font-weight: bold; margin-left: auto;">
+                                            x{ingredient.count}
+                                        </span>
+                                    )}
                                 </div>
                                 <p style="font-size: 12px; margin: 5px 0; line-height: 1.3;">{ingredient.description}</p>
                                 <CardEffect style="font-size: 11px;">

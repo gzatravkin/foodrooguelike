@@ -377,39 +377,44 @@ export class GameScreen {
         } else if (tileType === TileType.DINING_ROOM) {
           gameState.setScreen('diningroom');
         }
-      } else if (this.gameModeManager.getMode() === 'expedition' && tileType !== null) {
-        // Special case for stairs
+      } else if (this.gameModeManager.getMode() === 'expedition') {
+        // Special case for stairs on exact tile
         if (tileType === TileType.STAIRS_DOWN) {
           this.loadBaseCamp();
         } else {
-          // Try to use TileRegistry for all interactive tiles
-          const tileId = this.getTileIdFromType(tileType);
-          if (tileId) {
-            const tilePlugin = TileRegistry.getTileById(tileId);
-            if (tilePlugin?.interaction) {
-              const map = this.mapSystem.getCurrentMap();
-              if (map) {
-                const tileX = Math.floor(this.player.x / map.tileSize);
-                const tileY = Math.floor(this.player.y / map.tileSize);
+          // Check nearby tiles for interactive elements (increased interaction range)
+          const map = this.mapSystem.getCurrentMap();
+          if (map) {
+            const playerTileX = Math.floor(this.player.x / map.tileSize);
+            const playerTileY = Math.floor(this.player.y / map.tileSize);
+            const interactionRadius = 1; // Check 1 tile in each direction
 
-                if (tilePlugin.interaction.canInteract(this.player, tileX, tileY, this.mapSystem)) {
-                  tilePlugin.interaction.onInteract(
-                    this.player,
-                    tileX,
-                    tileY,
-                    this.mapSystem,
-                    (text, color) => this.addCombatLog(text, color)
-                  );
-                } else {
-                  // Tile cannot be interacted with (already used, etc.)
-                  // The plugin's onInteract will handle the message
-                  tilePlugin.interaction.onInteract(
-                    this.player,
-                    tileX,
-                    tileY,
-                    this.mapSystem,
-                    (text, color) => this.addCombatLog(text, color)
-                  );
+            let interacted = false;
+
+            // Check tiles in a 3x3 grid around the player
+            for (let dy = -interactionRadius; dy <= interactionRadius && !interacted; dy++) {
+              for (let dx = -interactionRadius; dx <= interactionRadius && !interacted; dx++) {
+                const checkX = playerTileX + dx;
+                const checkY = playerTileY + dy;
+                const checkTileType = this.mapSystem.getTileAt(checkX * map.tileSize + map.tileSize/2, checkY * map.tileSize + map.tileSize/2);
+
+                if (checkTileType !== null) {
+                  const tileId = this.getTileIdFromType(checkTileType);
+                  if (tileId) {
+                    const tilePlugin = TileRegistry.getTileById(tileId);
+                    if (tilePlugin?.interaction) {
+                      if (tilePlugin.interaction.canInteract(this.player, checkX, checkY, this.mapSystem)) {
+                        tilePlugin.interaction.onInteract(
+                          this.player,
+                          checkX,
+                          checkY,
+                          this.mapSystem,
+                          (text, color) => this.addCombatLog(text, color)
+                        );
+                        interacted = true;
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -445,7 +450,7 @@ export class GameScreen {
     const enemiesBeforeDeath = this.enemies.filter(e => e.alive).length;
 
     this.updater.updateEnemies(this.enemies, this.player, deltaTime);
-    this.updater.updateTraps(this.traps, this.player, deltaTime);
+    this.updater.updateTraps(this.traps, this.player, this.enemies, deltaTime);
     this.combatSystem.updateProjectiles(deltaTime, this.enemies, this.player);
     this.combatSystem.updateCorpses(deltaTime);
     this.particleSystem.update(deltaTime);

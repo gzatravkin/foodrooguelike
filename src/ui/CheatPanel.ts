@@ -147,17 +147,22 @@ export class CheatPanel {
 
   render(ctx: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number): void {
     if (!this.isOpen) {
-      // Draw toggle hint
+      // Draw toggle hint - centered at top below mode indicator to avoid overlaps
+      const hintWidth = 170;
+      const hintHeight = 30;
+      const hintX = (canvasWidth - hintWidth) / 2;
+      const hintY = 50;
+
       ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-      ctx.fillRect(canvasWidth - 180, 10, 170, 30);
+      ctx.fillRect(hintX, hintY, hintWidth, hintHeight);
       ctx.strokeStyle = '#FFD700';
       ctx.lineWidth = 2;
-      ctx.strokeRect(canvasWidth - 180, 10, 170, 30);
+      ctx.strokeRect(hintX, hintY, hintWidth, hintHeight);
 
       ctx.fillStyle = '#FFD700';
       ctx.font = '14px Arial';
-      ctx.textAlign = 'left';
-      ctx.fillText('Press ` for Cheat Panel', canvasWidth - 175, 32);
+      ctx.textAlign = 'center';
+      ctx.fillText('Press ` for Cheat Panel', canvasWidth / 2, hintY + 20);
       return;
     }
 

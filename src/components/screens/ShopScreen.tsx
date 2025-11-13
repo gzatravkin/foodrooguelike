@@ -26,16 +26,18 @@ function Pagination({ currentPage, totalItems, itemsPerPage, onPageChange }: Pag
     if (totalItems <= itemsPerPage) return null;
 
     return (
-        <div style="display: flex; gap: 10px; margin-top: 10px;">
+        <div style="display: flex; gap: 8px; margin-top: 8px; margin-bottom: 20px;">
             <ActionButton
                 onClick={() => onPageChange(Math.max(0, currentPage - 1))}
                 disabled={currentPage === 0}
+                style="padding: 6px 12px; font-size: 12px;"
             >
                 Previous
             </ActionButton>
             <ActionButton
                 onClick={() => onPageChange(currentPage + 1)}
                 disabled={(currentPage + 1) * itemsPerPage >= totalItems}
+                style="padding: 6px 12px; font-size: 12px;"
             >
                 Next
             </ActionButton>
@@ -97,33 +99,36 @@ export function ShopScreen() {
 
     return (
         <ScreenContainer>
-            <h1>🛒 SHOP</h1>
+            <h1 style="font-size: 28px; margin-bottom: 15px;">🛒 SHOP</h1>
             <GoldDisplay />
             <MessageDisplay message={message} />
 
-            <ContentWrapper>
+            <ContentWrapper style="max-width: 900px;">
                 {/* Weapons Section */}
-                <SectionTitle>Weapons</SectionTitle>
-                <GridLayout>
+                <SectionTitle style="font-size: 18px; margin-bottom: 10px;">Weapons</SectionTitle>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin-bottom: 15px;">
                     {weapons.slice(weaponStart, weaponStart + itemsPerPage).map((weapon: Weapon) => (
-                        <Card key={weapon.id}>
-                            <FlexRow>
-                                <div>
-                                    <CardTitle>{weapon.name}</CardTitle>
-                                    <p>{weapon.description}</p>
-                                    <CardEffect>Damage: {weapon.damage}</CardEffect>
-                                    <p style={`color: ${colors.gold};`}>Price: {formatGold(weapon.cost)}</p>
+                        <Card key={weapon.id} style="padding: 12px;">
+                            <FlexRow style="gap: 10px;">
+                                <div style="flex: 1; min-width: 0;">
+                                    <CardTitle style="font-size: 15px; margin-bottom: 5px;">{weapon.name}</CardTitle>
+                                    <p style="font-size: 12px; margin: 5px 0; line-height: 1.3;">{weapon.description}</p>
+                                    <CardEffect style="font-size: 11px;">Damage: {weapon.damage}</CardEffect>
+                                    <p style={`color: ${colors.gold}; font-size: 13px; margin-top: 5px; font-weight: bold;`}>
+                                        {formatGold(weapon.cost)}
+                                    </p>
                                 </div>
                                 <ActionButton
                                     onClick={() => buyWeapon(weapon)}
                                     disabled={gold < weapon.cost}
+                                    style="padding: 8px 16px; font-size: 13px; min-width: 60px; align-self: flex-start;"
                                 >
                                     Buy
                                 </ActionButton>
                             </FlexRow>
                         </Card>
                     ))}
-                </GridLayout>
+                </div>
                 <Pagination
                     currentPage={weaponPage}
                     totalItems={weapons.length}
@@ -132,31 +137,34 @@ export function ShopScreen() {
                 />
 
                 {/* Equipment Section */}
-                <SectionTitle>Equipment</SectionTitle>
-                <GridLayout>
+                <SectionTitle style="font-size: 18px; margin-bottom: 10px;">Equipment</SectionTitle>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin-bottom: 15px;">
                     {equipment.slice(equipmentStart, equipmentStart + itemsPerPage).map((equip: Equipment) => (
-                        <Card key={equip.id}>
-                            <FlexRow>
-                                <div>
-                                    <CardTitle>{equip.name}</CardTitle>
-                                    <p>{equip.description}</p>
-                                    <CardEffect>
-                                        {equip.stats.defense && `Defense: +${equip.stats.defense}`}
-                                        {equip.stats.attack && `Attack: +${equip.stats.attack}`}
-                                        {equip.stats.health && `Health: +${equip.stats.health}`}
+                        <Card key={equip.id} style="padding: 12px;">
+                            <FlexRow style="gap: 10px;">
+                                <div style="flex: 1; min-width: 0;">
+                                    <CardTitle style="font-size: 15px; margin-bottom: 5px;">{equip.name}</CardTitle>
+                                    <p style="font-size: 12px; margin: 5px 0; line-height: 1.3;">{equip.description}</p>
+                                    <CardEffect style="font-size: 11px;">
+                                        {equip.stats.defense && `DEF: +${equip.stats.defense} `}
+                                        {equip.stats.attack && `ATK: +${equip.stats.attack} `}
+                                        {equip.stats.health && `HP: +${equip.stats.health}`}
                                     </CardEffect>
-                                    <p style={`color: ${colors.gold};`}>Price: {formatGold(equip.cost)}</p>
+                                    <p style={`color: ${colors.gold}; font-size: 13px; margin-top: 5px; font-weight: bold;`}>
+                                        {formatGold(equip.cost)}
+                                    </p>
                                 </div>
                                 <ActionButton
                                     onClick={() => buyEquipment(equip)}
                                     disabled={gold < equip.cost}
+                                    style="padding: 8px 16px; font-size: 13px; min-width: 60px; align-self: flex-start;"
                                 >
                                     Buy
                                 </ActionButton>
                             </FlexRow>
                         </Card>
                     ))}
-                </GridLayout>
+                </div>
                 <Pagination
                     currentPage={equipmentPage}
                     totalItems={equipment.length}
@@ -167,27 +175,52 @@ export function ShopScreen() {
                 {/* Dishes Section */}
                 {dishes.length > 0 && (
                     <>
-                        <SectionTitle>Your Dishes</SectionTitle>
-                        <GridLayout>
+                        <SectionTitle style="font-size: 18px; margin-bottom: 10px;">Your Dishes</SectionTitle>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px; margin-bottom: 15px;">
                             {dishes.map(dish => {
                                 const sellPrice = Math.floor(dish.value * 0.5);
+                                // Get dish emoji based on buffType
+                                const dishIcon = dish.buffType === 'health' ? '🍜' :
+                                                dish.buffType === 'attack' ? '🍖' :
+                                                dish.buffType === 'defense' ? '🛡️' : '🍽️';
+                                // Get ingredient icons
+                                const ingredientIcons = dish.ingredients
+                                    .map(ingId => entityFactory.getTemplate(ingId))
+                                    .filter(ing => ing && 'icon' in ing)
+                                    .map(ing => (ing as any).icon)
+                                    .filter(Boolean)
+                                    .slice(0, 3)
+                                    .join('');
+
                                 return (
-                                    <Card key={dish.id}>
-                                        <CardTitle>{dish.name}</CardTitle>
-                                        <p>{dish.description}</p>
-                                        <CardEffect>{formatDishEffects(dish.effects)}</CardEffect>
-                                        <div style="display: flex; gap: 10px; margin-top: 10px;">
-                                            <ActionButton onClick={() => eatDish(dish)}>
+                                    <Card key={dish.id} style="padding: 12px;">
+                                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
+                                            <span style="font-size: 24px;">{dishIcon}</span>
+                                            <CardTitle style="font-size: 15px; margin: 0;">{dish.name}</CardTitle>
+                                        </div>
+                                        {ingredientIcons && (
+                                            <div style="font-size: 16px; margin: 5px 0;">{ingredientIcons}</div>
+                                        )}
+                                        <p style="font-size: 12px; margin: 5px 0; line-height: 1.3;">{dish.description}</p>
+                                        <CardEffect style="font-size: 11px;">{formatDishEffects(dish.effects)}</CardEffect>
+                                        <div style="display: flex; gap: 8px; margin-top: 10px;">
+                                            <ActionButton
+                                                onClick={() => eatDish(dish)}
+                                                style="padding: 6px 12px; font-size: 12px; flex: 1;"
+                                            >
                                                 Eat
                                             </ActionButton>
-                                            <ActionButton onClick={() => sellDish(dish)}>
+                                            <ActionButton
+                                                onClick={() => sellDish(dish)}
+                                                style="padding: 6px 12px; font-size: 12px; flex: 1;"
+                                            >
                                                 Sell ({formatGold(sellPrice)})
                                             </ActionButton>
                                         </div>
                                     </Card>
                                 );
                             })}
-                        </GridLayout>
+                        </div>
                     </>
                 )}
             </ContentWrapper>

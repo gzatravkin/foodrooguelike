@@ -30,6 +30,7 @@ export interface Enemy extends BaseEntity {
 
 export interface Ingredient extends BaseEntity {
     type: 'ingredient';
+    icon?: string;
     rarity: 'common' | 'uncommon' | 'rare' | 'legendary';
     baseValue: number;
 }

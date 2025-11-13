@@ -3,6 +3,7 @@
     "id": "jelly",
     "type": "ingredient",
     "name": "Jelly",
+    "icon": "🟣",
     "description": "Wobbly gelatin from slimes",
     "rarity": "common",
     "baseValue": 5
@@ -11,6 +12,7 @@
     "id": "sugar",
     "type": "ingredient",
     "name": "Sugar",
+    "icon": "🍬",
     "description": "Sweet crystalline substance",
     "rarity": "common",
     "baseValue": 3
@@ -19,6 +21,7 @@
     "id": "mushroom",
     "type": "ingredient",
     "name": "Mushroom",
+    "icon": "🍄",
     "description": "Earthy forest fungus",
     "rarity": "common",
     "baseValue": 8
@@ -27,6 +30,7 @@
     "id": "herb",
     "type": "ingredient",
     "name": "Herb",
+    "icon": "🌿",
     "description": "Aromatic herbs",
     "rarity": "common",
     "baseValue": 6
@@ -35,6 +39,7 @@
     "id": "meat",
     "type": "ingredient",
     "name": "Meat",
+    "icon": "🥩",
     "description": "Basic protein source",
     "rarity": "uncommon",
     "baseValue": 12
@@ -43,6 +48,7 @@
     "id": "dragon_fruit",
     "type": "ingredient",
     "name": "Dragon Fruit",
+    "icon": "🐉",
     "description": "Exotic fruit with magical properties",
     "rarity": "rare",
     "baseValue": 50
@@ -51,6 +57,7 @@
     "id": "fire_pepper",
     "type": "ingredient",
     "name": "Fire Pepper",
+    "icon": "🌶️",
     "description": "Extremely spicy pepper",
     "rarity": "rare",
     "baseValue": 40
@@ -59,6 +66,7 @@
     "id": "premium_meat",
     "type": "ingredient",
     "name": "Premium Meat",
+    "icon": "🍖",
     "description": "High quality dragon meat",
     "rarity": "rare",
     "baseValue": 60
@@ -67,6 +75,7 @@
     "id": "flour",
     "type": "ingredient",
     "name": "Flour",
+    "icon": "🌾",
     "description": "Ground wheat for baking",
     "rarity": "common",
     "baseValue": 4
@@ -75,6 +84,7 @@
     "id": "salt",
     "type": "ingredient",
     "name": "Salt",
+    "icon": "🧂",
     "description": "Essential seasoning mineral",
     "rarity": "common",
     "baseValue": 3
@@ -83,6 +93,7 @@
     "id": "egg",
     "type": "ingredient",
     "name": "Egg",
+    "icon": "🥚",
     "description": "Fresh protein-rich egg",
     "rarity": "common",
     "baseValue": 7
@@ -91,6 +102,7 @@
     "id": "onion",
     "type": "ingredient",
     "name": "Onion",
+    "icon": "🧅",
     "description": "Pungent aromatic bulb",
     "rarity": "common",
     "baseValue": 5
@@ -99,6 +111,7 @@
     "id": "garlic",
     "type": "ingredient",
     "name": "Garlic",
+    "icon": "🧄",
     "description": "Flavorful clove with healing properties",
     "rarity": "common",
     "baseValue": 6
@@ -107,6 +120,7 @@
     "id": "rice",
     "type": "ingredient",
     "name": "Rice",
+    "icon": "🍚",
     "description": "Versatile grain staple",
     "rarity": "common",
     "baseValue": 5
@@ -115,6 +129,7 @@
     "id": "fish",
     "type": "ingredient",
     "name": "Fish",
+    "icon": "🐟",
     "description": "Fresh catch from mountain streams",
     "rarity": "uncommon",
     "baseValue": 15
@@ -123,6 +138,7 @@
     "id": "cheese",
     "type": "ingredient",
     "name": "Cheese",
+    "icon": "🧀",
     "description": "Aged dairy delight",
     "rarity": "uncommon",
     "baseValue": 18
@@ -131,6 +147,7 @@
     "id": "honey",
     "type": "ingredient",
     "name": "Honey",
+    "icon": "🍯",
     "description": "Sweet golden nectar from giant bees",
     "rarity": "uncommon",
     "baseValue": 20
@@ -139,6 +156,7 @@
     "id": "spice_blend",
     "type": "ingredient",
     "name": "Spice Blend",
+    "icon": "🌶️",
     "description": "Exotic mixed seasonings",
     "rarity": "uncommon",
     "baseValue": 14
@@ -147,6 +165,7 @@
     "id": "butter",
     "type": "ingredient",
     "name": "Butter",
+    "icon": "🧈",
     "description": "Rich creamy fat for cooking",
     "rarity": "uncommon",
     "baseValue": 16
@@ -155,6 +174,7 @@
     "id": "tomato",
     "type": "ingredient",
     "name": "Tomato",
+    "icon": "🍅",
     "description": "Juicy red fruit with tangy flavor",
     "rarity": "uncommon",
     "baseValue": 13
@@ -163,6 +183,7 @@
     "id": "truffle",
     "type": "ingredient",
     "name": "Truffle",
+    "icon": "🍄",
     "description": "Rare underground fungus delicacy",
     "rarity": "rare",
     "baseValue": 55
@@ -171,6 +192,7 @@
     "id": "saffron",
     "type": "ingredient",
     "name": "Saffron",
+    "icon": "✨",
     "description": "World's most expensive spice",
     "rarity": "rare",
     "baseValue": 45
@@ -179,6 +201,7 @@
     "id": "crystal_salt",
     "type": "ingredient",
     "name": "Crystal Salt",
+    "icon": "💎",
     "description": "Magically-infused crystalline salt",
     "rarity": "rare",
     "baseValue": 38
@@ -187,6 +210,7 @@
     "id": "phoenix_egg",
     "type": "ingredient",
     "name": "Phoenix Egg",
+    "icon": "🔥",
     "description": "Egg from a mythical firebird",
     "rarity": "rare",
     "baseValue": 65
@@ -195,6 +219,7 @@
     "id": "mana_herb",
     "type": "ingredient",
     "name": "Mana Herb",
+    "icon": "🔮",
     "description": "Magical plant brimming with energy",
     "rarity": "rare",
     "baseValue": 42
@@ -203,6 +228,7 @@
     "id": "ancient_grain",
     "type": "ingredient",
     "name": "Ancient Grain",
+    "icon": "🌾",
     "description": "Prehistoric wheat with powerful nutrients",
     "rarity": "rare",
     "baseValue": 48
@@ -211,6 +237,7 @@
     "id": "void_essence",
     "type": "ingredient",
     "name": "Void Essence",
+    "icon": "🌌",
     "description": "Condensed essence from the void between worlds",
     "rarity": "legendary",
     "baseValue": 150
@@ -219,6 +246,7 @@
     "id": "celestial_nectar",
     "type": "ingredient",
     "name": "Celestial Nectar",
+    "icon": "⭐",
     "description": "Divine liquid from the heavens above",
     "rarity": "legendary",
     "baseValue": 200

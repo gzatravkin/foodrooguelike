@@ -89,24 +89,24 @@ export function CookingScreen() {
             <ScreenHeader title="COOKING" emoji="🍳" />
 
             {lastDish && (
-                <Card style={`background: #2E7D32; border-color: ${colors.success}; margin-bottom: 8px; padding: 6px; max-width: 300px;`}>
-                    <CardTitle style="font-size: 8px;">✓ Cooked: {lastDish.name}</CardTitle>
-                    <p style="font-size: 7px; margin: 3px 0;">{lastDish.description}</p>
-                    <CardEffect style="font-size: 6px;">
+                <Card style={`background: #2E7D32; border-color: ${colors.success}; margin-bottom: 8px; padding: 12px; max-width: 600px;`}>
+                    <CardTitle style="font-size: 16px;">✓ Cooked: {lastDish.name}</CardTitle>
+                    <p style="font-size: 14px; margin: 6px 0;">{lastDish.description}</p>
+                    <CardEffect style="font-size: 12px;">
                         Quality: {lastDish.quality.toFixed(2)} | HP: +{lastDish.effects?.health || 0}, ATK: +{lastDish.effects?.attack || 0}, DEF: +{lastDish.effects?.defense || 0}
                     </CardEffect>
                 </Card>
             )}
 
-            <ContentWrapper style="max-width: 350px;">
+            <ContentWrapper style="max-width: 700px;">
                 {/* Saved Recipes */}
                 {savedRecipes.length > 0 && (
                     <>
-                        <SectionTitle style="font-size: 8px; margin-bottom: 4px;">Known Recipes</SectionTitle>
+                        <SectionTitle style="font-size: 16px; margin-bottom: 8px;">Known Recipes</SectionTitle>
                         <select
                             value={selectedRecipe}
                             onChange={(e) => loadRecipe((e.target as HTMLSelectElement).value)}
-                            style={`width: 100%; max-width: 250px; padding: 4px; margin-bottom: 8px; font-size: 7px; background: ${colors.bgMedium}; color: white; border: 1px solid ${colors.borderDark}; border-radius: 3px;`}
+                            style={`width: 100%; max-width: 500px; padding: 8px; margin-bottom: 16px; font-size: 14px; background: ${colors.bgMedium}; color: white; border: 1px solid ${colors.borderDark}; border-radius: 6px;`}
                         >
                             <option value="">Select a recipe...</option>
                             {savedRecipes.map(recipe => (
@@ -119,11 +119,11 @@ export function CookingScreen() {
                 )}
 
                 {/* Ingredients Selection */}
-                <SectionTitle style="font-size: 8px; margin-bottom: 4px;">Select Ingredients (Max 5)</SectionTitle>
-                <p style={`color: ${colors.textMuted}; margin-bottom: 5px; font-size: 7px;`}>
+                <SectionTitle style="font-size: 16px; margin-bottom: 8px;">Select Ingredients (Max 5)</SectionTitle>
+                <p style={`color: ${colors.textMuted}; margin-bottom: 10px; font-size: 14px;`}>
                     Selected: {selectedIngredients.length}/5
                 </p>
-                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 5px; margin-bottom: 10px;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; margin-bottom: 20px;">
                     {ingredients.map(ingredient => {
                         const isSelected = selectedIngredients.includes(ingredient.id);
                         return (
@@ -131,19 +131,19 @@ export function CookingScreen() {
                                 key={ingredient.id}
                                 isSelected={isSelected}
                                 onClick={() => toggleIngredient(ingredient.id)}
-                                style="padding: 5px; cursor: pointer; min-width: 0; position: relative;"
+                                style="padding: 10px; cursor: pointer; min-width: 0; position: relative;"
                             >
-                                <div style="display: flex; align-items: center; gap: 4px; margin-bottom: 3px;">
-                                    {ingredient.icon && <span style="font-size: 10px;">{ingredient.icon}</span>}
-                                    <CardTitle style="font-size: 7px; margin: 0;">{ingredient.name}</CardTitle>
+                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                                    {ingredient.icon && <span style="font-size: 20px;">{ingredient.icon}</span>}
+                                    <CardTitle style="font-size: 14px; margin: 0;">{ingredient.name}</CardTitle>
                                     {ingredient.count > 1 && (
-                                        <span style="font-size: 7px; color: #FFD700; font-weight: bold; margin-left: auto;">
+                                        <span style="font-size: 14px; color: #FFD700; font-weight: bold; margin-left: auto;">
                                             x{ingredient.count}
                                         </span>
                                     )}
                                 </div>
-                                <p style="font-size: 6px; margin: 3px 0; line-height: 1.3;">{ingredient.description}</p>
-                                <CardEffect style="font-size: 6px;">
+                                <p style="font-size: 12px; margin: 6px 0; line-height: 1.3;">{ingredient.description}</p>
+                                <CardEffect style="font-size: 12px;">
                                     {ingredient.rarity} | {ingredient.baseValue}g
                                 </CardEffect>
                             </Card>
@@ -152,19 +152,19 @@ export function CookingScreen() {
                 </div>
 
                 {ingredients.length === 0 && (
-                    <p style={`color: ${colors.textMuted}; text-align: center; padding: 10px; font-size: 7px;`}>
+                    <p style={`color: ${colors.textMuted}; text-align: center; padding: 20px; font-size: 14px;`}>
                         No ingredients available. Go on expeditions to gather ingredients!
                     </p>
                 )}
 
                 {/* Cooking Method Selection */}
-                <SectionTitle style="font-size: 8px; margin-bottom: 4px;">Select Cooking Method</SectionTitle>
-                <div style="display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 8px;">
+                <SectionTitle style="font-size: 16px; margin-bottom: 8px;">Select Cooking Method</SectionTitle>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px;">
                     {methods.map(method => (
                         <ActionButton
                             key={method.id}
                             onClick={() => setSelectedMethod(method.id)}
-                            style={`padding: 4px 8px; font-size: 7px; min-width: 40px; ${selectedMethod === method.id ? commonStyles.activeTab : ''}`}
+                            style={`padding: 8px 16px; font-size: 14px; min-width: 80px; ${selectedMethod === method.id ? commonStyles.activeTab : ''}`}
                         >
                             {method.name}
                         </ActionButton>
@@ -172,23 +172,23 @@ export function CookingScreen() {
                 </div>
 
                 {/* Cooking Time */}
-                <SectionTitle style="font-size: 8px; margin-bottom: 4px;">Cooking Time</SectionTitle>
+                <SectionTitle style="font-size: 16px; margin-bottom: 8px;">Cooking Time</SectionTitle>
                 <input
                     type="range"
                     min="10"
                     max="120"
                     value={cookingTime}
                     onInput={(e) => setCookingTime(parseInt((e.target as HTMLInputElement).value))}
-                    style="width: 100%; max-width: 250px; margin-bottom: 3px;"
+                    style="width: 100%; max-width: 500px; margin-bottom: 6px;"
                 />
-                <p style="font-size: 7px; margin-bottom: 10px;">{cookingTime} seconds</p>
+                <p style="font-size: 14px; margin-bottom: 20px;">{cookingTime} seconds</p>
 
                 {/* Cook Button */}
                 <button
                     class="button"
                     onClick={cook}
                     disabled={selectedIngredients.length === 0 || !selectedMethod}
-                    style="margin-top: 5px; padding: 6px 15px; font-size: 8px; background: #FF6B35;"
+                    style="margin-top: 10px; padding: 12px 30px; font-size: 16px; background: #FF6B35;"
                 >
                     🍳 COOK! 🍳
                 </button>
@@ -196,7 +196,7 @@ export function CookingScreen() {
 
             <CloseButton />
 
-            <p style={`color: ${colors.textMuted}; margin-top: 8px; font-size: 6px;`}>Press ESC to close</p>
+            <p style={`color: ${colors.textMuted}; margin-top: 16px; font-size: 12px;`}>Press ESC to close</p>
         </ScreenContainer>
     );
 }

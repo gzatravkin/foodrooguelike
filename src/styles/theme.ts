@@ -75,14 +75,14 @@ export const spacing = {
 };
 
 export const fontSize = {
-    xs: '7px',
-    sm: '7px',
-    base: '8px',
-    md: '9px',
-    lg: '10px',
-    xl: '12px',
-    xxl: '21px',
-    xxxl: '24px',
+    xs: '14px',
+    sm: '14px',
+    base: '16px',
+    md: '18px',
+    lg: '20px',
+    xl: '24px',
+    xxl: '42px',
+    xxxl: '48px',
 };
 
 /**
@@ -138,8 +138,8 @@ export const commonStyles = {
     `,
 
     navButton: (gradient: string, glowColor: string) => `
-        height: 35px;
-        font-size: 8px;
+        height: 70px;
+        font-size: 16px;
         background: ${gradient};
         border: none;
         box-shadow: 0 2px 8px ${glowColor};

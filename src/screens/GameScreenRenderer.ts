@@ -196,8 +196,9 @@ export class GameScreenRenderer {
 
   private renderDiningPatron(x: number, y: number, size: number, color: string, facingAngle: number): void {
     const ctx = this.renderer.getContext();
+    const camera = this.renderer.getCamera();
     ctx.save();
-    ctx.translate(x, y);
+    ctx.translate(x - camera.x, y - camera.y);
     ctx.rotate(facingAngle);
 
     // Body (simple robe/dress shape)

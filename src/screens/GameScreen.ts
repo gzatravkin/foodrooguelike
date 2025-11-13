@@ -292,6 +292,9 @@ export class GameScreen {
     this.tileInteractionManager.reset();
     this.tileInteractionManager.findTeleporters(this.mapSystem);
 
+    // Clear NPCs - they should only exist in base camp
+    this.npcClients = [];
+
     // Reset hunger timer for new expedition
     gameState.resetHungerTimer();
 

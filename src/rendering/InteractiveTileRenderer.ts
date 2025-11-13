@@ -15,42 +15,45 @@ export class InteractiveTileRenderer {
     this.renderer.drawRect(worldX, worldY, size, size, floorColor);
 
     const ctx = this.renderer.getContext();
+    const camera = this.renderer.getCamera();
+    const screenX = worldX - camera.x;
+    const screenY = worldY - camera.y;
     const time = Date.now() / 1000;
     const pulse = Math.sin(time * 3) * 0.1 + 0.9;
 
     // Base/pedestal (multi-tier)
     ctx.fillStyle = '#8b7355';
-    ctx.fillRect(worldX + size * 0.2, worldY + size * 0.7, size * 0.6, size * 0.2);
-    ctx.fillRect(worldX + size * 0.25, worldY + size * 0.6, size * 0.5, size * 0.1);
-    ctx.fillRect(worldX + size * 0.3, worldY + size * 0.5, size * 0.4, size * 0.1);
+    ctx.fillRect(screenX + size * 0.2, screenY + size * 0.7, size * 0.6, size * 0.2);
+    ctx.fillRect(screenX + size * 0.25, screenY + size * 0.6, size * 0.5, size * 0.1);
+    ctx.fillRect(screenX + size * 0.3, screenY + size * 0.5, size * 0.4, size * 0.1);
 
     // Fountain bowl (chalice shape)
     ctx.fillStyle = '#a0826d';
     ctx.beginPath();
-    ctx.moveTo(worldX + size * 0.3, worldY + size * 0.5);
-    ctx.lineTo(worldX + size * 0.35, worldY + size * 0.35);
-    ctx.lineTo(worldX + size * 0.65, worldY + size * 0.35);
-    ctx.lineTo(worldX + size * 0.7, worldY + size * 0.5);
+    ctx.moveTo(screenX + size * 0.3, screenY + size * 0.5);
+    ctx.lineTo(screenX + size * 0.35, screenY + size * 0.35);
+    ctx.lineTo(screenX + size * 0.65, screenY + size * 0.35);
+    ctx.lineTo(screenX + size * 0.7, screenY + size * 0.5);
     ctx.closePath();
     ctx.fill();
 
     // Water (pulsing pink liquid)
     ctx.fillStyle = `rgba(255, 105, 180, ${pulse * 0.8})`;
-    ctx.fillRect(worldX + size * 0.37, worldY + size * 0.38, size * 0.26, size * 0.08);
+    ctx.fillRect(screenX + size * 0.37, screenY + size * 0.38, size * 0.26, size * 0.08);
 
     // Water droplets/fountain spray
     for (let i = 0; i < 3; i++) {
       const offset = Math.sin(time * 4 + i) * size * 0.1;
-      const dropY = worldY + size * 0.25 - Math.abs(offset);
+      const dropY = screenY + size * 0.25 - Math.abs(offset);
       ctx.fillStyle = `rgba(255, 105, 180, ${0.6 + Math.abs(offset) / size})`;
-      ctx.fillRect(worldX + size * (0.4 + i * 0.1), dropY, size * 0.05, size * 0.08);
+      ctx.fillRect(screenX + size * (0.4 + i * 0.1), dropY, size * 0.05, size * 0.08);
     }
 
     // Sparkles (star shapes)
     for (let i = 0; i < 3; i++) {
       const angle = (time + i * Math.PI * 2 / 3) * 2;
-      const sparkleX = worldX + size / 2 + Math.cos(angle) * size * 0.3;
-      const sparkleY = worldY + size * 0.4 + Math.sin(angle) * size * 0.3;
+      const sparkleX = screenX + size / 2 + Math.cos(angle) * size * 0.3;
+      const sparkleY = screenY + size * 0.4 + Math.sin(angle) * size * 0.3;
       this.drawStar(ctx, sparkleX, sparkleY, size * 0.08, 4, 'rgba(255, 255, 255, 0.8)');
     }
   }
@@ -60,53 +63,56 @@ export class InteractiveTileRenderer {
     this.renderer.drawRect(worldX, worldY, size, size, floorColor);
 
     const ctx = this.renderer.getContext();
+    const camera = this.renderer.getCamera();
+    const screenX = worldX - camera.x;
+    const screenY = worldY - camera.y;
 
     // Chest body (wooden)
     ctx.fillStyle = '#8b6914';
-    ctx.fillRect(worldX + size * 0.2, worldY + size * 0.4, size * 0.6, size * 0.4);
+    ctx.fillRect(screenX + size * 0.2, screenY + size * 0.4, size * 0.6, size * 0.4);
 
     // Wood planks detail
     ctx.strokeStyle = '#6b4810';
     ctx.lineWidth = 1;
     for (let i = 0; i < 3; i++) {
-      const y = worldY + size * (0.5 + i * 0.1);
+      const y = screenY + size * (0.5 + i * 0.1);
       ctx.beginPath();
-      ctx.moveTo(worldX + size * 0.2, y);
-      ctx.lineTo(worldX + size * 0.8, y);
+      ctx.moveTo(screenX + size * 0.2, y);
+      ctx.lineTo(screenX + size * 0.8, y);
       ctx.stroke();
     }
 
     // Chest lid (curved)
     ctx.fillStyle = '#daa520';
     ctx.beginPath();
-    ctx.moveTo(worldX + size * 0.2, worldY + size * 0.4);
-    ctx.quadraticCurveTo(worldX + size * 0.5, worldY + size * 0.2, worldX + size * 0.8, worldY + size * 0.4);
-    ctx.lineTo(worldX + size * 0.8, worldY + size * 0.45);
-    ctx.lineTo(worldX + size * 0.2, worldY + size * 0.45);
+    ctx.moveTo(screenX + size * 0.2, screenY + size * 0.4);
+    ctx.quadraticCurveTo(screenX + size * 0.5, screenY + size * 0.2, screenX + size * 0.8, screenY + size * 0.4);
+    ctx.lineTo(screenX + size * 0.8, screenY + size * 0.45);
+    ctx.lineTo(screenX + size * 0.2, screenY + size * 0.45);
     ctx.closePath();
     ctx.fill();
 
     // Metal bands
     ctx.strokeStyle = '#696969';
     ctx.lineWidth = 2;
-    ctx.strokeRect(worldX + size * 0.2, worldY + size * 0.4, size * 0.6, size * 0.4);
+    ctx.strokeRect(screenX + size * 0.2, screenY + size * 0.4, size * 0.6, size * 0.4);
     ctx.beginPath();
-    ctx.moveTo(worldX + size * 0.5, worldY + size * 0.4);
-    ctx.lineTo(worldX + size * 0.5, worldY + size * 0.8);
+    ctx.moveTo(screenX + size * 0.5, screenY + size * 0.4);
+    ctx.lineTo(screenX + size * 0.5, screenY + size * 0.8);
     ctx.stroke();
 
     // Lock (keyhole shape)
     ctx.fillStyle = '#ffd700';
-    ctx.fillRect(worldX + size * 0.47, worldY + size * 0.52, size * 0.06, size * 0.04);
+    ctx.fillRect(screenX + size * 0.47, screenY + size * 0.52, size * 0.06, size * 0.04);
     ctx.beginPath();
-    ctx.moveTo(worldX + size * 0.47, worldY + size * 0.56);
-    ctx.lineTo(worldX + size * 0.5, worldY + size * 0.62);
-    ctx.lineTo(worldX + size * 0.53, worldY + size * 0.56);
+    ctx.moveTo(screenX + size * 0.47, screenY + size * 0.56);
+    ctx.lineTo(screenX + size * 0.5, screenY + size * 0.62);
+    ctx.lineTo(screenX + size * 0.53, screenY + size * 0.56);
     ctx.closePath();
     ctx.fill();
 
     // Shine effect (star)
-    this.drawStar(ctx, worldX + size * 0.3, worldY + size * 0.3, size * 0.08, 4, 'rgba(255, 255, 255, 0.8)');
+    this.drawStar(ctx, screenX + size * 0.3, screenY + size * 0.3, size * 0.08, 4, 'rgba(255, 255, 255, 0.8)');
   }
 
   renderTeleporter(worldX: number, worldY: number, size: number): void {
@@ -114,25 +120,28 @@ export class InteractiveTileRenderer {
     this.renderer.drawRect(worldX, worldY, size, size, floorColor);
 
     const ctx = this.renderer.getContext();
+    const camera = this.renderer.getCamera();
+    const screenX = worldX - camera.x;
+    const screenY = worldY - camera.y;
     const time = Date.now() / 1000;
     const pulse = Math.sin(time * 4) * 0.15 + 0.85;
 
     // Base platform (stone)
     ctx.fillStyle = '#696969';
-    ctx.fillRect(worldX + size * 0.15, worldY + size * 0.7, size * 0.7, size * 0.15);
+    ctx.fillRect(screenX + size * 0.15, screenY + size * 0.7, size * 0.7, size * 0.15);
 
     // Outer ring (portal frame)
     ctx.strokeStyle = '#4a4a4a';
     ctx.lineWidth = size * 0.08;
     ctx.beginPath();
-    ctx.arc(worldX + size / 2, worldY + size / 2, size * 0.35, 0, Math.PI * 2);
+    ctx.arc(screenX + size / 2, screenY + size / 2, size * 0.35, 0, Math.PI * 2);
     ctx.stroke();
 
     // Spinning runes around the ring
     for (let i = 0; i < 8; i++) {
       const angle = (time * 2 + i * Math.PI / 4);
-      const x = worldX + size / 2 + Math.cos(angle) * size * 0.35;
-      const y = worldY + size / 2 + Math.sin(angle) * size * 0.35;
+      const x = screenX + size / 2 + Math.cos(angle) * size * 0.35;
+      const y = screenY + size / 2 + Math.sin(angle) * size * 0.35;
 
       // Rune symbols (small rectangles)
       ctx.save();
@@ -144,19 +153,19 @@ export class InteractiveTileRenderer {
     }
 
     // Portal energy (swirling center)
-    const gradient = ctx.createRadialGradient(worldX + size / 2, worldY + size / 2, 0, worldX + size / 2, worldY + size / 2, size * 0.25);
+    const gradient = ctx.createRadialGradient(screenX + size / 2, screenY + size / 2, 0, screenX + size / 2, screenY + size / 2, size * 0.25);
     gradient.addColorStop(0, `rgba(200, 100, 255, ${pulse})`);
     gradient.addColorStop(0.5, `rgba(139, 0, 255, ${pulse * 0.7})`);
     gradient.addColorStop(1, 'rgba(139, 0, 255, 0)');
     ctx.fillStyle = gradient;
-    ctx.fillRect(worldX + size * 0.25, worldY + size * 0.25, size * 0.5, size * 0.5);
+    ctx.fillRect(screenX + size * 0.25, screenY + size * 0.25, size * 0.5, size * 0.5);
 
     // Energy sparks
     for (let i = 0; i < 4; i++) {
       const sparkAngle = time * 3 + i * Math.PI / 2;
       const sparkDist = (Math.sin(time * 5 + i) * 0.5 + 0.5) * size * 0.15;
-      const sx = worldX + size / 2 + Math.cos(sparkAngle) * sparkDist;
-      const sy = worldY + size / 2 + Math.sin(sparkAngle) * sparkDist;
+      const sx = screenX + size / 2 + Math.cos(sparkAngle) * sparkDist;
+      const sy = screenY + size / 2 + Math.sin(sparkAngle) * sparkDist;
       this.drawStar(ctx, sx, sy, size * 0.06, 4, 'rgba(255, 200, 255, 0.8)');
     }
   }
@@ -166,21 +175,24 @@ export class InteractiveTileRenderer {
     this.renderer.drawRect(worldX, worldY, size, size, floorColor);
 
     const ctx = this.renderer.getContext();
+    const camera = this.renderer.getCamera();
+    const screenX = worldX - camera.x;
+    const screenY = worldY - camera.y;
     const time = Date.now() / 1000;
     const glow = Math.sin(time * 2) * 0.3 + 0.7;
 
     // Pedestal (multi-tier)
     ctx.fillStyle = '#696969';
-    ctx.fillRect(worldX + size * 0.25, worldY + size * 0.65, size * 0.5, size * 0.25);
+    ctx.fillRect(screenX + size * 0.25, screenY + size * 0.65, size * 0.5, size * 0.25);
     ctx.fillStyle = '#7a7a7a';
-    ctx.fillRect(worldX + size * 0.3, worldY + size * 0.6, size * 0.4, size * 0.05);
+    ctx.fillRect(screenX + size * 0.3, screenY + size * 0.6, size * 0.4, size * 0.05);
 
     // Shrine top (detailed pyramid with golden edges)
-    const centerX = worldX + size / 2;
-    const topY = worldY + size * 0.2;
-    const bottomY = worldY + size * 0.6;
-    const leftX = worldX + size * 0.3;
-    const rightX = worldX + size * 0.7;
+    const centerX = screenX + size / 2;
+    const topY = screenY + size * 0.2;
+    const bottomY = screenY + size * 0.6;
+    const leftX = screenX + size * 0.3;
+    const rightX = screenX + size * 0.7;
 
     // Pyramid faces (filled)
     ctx.fillStyle = '#c9a961';

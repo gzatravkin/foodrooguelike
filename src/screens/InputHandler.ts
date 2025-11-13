@@ -28,14 +28,16 @@ export class InputHandler {
   handleWeaponSwitching(player: Player): void {
     for (let i = 1; i <= 9; i++) {
       if (this.input.isKeyJustPressed(i.toString())) {
-        const weapons = gameState.getState().inventory
-          .map(id => entityFactory.getTemplate(id))
-          .filter(item => item?.type === 'weapon') as Weapon[];
+        const weaponIds = gameState.getState().inventory
+          .filter(id => {
+            const template = entityFactory.getTemplate(id);
+            return template?.type === 'weapon';
+          });
 
-        if (weapons[i - 1]) {
-          const weapon = weapons[i - 1];
-          player.equipWeapon(weapon);
-          gameState.equipWeapon(weapon.id);
+        if (weaponIds[i - 1]) {
+          const weaponId = weaponIds[i - 1];
+          // Let the event system handle the actual equipping
+          gameState.equipWeapon(weaponId);
         }
         break;
       }

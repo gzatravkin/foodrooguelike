@@ -236,5 +236,86 @@
     },
     "buffType": "defense",
     "rarity": "rare"
+  },
+  "venom_elixir": {
+    "id": "venom_elixir",
+    "type": "recipe",
+    "name": "Venom Elixir",
+    "description": "A dangerous potion with spider venom and magical herbs",
+    "ingredients": [
+      "spider_venom",
+      "mana_herb",
+      "honey",
+      "fire_pepper"
+    ],
+    "cookingMethod": "boil",
+    "cookingTime": 65,
+    "cookingTimeRange": {
+      "min": 60,
+      "max": 75
+    },
+    "buffType": "attack",
+    "rarity": "rare"
+  },
+  "royal_crab_feast": {
+    "id": "royal_crab_feast",
+    "type": "recipe",
+    "name": "Royal Crab Feast",
+    "description": "An extravagant dish fit for royalty",
+    "ingredients": [
+      "crab_meat",
+      "truffle",
+      "butter",
+      "saffron"
+    ],
+    "cookingMethod": "grill",
+    "cookingTime": 85,
+    "cookingTimeRange": {
+      "min": 80,
+      "max": 95
+    },
+    "buffType": "defense",
+    "rarity": "rare"
+  },
+  "bone_marrow_delicacy": {
+    "id": "bone_marrow_delicacy",
+    "type": "recipe",
+    "name": "Bone Marrow Delicacy",
+    "description": "Ancient bones roasted with rare herbs",
+    "ingredients": [
+      "bone_marrow",
+      "ancient_grain",
+      "mana_herb",
+      "crystal_salt"
+    ],
+    "cookingMethod": "bake",
+    "cookingTime": 90,
+    "cookingTimeRange": {
+      "min": 85,
+      "max": 100
+    },
+    "buffType": "health",
+    "rarity": "rare"
+  },
+  "infernal_bat_curry": {
+    "id": "infernal_bat_curry",
+    "type": "recipe",
+    "name": "Infernal Bat Curry",
+    "description": "Spicy curry with exotic bat wings",
+    "ingredients": [
+      "bat_wing",
+      "fire_pepper",
+      "rice",
+      "spice_blend",
+      "mana_herb"
+    ],
+    "cookingMethod": "boil",
+    "cookingTime": 75,
+    "cookingTimeRange": {
+      "min": 70,
+      "max": 85
+    },
+    "buffType": "attack",
+    "rarity": "rare"
   }
 }

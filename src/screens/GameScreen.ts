@@ -76,7 +76,7 @@ export class GameScreen {
     this.gameModeManager = new GameModeManager(this.spawnManager);
     this.svgAssetLoader = new SVGAssetLoader();
 
-    const startingWeapon = entityFactory.createWeapon('pistol');
+    const startingWeapon = entityFactory.createWeapon('fists');
     this.player = new Player(320, 240, startingWeapon || undefined);
 
     // Apply initial dash training bonuses from saved state

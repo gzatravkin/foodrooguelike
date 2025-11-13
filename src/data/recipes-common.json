@@ -111,5 +111,123 @@
     },
     "buffType": "health",
     "rarity": "common"
+  },
+  "bat_wing_soup": {
+    "id": "bat_wing_soup",
+    "type": "recipe",
+    "name": "Bat Wing Soup",
+    "description": "A cave delicacy with tender bat wings",
+    "ingredients": [
+      "bat_wing",
+      "mushroom",
+      "herb",
+      "salt"
+    ],
+    "cookingMethod": "boil",
+    "cookingTime": 50,
+    "cookingTimeRange": {
+      "min": 45,
+      "max": 55
+    },
+    "buffType": "defense",
+    "rarity": "common"
+  },
+  "bone_broth": {
+    "id": "bone_broth",
+    "type": "recipe",
+    "name": "Bone Broth",
+    "description": "Rich nutritious broth from ancient marrow",
+    "ingredients": [
+      "bone_marrow",
+      "herb",
+      "salt",
+      "onion"
+    ],
+    "cookingMethod": "boil",
+    "cookingTime": 60,
+    "cookingTimeRange": {
+      "min": 55,
+      "max": 70
+    },
+    "buffType": "health",
+    "rarity": "common"
+  },
+  "garlic_bread": {
+    "id": "garlic_bread",
+    "type": "recipe",
+    "name": "Garlic Bread",
+    "description": "Crispy bread with aromatic garlic butter",
+    "ingredients": [
+      "flour",
+      "garlic",
+      "butter",
+      "salt"
+    ],
+    "cookingMethod": "bake",
+    "cookingTime": 70,
+    "cookingTimeRange": {
+      "min": 65,
+      "max": 80
+    },
+    "buffType": "health",
+    "rarity": "common"
+  },
+  "egg_drop_soup": {
+    "id": "egg_drop_soup",
+    "type": "recipe",
+    "name": "Egg Drop Soup",
+    "description": "Light soup with silky egg ribbons",
+    "ingredients": [
+      "egg",
+      "rice",
+      "salt",
+      "herb"
+    ],
+    "cookingMethod": "boil",
+    "cookingTime": 35,
+    "cookingTimeRange": {
+      "min": 30,
+      "max": 40
+    },
+    "buffType": "health",
+    "rarity": "common"
+  },
+  "veggie_medley": {
+    "id": "veggie_medley",
+    "type": "recipe",
+    "name": "Veggie Medley",
+    "description": "Fresh vegetables saut\u00e9ed to perfection",
+    "ingredients": [
+      "onion",
+      "mushroom",
+      "garlic",
+      "herb"
+    ],
+    "cookingMethod": "fry",
+    "cookingTime": 30,
+    "cookingTimeRange": {
+      "min": 25,
+      "max": 35
+    },
+    "buffType": "defense",
+    "rarity": "common"
+  },
+  "salted_meat": {
+    "id": "salted_meat",
+    "type": "recipe",
+    "name": "Salted Meat",
+    "description": "Preserved meat with a salty crust",
+    "ingredients": [
+      "meat",
+      "salt"
+    ],
+    "cookingMethod": "bake",
+    "cookingTime": 40,
+    "cookingTimeRange": {
+      "min": 35,
+      "max": 45
+    },
+    "buffType": "attack",
+    "rarity": "common"
   }
 }

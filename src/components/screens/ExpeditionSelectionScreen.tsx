@@ -2,7 +2,7 @@
  * ExpeditionSelectionScreen - Preact component for expedition selection
  */
 
-import { useState } from 'preact/hooks';
+import { useState, useEffect } from 'preact/hooks';
 import { useGold, useDishes } from '../../hooks/useGameState';
 import { gameState } from '../../core/GameState';
 import expeditionsData from '../../data/expeditions.json';
@@ -19,13 +19,37 @@ export function ExpeditionSelectionScreen() {
     const dishes = useDishes();
     const expeditions = expeditionsData as Record<string, ExpeditionLocation>;
     const expeditionIds = Object.keys(expeditions);
-    const [currentExpeditionIndex, setCurrentExpeditionIndex] = useState(0);
+
+    // Initialize with preselected expedition if available
+    const getInitialExpeditionIndex = () => {
+        try {
+            const preselected = localStorage.getItem('preselectedExpedition');
+            if (preselected) {
+                const expedition = JSON.parse(preselected) as ExpeditionLocation;
+                localStorage.removeItem('preselectedExpedition');
+                const index = expeditionIds.indexOf(expedition.id);
+                return index >= 0 ? index : 0;
+            }
+        } catch (error) {
+            console.error('Failed to load preselected expedition:', error);
+        }
+        return 0;
+    };
+
+    const [currentExpeditionIndex, setCurrentExpeditionIndex] = useState(getInitialExpeditionIndex);
     const [selectedLevel, setSelectedLevel] = useState(1);
     const [selectedFoodBuff, setSelectedFoodBuff] = useState<string | undefined>(undefined);
 
     const expedition = expeditions[expeditionIds[currentExpeditionIndex]];
     const progress = expedition ? gameState.getExpeditionProgress(expedition.id) : null;
     const isUnlocked = expedition ? gameState.isLocationUnlocked(expedition.id) : false;
+
+    // Update selected level when expedition changes
+    useEffect(() => {
+        if (progress) {
+            setSelectedLevel(progress.currentLevel);
+        }
+    }, [currentExpeditionIndex, progress?.currentLevel]);
 
     const getCost = (level: number) => {
         if (!expedition) return 0;

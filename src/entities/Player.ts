@@ -8,7 +8,8 @@ import { getPlayerSize } from '../utils/MobileUtils';
 
 export class Player extends Entity {
   public weapon: Weapon | null = null;
-  public armor: Equipment | null = null;
+  public weaponEquipment: Equipment | null = null; // Equipment with slot="weapon"
+  public armor: Equipment | null = null; // Equipment with slot="armor"
   public gold: number = 100;
   public attackCooldown: number = 0;
   public facingAngle: number = 0; // Direction player is facing
@@ -217,9 +218,40 @@ export class Player extends Entity {
     this.weapon = weapon;
   }
 
+  equipWeaponEquipment(equipment: Equipment): void {
+    // Remove old equipment bonuses
+    if (this.weaponEquipment && this.weaponEquipment.stats.attack) {
+      this.stats.attack -= this.weaponEquipment.stats.attack;
+    }
+
+    // Equip new equipment
+    this.weaponEquipment = equipment;
+
+    // Apply new equipment bonuses
+    if (equipment.stats.attack) {
+      this.stats.attack += equipment.stats.attack;
+    }
+  }
+
   equipArmor(armor: Equipment): void {
+    // Remove old armor bonuses
+    if (this.armor) {
+      if (this.armor.stats.defense) {
+        this.stats.defense -= this.armor.stats.defense;
+      }
+      if (this.armor.stats.health) {
+        this.stats.maxHealth -= this.armor.stats.health;
+        this.stats.health = Math.min(this.stats.health, this.stats.maxHealth);
+      }
+    }
+
+    // Equip new armor
     this.armor = armor;
-    // Add health bonus if any
+
+    // Apply new armor bonuses
+    if (armor.stats.defense) {
+      this.stats.defense += armor.stats.defense;
+    }
     if (armor.stats.health) {
       this.stats.maxHealth += armor.stats.health;
       this.stats.health += armor.stats.health;

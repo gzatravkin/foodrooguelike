@@ -78,11 +78,29 @@ export class GameScreen {
     this.gameModeManager = new GameModeManager(this.spawnManager);
     this.svgAssetLoader = new SVGAssetLoader();
 
-    const startingWeapon = entityFactory.createWeapon('fists');
+    // Load saved state
+    const initialState = gameState.getState();
+
+    // Load combat weapon from state (or default to fists)
+    const weaponId = initialState.combatWeapon || 'fists';
+    const startingWeapon = entityFactory.createWeapon(weaponId);
     this.player = new Player(320, 240, startingWeapon || undefined);
 
+    // Load equipped equipment from state
+    if (initialState.equipment.weapon) {
+      const weaponEquipment = entityFactory.getTemplate(initialState.equipment.weapon) as any;
+      if (weaponEquipment && weaponEquipment.type === 'equipment') {
+        this.player.equipWeaponEquipment(weaponEquipment);
+      }
+    }
+    if (initialState.equipment.armor) {
+      const armor = entityFactory.getTemplate(initialState.equipment.armor) as any;
+      if (armor && armor.type === 'equipment') {
+        this.player.equipArmor(armor);
+      }
+    }
+
     // Apply initial dash training bonuses from saved state
-    const initialState = gameState.getState();
     const trainingLevels: { [key: string]: number } = {};
     initialState.trainingSkills.forEach(skill => {
       trainingLevels[skill.id] = skill.level;
@@ -138,6 +156,20 @@ export class GameScreen {
         const weapon = entityFactory.createWeapon(weaponId);
         if (weapon) {
           this.player.equipWeapon(weapon);
+        }
+      });
+
+      eventBus.on('weapon-equipment:equipped', (equipmentId: string) => {
+        const equipment = entityFactory.getTemplate(equipmentId) as any;
+        if (equipment && equipment.type === 'equipment') {
+          this.player.equipWeaponEquipment(equipment);
+        }
+      });
+
+      eventBus.on('armor:equipped', (armorId: string) => {
+        const armor = entityFactory.getTemplate(armorId) as any;
+        if (armor && armor.type === 'equipment') {
+          this.player.equipArmor(armor);
         }
       });
 

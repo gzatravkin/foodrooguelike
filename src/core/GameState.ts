@@ -69,9 +69,10 @@ export interface GameData {
     discoveredRecipes: string[];
     savedRecipeConfigs: SavedRecipeConfig[]; // Quick-select recipe configurations
     currentScreen: 'menu' | 'shop' | 'cooking' | 'settings' | 'restaurant' | 'upgrades' | 'recipebook' | 'game' | 'training' | 'expedition' | 'worldmap' | 'diningroom';
+    combatWeapon?: string; // Combat weapon ID (rusty_sword, iron_sword, etc.)
     equipment: {
-        weapon?: string;
-        armor?: string;
+        weapon?: string; // Equipment with slot="weapon" (steel_sword, iron_sword equipment)
+        armor?: string; // Equipment with slot="armor" (leather_armor, chain_mail)
     };
     activeBuffs: Array<{
         name: string;
@@ -119,6 +120,7 @@ class GameState {
             discoveredRecipes: [],
             savedRecipeConfigs: [],
             currentScreen: 'game',
+            combatWeapon: 'fists', // Start with fists
             equipment: {},
             activeBuffs: [],
             restaurant: {
@@ -258,11 +260,19 @@ class GameState {
         this.setScreen(screen);
     }
 
+    // Equip combat weapon (type="weapon")
     equipWeapon(weaponId: string): void {
-        this.state.equipment.weapon = weaponId;
+        this.state.combatWeapon = weaponId;
         eventBus.emit('weapon:equipped', weaponId);
     }
 
+    // Equip weapon equipment (type="equipment", slot="weapon")
+    equipWeaponEquipment(equipmentId: string): void {
+        this.state.equipment.weapon = equipmentId;
+        eventBus.emit('weapon-equipment:equipped', equipmentId);
+    }
+
+    // Equip armor equipment (type="equipment", slot="armor")
     equipArmor(armorId: string): void {
         this.state.equipment.armor = armorId;
         eventBus.emit('armor:equipped', armorId);

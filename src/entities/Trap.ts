@@ -6,11 +6,12 @@ export class Trap {
   public x: number;
   public y: number;
   public size: number = 24;
-  public active: boolean = false; // True when activated (safe)
+  public active: boolean = false; // True when activated
+  public destroyed: boolean = false; // True when trap has been used and should be removed
   public activationTimer: number = 0; // Timer for activation animation
   public damage: number = 15;
   public triggerRadius: number = 20; // Distance to trigger trap
-  public activationDelay: number = 0.5; // Time trap stays in activated state visually
+  public activationDelay: number = 0.5; // Time trap stays visible after activation
 
   constructor(x: number, y: number) {
     this.x = x;
@@ -21,7 +22,8 @@ export class Trap {
     if (this.activationTimer > 0) {
       this.activationTimer -= deltaTime;
       if (this.activationTimer <= 0) {
-        this.active = false; // Trap resets after activation animation
+        // Mark trap as destroyed instead of resetting
+        this.destroyed = true;
       }
     }
   }
@@ -39,6 +41,6 @@ export class Trap {
   }
 
   canDamage(): boolean {
-    return !this.active && this.activationTimer <= 0;
+    return !this.active && !this.destroyed && this.activationTimer <= 0;
   }
 }

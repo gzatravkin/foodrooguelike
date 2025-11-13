@@ -15,6 +15,9 @@ export class SVGAssetLoader {
       // Player
       await canvasRenderer.preloadSVG(wrapSVG(SVGArt.createPlayerSVG()), 'player');
 
+      // Patron NPC
+      await canvasRenderer.preloadSVG(wrapSVG(SVGArt.createPatronSVG()), 'patron');
+
       // All unique enemy sprites
       await canvasRenderer.preloadSVG(wrapSVG(SVGArt.createSlimeSVG()), 'slime');
       await canvasRenderer.preloadSVG(wrapSVG(SVGArt.createGoblinSVG()), 'goblin');

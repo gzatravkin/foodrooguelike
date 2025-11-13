@@ -222,8 +222,10 @@ export class GameScreenUpdater {
   }
 
   updateCamera(player: Player, renderer: any): void {
-    const viewWidth = 640;
-    const viewHeight = 480;
+    // Get actual canvas dimensions for proper centering
+    const canvas = renderer.renderer?.getCanvas();
+    const viewWidth = canvas ? canvas.width : 640;
+    const viewHeight = canvas ? canvas.height : 480;
     const cameraX = player.x - viewWidth / 2;
     const cameraY = player.y - viewHeight / 2;
     renderer.setCamera(cameraX, cameraY);

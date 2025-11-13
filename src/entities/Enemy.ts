@@ -107,6 +107,7 @@ export class Enemy extends Entity {
       case 'ranged': this.updateRangedBehavior(dx, dy, distanceToPlayer, deltaTime, canMoveTo); break;
       case 'ambusher': this.updateAmbusherBehavior(dx, dy, distanceToPlayer, deltaTime, canMoveTo); break;
       case 'patrol': this.updatePatrolBehavior(dx, dy, distanceToPlayer, deltaTime, canMoveTo); break;
+      case 'patron': this.updatePatronBehavior(deltaTime, canMoveTo); break; // Friendly NPCs
       default: this.updateStandardBehavior(dx, dy, distanceToPlayer, deltaTime, canMoveTo); break;
     }
   }
@@ -149,6 +150,11 @@ export class Enemy extends Entity {
     if (this.aiState === 'patrol') this.patrolArea(deltaTime, canMoveTo);
     else if (this.aiState === 'chase') this.moveTowardsTarget(dx, dy, distance, deltaTime, canMoveTo);
     else if (this.aiState === 'attack') this.attack.executeAttackPattern();
+  }
+
+  private updatePatronBehavior(deltaTime: number, canMoveTo: (x: number, y: number) => boolean): void {
+    // Patrons just patrol around - they never chase or attack
+    this.patrolArea(deltaTime, canMoveTo);
   }
 
   private moveTowardsTarget(dx: number, dy: number, distance: number, deltaTime: number, canMoveTo: (x: number, y: number) => boolean, speedMultiplier: number = 1.0): void {

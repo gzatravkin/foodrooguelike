@@ -45,6 +45,12 @@ export class EnemyAI {
         this.aiState = 'patrol';
         return { chaseRange: 200, speedMultiplier: 1.0, initialState: 'patrol' };
 
+      case 'patron':
+        // Friendly NPCs that just patrol around, never chase or attack
+        this.chaseRange = 0; // Never chase player
+        this.aiState = 'patrol';
+        return { chaseRange: 0, speedMultiplier: 0.4, initialState: 'patrol' }; // Slow casual walk
+
       case 'standard':
       default:
         return { chaseRange: 200, speedMultiplier: 1.0, initialState: 'idle' };
@@ -52,6 +58,12 @@ export class EnemyAI {
   }
 
   updateAIState(distanceToPlayer: number, attackRange: number, currentHealth: number, maxHealth: number, currentSpeed: number): number {
+    // Patron NPCs always stay in patrol state - they never chase or attack
+    if (this.aiBehavior === 'patron') {
+      this.aiState = 'patrol';
+      return currentSpeed;
+    }
+
     // Special handling for ambusher
     if (this.aiBehavior === 'ambusher' && !this.ambushTriggered) {
       if (distanceToPlayer <= this.ambushRange) {

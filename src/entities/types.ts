@@ -9,7 +9,7 @@ export interface BaseEntity {
     description: string;
 }
 
-export type AIBehaviorType = 'patrol' | 'aggressive' | 'defensive' | 'ranged' | 'ambusher' | 'standard';
+export type AIBehaviorType = 'patrol' | 'aggressive' | 'defensive' | 'ranged' | 'ambusher' | 'standard' | 'patron';
 export type AttackPattern = 'standard' | 'burst' | 'charge' | 'strafe' | 'retreat';
 
 export interface Enemy extends BaseEntity {

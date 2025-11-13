@@ -74,7 +74,8 @@ export function ShopScreen() {
     const buyWeapon = (weapon: Weapon) => {
         if (gameState.spendGold(weapon.cost)) {
             gameState.addToInventory(weapon.id);
-            showMessage(`Bought ${weapon.name} for ${formatGold(weapon.cost)}!`);
+            gameState.equipWeapon(weapon.id);
+            showMessage(`Bought and equipped ${weapon.name} for ${formatGold(weapon.cost)}!`);
         } else {
             showMessage('Not enough gold!');
         }

@@ -250,5 +250,41 @@
     "description": "Divine liquid from the heavens above",
     "rarity": "legendary",
     "baseValue": 1000
+  },
+  "bat_wing": {
+    "id": "bat_wing",
+    "type": "ingredient",
+    "name": "Bat Wing",
+    "icon": "🦇",
+    "description": "Leathery wing membrane from cave bats",
+    "rarity": "common",
+    "baseValue": 40
+  },
+  "spider_venom": {
+    "id": "spider_venom",
+    "type": "ingredient",
+    "name": "Spider Venom",
+    "icon": "🕷️",
+    "description": "Toxic venom with medicinal properties",
+    "rarity": "uncommon",
+    "baseValue": 95
+  },
+  "crab_meat": {
+    "id": "crab_meat",
+    "type": "ingredient",
+    "name": "Crab Meat",
+    "icon": "🦀",
+    "description": "Sweet succulent crustacean meat",
+    "rarity": "uncommon",
+    "baseValue": 85
+  },
+  "bone_marrow": {
+    "id": "bone_marrow",
+    "type": "ingredient",
+    "name": "Bone Marrow",
+    "icon": "🦴",
+    "description": "Nutritious marrow from ancient bones",
+    "rarity": "common",
+    "baseValue": 55
   }
 }

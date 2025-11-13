@@ -196,5 +196,185 @@
     },
     "buffType": "defense",
     "rarity": "uncommon"
+  },
+  "crab_cakes": {
+    "id": "crab_cakes",
+    "type": "recipe",
+    "name": "Crab Cakes",
+    "description": "Golden-fried cakes of sweet crab meat",
+    "ingredients": [
+      "crab_meat",
+      "egg",
+      "flour",
+      "butter"
+    ],
+    "cookingMethod": "fry",
+    "cookingTime": 45,
+    "cookingTimeRange": {
+      "min": 40,
+      "max": 50
+    },
+    "buffType": "health",
+    "rarity": "uncommon"
+  },
+  "spicy_bat_wings": {
+    "id": "spicy_bat_wings",
+    "type": "recipe",
+    "name": "Spicy Bat Wings",
+    "description": "Crispy wings tossed in fiery spice",
+    "ingredients": [
+      "bat_wing",
+      "fire_pepper",
+      "butter",
+      "spice_blend"
+    ],
+    "cookingMethod": "fry",
+    "cookingTime": 40,
+    "cookingTimeRange": {
+      "min": 35,
+      "max": 45
+    },
+    "buffType": "attack",
+    "rarity": "uncommon"
+  },
+  "crab_bisque": {
+    "id": "crab_bisque",
+    "type": "recipe",
+    "name": "Crab Bisque",
+    "description": "Creamy seafood soup with a rich flavor",
+    "ingredients": [
+      "crab_meat",
+      "butter",
+      "flour",
+      "tomato"
+    ],
+    "cookingMethod": "boil",
+    "cookingTime": 55,
+    "cookingTimeRange": {
+      "min": 50,
+      "max": 60
+    },
+    "buffType": "defense",
+    "rarity": "uncommon"
+  },
+  "stuffed_mushrooms": {
+    "id": "stuffed_mushrooms",
+    "type": "recipe",
+    "name": "Stuffed Mushrooms",
+    "description": "Mushroom caps filled with cheese and herbs",
+    "ingredients": [
+      "mushroom",
+      "cheese",
+      "garlic",
+      "butter"
+    ],
+    "cookingMethod": "bake",
+    "cookingTime": 65,
+    "cookingTimeRange": {
+      "min": 60,
+      "max": 70
+    },
+    "buffType": "defense",
+    "rarity": "uncommon"
+  },
+  "fish_chowder": {
+    "id": "fish_chowder",
+    "type": "recipe",
+    "name": "Fish Chowder",
+    "description": "Hearty seafood stew with vegetables",
+    "ingredients": [
+      "fish",
+      "flour",
+      "butter",
+      "onion",
+      "salt"
+    ],
+    "cookingMethod": "boil",
+    "cookingTime": 60,
+    "cookingTimeRange": {
+      "min": 55,
+      "max": 65
+    },
+    "buffType": "health",
+    "rarity": "uncommon"
+  },
+  "meat_pie": {
+    "id": "meat_pie",
+    "type": "recipe",
+    "name": "Meat Pie",
+    "description": "Savory pie filled with tender meat",
+    "ingredients": [
+      "meat",
+      "flour",
+      "butter",
+      "onion"
+    ],
+    "cookingMethod": "bake",
+    "cookingTime": 100,
+    "cookingTimeRange": {
+      "min": 95,
+      "max": 110
+    },
+    "buffType": "attack",
+    "rarity": "uncommon"
+  },
+  "baked_fish": {
+    "id": "baked_fish",
+    "type": "recipe",
+    "name": "Baked Fish",
+    "description": "Tender fish baked with herbs and butter",
+    "ingredients": [
+      "fish",
+      "butter",
+      "herb",
+      "salt"
+    ],
+    "cookingMethod": "bake",
+    "cookingTime": 70,
+    "cookingTimeRange": {
+      "min": 65,
+      "max": 80
+    },
+    "buffType": "defense",
+    "rarity": "uncommon"
+  },
+  "forest_mushroom_risotto": {
+    "id": "forest_mushroom_risotto",
+    "type": "recipe",
+    "name": "Forest Mushroom Risotto",
+    "description": "Creamy rice with forest mushrooms",
+    "ingredients": [
+      "mushroom",
+      "rice",
+      "butter",
+      "herb"
+    ],
+    "cookingMethod": "boil",
+    "cookingTime": 65,
+    "cookingTimeRange": {
+      "min": 60,
+      "max": 75
+    },
+    "buffType": "defense",
+    "rarity": "uncommon"
+  },
+  "cheese_fondue": {
+    "id": "cheese_fondue",
+    "type": "recipe",
+    "name": "Cheese Fondue",
+    "description": "Melted cheese with garlic and herbs",
+    "ingredients": [
+      "cheese",
+      "butter",
+      "garlic"
+    ],
+    "cookingMethod": "boil",
+    "cookingTime": 35,
+    "cookingTimeRange": {
+      "min": 30,
+      "max": 40
+    },
+    "buffType": "health",
+    "rarity": "uncommon"
   }
 }

@@ -70,10 +70,10 @@
     "attackPattern": "standard",
     "speed": 95,
     "lootTable": [
-      { "itemId": "meat", "chance": 0.6 },
-      { "itemId": "herb", "chance": 0.4 },
-      { "itemId": "flour", "chance": 0.5 },
-      { "itemId": "rice", "chance": 0.4 }
+      { "itemId": "meat", "chance": 0.7 },
+      { "itemId": "flour", "chance": 0.6 },
+      { "itemId": "cheese", "chance": 0.4 },
+      { "itemId": "rice", "chance": 0.5 }
     ]
   },
   "bat": {
@@ -89,7 +89,7 @@
     "attackPattern": "strafe",
     "speed": 110,
     "lootTable": [
-      { "itemId": "jelly", "chance": 0.5 },
+      { "itemId": "bat_wing", "chance": 0.9 },
       { "itemId": "mushroom", "chance": 0.7 },
       { "itemId": "egg", "chance": 0.4 }
     ]
@@ -107,10 +107,11 @@
     "attackPattern": "standard",
     "speed": 75,
     "lootTable": [
-      { "itemId": "mushroom", "chance": 0.9 },
-      { "itemId": "herb", "chance": 0.7 },
-      { "itemId": "sugar", "chance": 0.5 },
-      { "itemId": "ancient_grain", "chance": 0.2 }
+      { "itemId": "bone_marrow", "chance": 0.8 },
+      { "itemId": "mushroom", "chance": 0.7 },
+      { "itemId": "herb", "chance": 0.6 },
+      { "itemId": "ancient_grain", "chance": 0.3 },
+      { "itemId": "salt", "chance": 0.5 }
     ]
   },
   "orc": {
@@ -166,11 +167,11 @@
     "attackPattern": "retreat",
     "speed": 65,
     "lootTable": [
-      { "itemId": "dragon_fruit", "chance": 0.8 },
-      { "itemId": "sugar", "chance": 0.95 },
-      { "itemId": "jelly", "chance": 1.0 },
-      { "itemId": "crystal_salt", "chance": 0.6 },
-      { "itemId": "mana_herb", "chance": 0.7 }
+      { "itemId": "crystal_salt", "chance": 0.95 },
+      { "itemId": "sugar", "chance": 0.8 },
+      { "itemId": "jelly", "chance": 0.9 },
+      { "itemId": "mana_herb", "chance": 0.7 },
+      { "itemId": "fish", "chance": 0.6 }
     ]
   },
   "fire_elemental": {
@@ -187,9 +188,9 @@
     "speed": 100,
     "lootTable": [
       { "itemId": "fire_pepper", "chance": 1.0 },
-      { "itemId": "dragon_fruit", "chance": 0.7 },
-      { "itemId": "premium_meat", "chance": 0.6 },
-      { "itemId": "spice_blend", "chance": 0.8 },
+      { "itemId": "spice_blend", "chance": 0.9 },
+      { "itemId": "saffron", "chance": 0.6 },
+      { "itemId": "mana_herb", "chance": 0.7 },
       { "itemId": "phoenix_egg", "chance": 0.4 }
     ]
   },
@@ -206,9 +207,9 @@
     "attackPattern": "burst",
     "speed": 70,
     "lootTable": [
-      { "itemId": "jelly", "chance": 0.8 },
+      { "itemId": "spider_venom", "chance": 0.75 },
       { "itemId": "mushroom", "chance": 0.9 },
-      { "itemId": "herb", "chance": 0.6 },
+      { "itemId": "jelly", "chance": 0.6 },
       { "itemId": "mana_herb", "chance": 0.3 }
     ]
   },
@@ -244,11 +245,10 @@
     "attackPattern": "standard",
     "speed": 60,
     "lootTable": [
-      { "itemId": "premium_meat", "chance": 0.8 },
-      { "itemId": "meat", "chance": 0.95 },
-      { "itemId": "sugar", "chance": 0.6 },
+      { "itemId": "crab_meat", "chance": 0.95 },
       { "itemId": "fish", "chance": 0.7 },
-      { "itemId": "butter", "chance": 0.5 }
+      { "itemId": "salt", "chance": 0.6 },
+      { "itemId": "butter", "chance": 0.4 }
     ]
   },
   "demon_lord": {

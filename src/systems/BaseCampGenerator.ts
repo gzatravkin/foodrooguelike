@@ -6,16 +6,19 @@ import { TileType, GameMap } from './TileTypes';
 import { getTileSize } from '../utils/MobileUtils';
 
 export class BaseCampGenerator {
-  static generate(): GameMap {
+  static generate(restaurantLocation?: string): GameMap {
     const width = 20;
     const height = 15;
     const tiles: TileType[][] = [];
 
-    // Initialize with floor
+    // Choose floor type based on restaurant location
+    const floorType = this.getFloorTypeForLocation(restaurantLocation || 'starter_kitchen');
+
+    // Initialize with themed floor
     for (let y = 0; y < height; y++) {
       tiles[y] = [];
       for (let x = 0; x < width; x++) {
-        tiles[y][x] = TileType.FLOOR;
+        tiles[y][x] = floorType;
       }
     }
 
@@ -66,5 +69,27 @@ export class BaseCampGenerator {
       tiles,
       name: 'Base Camp',
     };
+  }
+
+  private static getFloorTypeForLocation(location: string): TileType {
+    // Return themed floor based on restaurant location
+    switch (location) {
+      case 'forest_outskirts':
+        return TileType.GRASS;
+      case 'dark_cave':
+        return TileType.FLOOR; // Cave floor
+      case 'goblin_camp':
+        return TileType.FLOOR; // Stone floor
+      case 'orc_stronghold':
+        return TileType.FLOOR; // Dungeon floor
+      case 'frozen_wasteland':
+        return TileType.ICE;
+      case 'volcano_depths':
+        return TileType.FLOOR; // Volcanic stone floor (safe)
+      case 'demon_realm':
+        return TileType.FLOOR; // Void/demon floor
+      default:
+        return TileType.FLOOR; // Default starter kitchen
+    }
   }
 }

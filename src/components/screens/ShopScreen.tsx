@@ -59,8 +59,10 @@ export function ShopScreen() {
     const allWeapons = entityFactory.getAllOfType('weapon') as Weapon[];
     const unlockedLocations = gameState.getUnlockedLocations();
 
-    // Filter weapons based on unlocked locations
+    // Filter weapons based on unlocked locations and cost
     const weapons = allWeapons.filter(weapon => {
+        // Exclude weapons with no cost (like fists)
+        if (weapon.cost <= 0) return false;
         // Always show weapons without location requirement
         if (!weapon.requiredLocation) return true;
         // Show weapons for unlocked locations

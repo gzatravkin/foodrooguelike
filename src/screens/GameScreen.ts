@@ -255,6 +255,26 @@ export class GameScreen {
     }
   }
 
+  loadDiningRoom(): void {
+    const result = this.gameModeManager.loadDiningRoom(this.mapSystem, this.player);
+
+    this.enemies = result.enemies;
+    this.traps = result.traps;
+    this.combatSystem.clearProjectiles();
+    this.combatSystem.clearCorpses();
+    this.baseHealTimer = 0;
+    this.tileInteractionManager.reset();
+
+    this.addCombatLog('=== DINING ROOM ===', '#FFD700');
+    this.addCombatLog('Press E on the door to return to base', '#90EE90');
+
+    // Spawn initial NPCs if none exist
+    if (gameState.getDiningRoomClients().length === 0) {
+      gameState.spawnDiningRoomClients(3);
+      this.addCombatLog('Customers are waiting!', '#FFD700');
+    }
+  }
+
   loadExpedition(level: number = 1): void {
     const result = this.gameModeManager.loadExpedition(this.mapSystem, this.player, level);
 
@@ -344,6 +364,14 @@ export class GameScreen {
         } else if (tileType === TileType.UPGRADES_HALL) {
           gameState.setScreen('upgrades');
         } else if (tileType === TileType.DINING_ROOM) {
+          this.loadDiningRoom();
+        }
+      } else if (this.gameModeManager.getMode() === 'diningroom') {
+        // In dining room - handle door or open UI
+        if (tileType === TileType.DOOR) {
+          this.loadBaseCamp();
+        } else {
+          // Anywhere else in dining room, open the dining room UI
           gameState.setScreen('diningroom');
         }
       } else if (this.gameModeManager.getMode() === 'expedition' && tileType !== null) {

@@ -56,11 +56,9 @@ export class BaseCampGenerator {
     tiles[12][15] = TileType.UPGRADES_HALL;
     tiles[12][16] = TileType.UPGRADES_HALL;
 
-    // Add dining room (top-center area)
+    // Add door to dining room (top-center area) - leads to separate dining room space
     tiles[2][9] = TileType.DINING_ROOM;
     tiles[2][10] = TileType.DINING_ROOM;
-    tiles[3][9] = TileType.DINING_ROOM;
-    tiles[3][10] = TileType.DINING_ROOM;
 
     // Add expedition portal (bottom center)
     tiles[11][9] = TileType.EXPEDITION_PORTAL;

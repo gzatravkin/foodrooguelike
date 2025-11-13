@@ -14,20 +14,44 @@ export class InteractiveTileRenderer {
     const floorColor = TileManager.getTileColor(TileType.FLOOR);
     this.renderer.drawRect(worldX, worldY, size, size, floorColor);
 
-    // Base
-    this.renderer.drawRect(worldX + size * 0.25, worldY + size * 0.6, size * 0.5, size * 0.3, '#8b7355');
-
-    // Water
+    const ctx = this.renderer.getContext();
     const time = Date.now() / 1000;
     const pulse = Math.sin(time * 3) * 0.1 + 0.9;
-    this.renderer.drawCircle(worldX + size / 2, worldY + size * 0.5, size * 0.25 * pulse, `rgba(255, 105, 180, ${pulse})`);
 
-    // Sparkles
+    // Base/pedestal (multi-tier)
+    ctx.fillStyle = '#8b7355';
+    ctx.fillRect(worldX + size * 0.2, worldY + size * 0.7, size * 0.6, size * 0.2);
+    ctx.fillRect(worldX + size * 0.25, worldY + size * 0.6, size * 0.5, size * 0.1);
+    ctx.fillRect(worldX + size * 0.3, worldY + size * 0.5, size * 0.4, size * 0.1);
+
+    // Fountain bowl (chalice shape)
+    ctx.fillStyle = '#a0826d';
+    ctx.beginPath();
+    ctx.moveTo(worldX + size * 0.3, worldY + size * 0.5);
+    ctx.lineTo(worldX + size * 0.35, worldY + size * 0.35);
+    ctx.lineTo(worldX + size * 0.65, worldY + size * 0.35);
+    ctx.lineTo(worldX + size * 0.7, worldY + size * 0.5);
+    ctx.closePath();
+    ctx.fill();
+
+    // Water (pulsing pink liquid)
+    ctx.fillStyle = `rgba(255, 105, 180, ${pulse * 0.8})`;
+    ctx.fillRect(worldX + size * 0.37, worldY + size * 0.38, size * 0.26, size * 0.08);
+
+    // Water droplets/fountain spray
+    for (let i = 0; i < 3; i++) {
+      const offset = Math.sin(time * 4 + i) * size * 0.1;
+      const dropY = worldY + size * 0.25 - Math.abs(offset);
+      ctx.fillStyle = `rgba(255, 105, 180, ${0.6 + Math.abs(offset) / size})`;
+      ctx.fillRect(worldX + size * (0.4 + i * 0.1), dropY, size * 0.05, size * 0.08);
+    }
+
+    // Sparkles (star shapes)
     for (let i = 0; i < 3; i++) {
       const angle = (time + i * Math.PI * 2 / 3) * 2;
       const sparkleX = worldX + size / 2 + Math.cos(angle) * size * 0.3;
       const sparkleY = worldY + size * 0.4 + Math.sin(angle) * size * 0.3;
-      this.renderer.drawCircle(sparkleX, sparkleY, 2, 'rgba(255, 255, 255, 0.8)');
+      this.drawStar(ctx, sparkleX, sparkleY, size * 0.08, 4, 'rgba(255, 255, 255, 0.8)');
     }
   }
 
@@ -35,62 +59,176 @@ export class InteractiveTileRenderer {
     const floorColor = TileManager.getTileColor(TileType.FLOOR);
     this.renderer.drawRect(worldX, worldY, size, size, floorColor);
 
-    // Chest body
-    this.renderer.drawRect(worldX + size * 0.2, worldY + size * 0.4, size * 0.6, size * 0.4, '#8b6914');
+    const ctx = this.renderer.getContext();
 
-    // Chest lid
-    this.renderer.drawRect(worldX + size * 0.2, worldY + size * 0.25, size * 0.6, size * 0.2, '#daa520');
+    // Chest body (wooden)
+    ctx.fillStyle = '#8b6914';
+    ctx.fillRect(worldX + size * 0.2, worldY + size * 0.4, size * 0.6, size * 0.4);
 
-    // Lock
-    this.renderer.drawCircle(worldX + size / 2, worldY + size * 0.5, size * 0.08, '#ffd700');
+    // Wood planks detail
+    ctx.strokeStyle = '#6b4810';
+    ctx.lineWidth = 1;
+    for (let i = 0; i < 3; i++) {
+      const y = worldY + size * (0.5 + i * 0.1);
+      ctx.beginPath();
+      ctx.moveTo(worldX + size * 0.2, y);
+      ctx.lineTo(worldX + size * 0.8, y);
+      ctx.stroke();
+    }
 
-    // Shine
-    this.renderer.drawCircle(worldX + size * 0.3, worldY + size * 0.3, 2, 'rgba(255, 255, 255, 0.8)');
+    // Chest lid (curved)
+    ctx.fillStyle = '#daa520';
+    ctx.beginPath();
+    ctx.moveTo(worldX + size * 0.2, worldY + size * 0.4);
+    ctx.quadraticCurveTo(worldX + size * 0.5, worldY + size * 0.2, worldX + size * 0.8, worldY + size * 0.4);
+    ctx.lineTo(worldX + size * 0.8, worldY + size * 0.45);
+    ctx.lineTo(worldX + size * 0.2, worldY + size * 0.45);
+    ctx.closePath();
+    ctx.fill();
+
+    // Metal bands
+    ctx.strokeStyle = '#696969';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(worldX + size * 0.2, worldY + size * 0.4, size * 0.6, size * 0.4);
+    ctx.beginPath();
+    ctx.moveTo(worldX + size * 0.5, worldY + size * 0.4);
+    ctx.lineTo(worldX + size * 0.5, worldY + size * 0.8);
+    ctx.stroke();
+
+    // Lock (keyhole shape)
+    ctx.fillStyle = '#ffd700';
+    ctx.fillRect(worldX + size * 0.47, worldY + size * 0.52, size * 0.06, size * 0.04);
+    ctx.beginPath();
+    ctx.moveTo(worldX + size * 0.47, worldY + size * 0.56);
+    ctx.lineTo(worldX + size * 0.5, worldY + size * 0.62);
+    ctx.lineTo(worldX + size * 0.53, worldY + size * 0.56);
+    ctx.closePath();
+    ctx.fill();
+
+    // Shine effect (star)
+    this.drawStar(ctx, worldX + size * 0.3, worldY + size * 0.3, size * 0.08, 4, 'rgba(255, 255, 255, 0.8)');
   }
 
   renderTeleporter(worldX: number, worldY: number, size: number): void {
     const floorColor = TileManager.getTileColor(TileType.FLOOR);
     this.renderer.drawRect(worldX, worldY, size, size, floorColor);
 
+    const ctx = this.renderer.getContext();
     const time = Date.now() / 1000;
+    const pulse = Math.sin(time * 4) * 0.15 + 0.85;
 
-    // Spinning outer ring
+    // Base platform (stone)
+    ctx.fillStyle = '#696969';
+    ctx.fillRect(worldX + size * 0.15, worldY + size * 0.7, size * 0.7, size * 0.15);
+
+    // Outer ring (portal frame)
+    ctx.strokeStyle = '#4a4a4a';
+    ctx.lineWidth = size * 0.08;
+    ctx.beginPath();
+    ctx.arc(worldX + size / 2, worldY + size / 2, size * 0.35, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Spinning runes around the ring
     for (let i = 0; i < 8; i++) {
       const angle = (time * 2 + i * Math.PI / 4);
       const x = worldX + size / 2 + Math.cos(angle) * size * 0.35;
       const y = worldY + size / 2 + Math.sin(angle) * size * 0.35;
-      this.renderer.drawCircle(x, y, 3, 'rgba(139, 0, 255, 0.6)');
+
+      // Rune symbols (small rectangles)
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(angle);
+      ctx.fillStyle = `rgba(139, 0, 255, ${0.6 + Math.sin(time * 3 + i) * 0.4})`;
+      ctx.fillRect(-size * 0.04, -size * 0.06, size * 0.08, size * 0.12);
+      ctx.restore();
     }
 
-    // Pulsing center
-    const pulse = Math.sin(time * 4) * 0.15 + 0.85;
-    this.renderer.drawCircle(worldX + size / 2, worldY + size / 2, size * 0.2 * pulse, `rgba(139, 0, 255, ${pulse})`);
-    this.renderer.drawCircle(worldX + size / 2, worldY + size / 2, size * 0.1 * pulse, `rgba(200, 100, 255, ${pulse})`);
+    // Portal energy (swirling center)
+    const gradient = ctx.createRadialGradient(worldX + size / 2, worldY + size / 2, 0, worldX + size / 2, worldY + size / 2, size * 0.25);
+    gradient.addColorStop(0, `rgba(200, 100, 255, ${pulse})`);
+    gradient.addColorStop(0.5, `rgba(139, 0, 255, ${pulse * 0.7})`);
+    gradient.addColorStop(1, 'rgba(139, 0, 255, 0)');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(worldX + size * 0.25, worldY + size * 0.25, size * 0.5, size * 0.5);
+
+    // Energy sparks
+    for (let i = 0; i < 4; i++) {
+      const sparkAngle = time * 3 + i * Math.PI / 2;
+      const sparkDist = (Math.sin(time * 5 + i) * 0.5 + 0.5) * size * 0.15;
+      const sx = worldX + size / 2 + Math.cos(sparkAngle) * sparkDist;
+      const sy = worldY + size / 2 + Math.sin(sparkAngle) * sparkDist;
+      this.drawStar(ctx, sx, sy, size * 0.06, 4, 'rgba(255, 200, 255, 0.8)');
+    }
   }
 
   renderShrine(worldX: number, worldY: number, size: number): void {
     const floorColor = TileManager.getTileColor(TileType.FLOOR);
     this.renderer.drawRect(worldX, worldY, size, size, floorColor);
 
-    // Pedestal
-    this.renderer.drawRect(worldX + size * 0.3, worldY + size * 0.6, size * 0.4, size * 0.3, '#696969');
+    const ctx = this.renderer.getContext();
+    const time = Date.now() / 1000;
+    const glow = Math.sin(time * 2) * 0.3 + 0.7;
 
-    // Shrine top (pyramid)
+    // Pedestal (multi-tier)
+    ctx.fillStyle = '#696969';
+    ctx.fillRect(worldX + size * 0.25, worldY + size * 0.65, size * 0.5, size * 0.25);
+    ctx.fillStyle = '#7a7a7a';
+    ctx.fillRect(worldX + size * 0.3, worldY + size * 0.6, size * 0.4, size * 0.05);
+
+    // Shrine top (detailed pyramid with golden edges)
     const centerX = worldX + size / 2;
     const topY = worldY + size * 0.2;
     const bottomY = worldY + size * 0.6;
     const leftX = worldX + size * 0.3;
     const rightX = worldX + size * 0.7;
 
-    // Draw triangle for pyramid
-    this.renderer.drawLine(leftX, bottomY, centerX, topY, '#daa520', 2);
-    this.renderer.drawLine(rightX, bottomY, centerX, topY, '#daa520', 2);
-    this.renderer.drawLine(leftX, bottomY, rightX, bottomY, '#daa520', 2);
+    // Pyramid faces (filled)
+    ctx.fillStyle = '#c9a961';
+    ctx.beginPath();
+    ctx.moveTo(centerX, topY);
+    ctx.lineTo(leftX, bottomY);
+    ctx.lineTo(rightX, bottomY);
+    ctx.closePath();
+    ctx.fill();
 
-    // Glow effect
-    const time = Date.now() / 1000;
-    const glow = Math.sin(time * 2) * 0.3 + 0.7;
-    this.renderer.drawCircle(centerX, topY, 4, `rgba(218, 165, 32, ${glow})`);
+    // Golden edges
+    ctx.strokeStyle = '#daa520';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(leftX, bottomY);
+    ctx.lineTo(centerX, topY);
+    ctx.lineTo(rightX, bottomY);
+    ctx.lineTo(leftX, bottomY);
+    ctx.stroke();
+
+    // Sacred symbol at top (glowing diamond)
+    ctx.save();
+    ctx.translate(centerX, topY);
+    ctx.rotate(Math.PI / 4);
+    ctx.fillStyle = `rgba(218, 165, 32, ${glow})`;
+    ctx.fillRect(-size * 0.06, -size * 0.06, size * 0.12, size * 0.12);
+    ctx.restore();
+
+    // Glow effect (radial)
+    const gradient = ctx.createRadialGradient(centerX, topY, 0, centerX, topY, size * 0.2);
+    gradient.addColorStop(0, `rgba(218, 165, 32, ${glow * 0.5})`);
+    gradient.addColorStop(1, 'rgba(218, 165, 32, 0)');
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(centerX, topY, size * 0.2, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Light rays
+    ctx.strokeStyle = `rgba(255, 215, 0, ${glow * 0.3})`;
+    ctx.lineWidth = 1;
+    for (let i = 0; i < 8; i++) {
+      const angle = (time * 0.5 + i * Math.PI / 4);
+      const rayLen = size * 0.15;
+      ctx.beginPath();
+      ctx.moveTo(centerX, topY);
+      ctx.lineTo(centerX + Math.cos(angle) * rayLen, topY + Math.sin(angle) * rayLen);
+      ctx.stroke();
+    }
   }
 
   renderBerryBush(worldX: number, worldY: number, size: number): void {
@@ -245,5 +383,29 @@ export class InteractiveTileRenderer {
 
     // Ancient glow effect
     this.renderer.drawCircle(worldX + size * 0.5, worldY + size * 0.4, size * 0.38, 'rgba(255, 215, 0, 0.15)');
+  }
+
+  private drawStar(ctx: CanvasRenderingContext2D, x: number, y: number, size: number, points: number, color: string): void {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.fillStyle = color;
+    ctx.beginPath();
+
+    for (let i = 0; i < points * 2; i++) {
+      const angle = (i * Math.PI) / points;
+      const radius = i % 2 === 0 ? size : size * 0.4;
+      const px = Math.cos(angle) * radius;
+      const py = Math.sin(angle) * radius;
+
+      if (i === 0) {
+        ctx.moveTo(px, py);
+      } else {
+        ctx.lineTo(px, py);
+      }
+    }
+
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
   }
 }

@@ -189,26 +189,75 @@ export class GameScreenRenderer {
 
   renderNPCs(npcs: NPCClient[]): void {
     for (const npc of npcs) {
-      // Draw NPC as a simple colored circle
-      this.renderer.drawCircle(npc.x, npc.y, npc.size, npc.clientData.color);
-
-      // Draw a white outline
-      const ctx = this.renderer.getContext();
-      ctx.save();
-      ctx.strokeStyle = '#FFF';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.arc(npc.x, npc.y, npc.size, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.restore();
-
-      // Show indicator if they want food
-      if (npc.wantsFood) {
-        // Draw a small food icon above their head
-        const iconY = npc.y - npc.size - 10;
-        this.renderer.drawText('🍽️', npc.x, iconY, '#FFD700', 16, 'center');
-      }
+      const color = npc.clientData?.color || npc.color || '#FF6B6B';
+      this.renderDiningPatron(npc.x, npc.y, npc.size, color, npc.facingAngle);
     }
+  }
+
+  private renderDiningPatron(x: number, y: number, size: number, color: string, facingAngle: number): void {
+    const ctx = this.renderer.getContext();
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(facingAngle);
+
+    // Body (simple robe/dress shape)
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.ellipse(0, size * 0.3, size * 0.6, size * 0.7, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Head (peach/skin tone circle)
+    ctx.fillStyle = '#ffdbac';
+    ctx.beginPath();
+    ctx.arc(0, -size * 0.3, size * 0.4, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Hair (darker shade)
+    ctx.fillStyle = this.darkenColor(color, 0.3);
+    ctx.beginPath();
+    ctx.arc(0, -size * 0.5, size * 0.35, 0, Math.PI);
+    ctx.fill();
+
+    // Simple facial features (two dots for eyes)
+    ctx.fillStyle = '#000';
+    ctx.beginPath();
+    ctx.arc(-size * 0.15, -size * 0.3, size * 0.08, 0, Math.PI * 2);
+    ctx.arc(size * 0.15, -size * 0.3, size * 0.08, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Arms/hands holding utensils
+    ctx.strokeStyle = '#ffdbac';
+    ctx.lineWidth = size * 0.15;
+    ctx.beginPath();
+    ctx.moveTo(-size * 0.5, size * 0.2);
+    ctx.lineTo(-size * 0.7, size * 0.5);
+    ctx.moveTo(size * 0.5, size * 0.2);
+    ctx.lineTo(size * 0.7, size * 0.5);
+    ctx.stroke();
+
+    // Fork in left hand
+    ctx.strokeStyle = '#C0C0C0';
+    ctx.lineWidth = size * 0.05;
+    ctx.beginPath();
+    ctx.moveTo(-size * 0.7, size * 0.5);
+    ctx.lineTo(-size * 0.75, size * 0.7);
+    ctx.stroke();
+
+    // Knife in right hand
+    ctx.beginPath();
+    ctx.moveTo(size * 0.7, size * 0.5);
+    ctx.lineTo(size * 0.75, size * 0.7);
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  private darkenColor(color: string, amount: number): string {
+    const hex = color.replace('#', '');
+    const r = Math.max(0, parseInt(hex.substr(0, 2), 16) - amount * 255);
+    const g = Math.max(0, parseInt(hex.substr(2, 2), 16) - amount * 255);
+    const b = Math.max(0, parseInt(hex.substr(4, 2), 16) - amount * 255);
+    return `#${Math.floor(r).toString(16).padStart(2, '0')}${Math.floor(g).toString(16).padStart(2, '0')}${Math.floor(b).toString(16).padStart(2, '0')}`;
   }
 
   renderProjectiles(projectiles: Projectile[]): void {

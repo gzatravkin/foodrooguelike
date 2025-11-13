@@ -71,6 +71,22 @@ export class BaseCampGenerator {
       tiles[13][x] = floorType; // Hallway
     }
 
+    // Hallway walls (enclose the hallway)
+    for (let x = 22; x < 24; x++) {
+      tiles[12][x] = TileType.WALL; // Top wall of hallway
+      tiles[14][x] = TileType.WALL; // Bottom wall of hallway
+    }
+
+    // Close off the main area wall above and below the door
+    for (let y = 0; y < 12; y++) {
+      tiles[y][21] = TileType.WALL;
+    }
+    for (let y = 15; y <= height - 1; y++) {
+      tiles[y][21] = TileType.WALL;
+    }
+    tiles[12][21] = TileType.WALL; // Wall above door
+    tiles[14][21] = TileType.WALL; // Wall below door
+
     // Dining room walls
     for (let x = 24; x < width; x++) {
       tiles[8][x] = TileType.WALL; // Top wall

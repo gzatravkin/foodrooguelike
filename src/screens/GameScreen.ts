@@ -250,23 +250,14 @@ export class GameScreen {
     if (wasExpedition) {
       this.addCombatLog('=== RETURNED TO BASE ===', '#90EE90');
       this.addCombatLog('You are safe now!', '#90EE90');
-
-      // Spawn new dining room clients after expedition
-      gameState.spawnDiningRoomClients(3);
-      this.spawnNPCClients();
-      this.addCombatLog('New customers arrived at the Dining Room!', '#FFD700');
-    } else {
-      // Spawn initial clients on first load if none exist
-      if (gameState.getDiningRoomClients().length === 0) {
-        gameState.spawnDiningRoomClients(3);
-      }
-      this.spawnNPCClients();
     }
+
+    // Spawn background NPCs for atmosphere
+    this.spawnBackgroundNPCs();
   }
 
-  private spawnNPCClients(): void {
+  private spawnBackgroundNPCs(): void {
     this.npcClients = [];
-    const clients = gameState.getDiningRoomClients();
     const tileSize = this.mapSystem.getCurrentMap()?.tileSize || 32;
 
     // Dining room is at tiles x: 25-29, y: 9-17
@@ -275,15 +266,20 @@ export class GameScreen {
     const diningRoomCenterY = 13 * tileSize;
     const spawnRadius = 2 * tileSize;
 
-    clients.forEach((clientData, index) => {
-      // Spawn NPCs in a circle around the dining room center
-      const angle = (index / clients.length) * Math.PI * 2;
+    // Simple patron colors for variety
+    const patronColors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F'];
+
+    // Spawn 4-5 background NPCs
+    const npcCount = 4 + Math.floor(Math.random() * 2);
+    for (let i = 0; i < npcCount; i++) {
+      const angle = (i / npcCount) * Math.PI * 2;
       const x = diningRoomCenterX + Math.cos(angle) * spawnRadius;
       const y = diningRoomCenterY + Math.sin(angle) * spawnRadius;
 
-      const npc = new NPCClient(x, y, clientData);
+      const color = patronColors[i % patronColors.length];
+      const npc = new NPCClient(x, y, color);
       this.npcClients.push(npc);
-    });
+    }
   }
 
   loadExpedition(level: number = 1): void {

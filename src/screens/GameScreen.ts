@@ -601,6 +601,10 @@ export class GameScreen {
 
   render(): void {
     this.renderer.clear();
+
+    // Render background first (theme-appropriate)
+    this.renderer.renderBackground(this.mapSystem.getCurrentMap());
+
     this.renderer.renderMap(this.mapSystem.getCurrentMap());
 
     this.renderer.renderTraps(this.traps);

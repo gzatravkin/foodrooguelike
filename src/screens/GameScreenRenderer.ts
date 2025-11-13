@@ -46,6 +46,46 @@ export class GameScreenRenderer {
     return `rgba(${r}, ${g}, ${b}, ${alpha})`;
   }
 
+  private adjustBrightness(color: string, amount: number): string {
+    if (color.startsWith('#')) {
+      const r = Math.min(255, Math.max(0, parseInt(color.slice(1, 3), 16) + amount));
+      const g = Math.min(255, Math.max(0, parseInt(color.slice(3, 5), 16) + amount));
+      const b = Math.min(255, Math.max(0, parseInt(color.slice(5, 7), 16) + amount));
+      return `#${Math.floor(r).toString(16).padStart(2, '0')}${Math.floor(g).toString(16).padStart(2, '0')}${Math.floor(b).toString(16).padStart(2, '0')}`;
+    }
+    return color;
+  }
+
+  renderBackground(map: GameMap | null): void {
+    if (!map) return;
+
+    const ctx = this.renderer.getContext();
+    const canvas = this.renderer.getCanvas();
+
+    // Use a very dark base color
+    const baseColor = '#0a0a0a';
+
+    // Create a subtle gradient background
+    const gradient = ctx.createRadialGradient(
+      canvas.width / 2,
+      canvas.height / 2,
+      0,
+      canvas.width / 2,
+      canvas.height / 2,
+      Math.max(canvas.width, canvas.height)
+    );
+
+    gradient.addColorStop(0, this.adjustBrightness(baseColor, 15));
+    gradient.addColorStop(1, baseColor);
+
+    // Fill the entire canvas with the gradient background
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform to draw in screen space
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.restore();
+  }
+
   renderMap(map: GameMap | null): void {
     if (!map) return;
 

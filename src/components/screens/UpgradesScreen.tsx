@@ -106,7 +106,7 @@ export function UpgradesScreen() {
             <ScreenHeader title="UPGRADES" emoji="⭐" />
             <GoldDisplay />
 
-            <div style="display: flex; gap: 10px; margin: 20px 0;">
+            <div style="display: flex; gap: 5px; margin: 10px 0;">
                 {tabs.map(tab => (
                     <ActionButton
                         key={tab.type}

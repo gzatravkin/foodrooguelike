@@ -16,8 +16,8 @@ interface CloseButtonProps {
  */
 export function CloseButton({ position = 'bottom', style = '' }: CloseButtonProps) {
     const positionStyles = position === 'top-right'
-        ? `position: absolute; top: 20px; right: 20px; min-width: 100px; background: ${colors.textDarker}; padding: 10px 20px;`
-        : `margin-top: 30px;`;
+        ? `position: absolute; top: 10px; right: 10px; min-width: 50px; background: ${colors.textDarker}; padding: 5px 10px;`
+        : `margin-top: 15px;`;
 
     return (
         <button
@@ -47,7 +47,7 @@ export function NavButton({ emoji, label, gradient, shadowColor, onClick, style 
         <button
             class="button"
             onClick={onClick}
-            style={`height: 70px; font-size: 16px; background: ${gradient}; border: none; box-shadow: 0 4px 15px ${shadowColor}; ${style}`}
+            style={`height: 35px; font-size: 8px; background: ${gradient}; border: none; box-shadow: 0 2px 8px ${shadowColor}; ${style}`}
         >
             {emoji && <>{emoji}<br /></>}
             {label}

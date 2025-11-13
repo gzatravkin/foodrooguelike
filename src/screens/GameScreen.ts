@@ -25,6 +25,7 @@ import { TileInteractionManager } from './TileInteractionManager';
 import { GameModeManager, GameMode } from './GameModeManager';
 import { SVGAssetLoader } from './SVGAssetLoader';
 import { TileRegistry } from '../plugins/tiles/TileRegistry';
+import { NPCClient } from '../entities/NPCClient';
 
 export class GameScreen {
   private renderer: GameScreenRenderer;
@@ -33,6 +34,7 @@ export class GameScreen {
   private player: Player;
   private enemies: Enemy[] = [];
   private traps: Trap[] = [];
+  private npcClients: NPCClient[] = [];
   private combatSystem: CombatSystem;
   private inputHandler: InputHandler;
   private spawnManager: SpawnManager;
@@ -251,8 +253,37 @@ export class GameScreen {
 
       // Spawn new dining room clients after expedition
       gameState.spawnDiningRoomClients(3);
+      this.spawnNPCClients();
       this.addCombatLog('New customers arrived at the Dining Room!', '#FFD700');
+    } else {
+      // Spawn initial clients on first load if none exist
+      if (gameState.getDiningRoomClients().length === 0) {
+        gameState.spawnDiningRoomClients(3);
+      }
+      this.spawnNPCClients();
     }
+  }
+
+  private spawnNPCClients(): void {
+    this.npcClients = [];
+    const clients = gameState.getDiningRoomClients();
+    const tileSize = this.mapSystem.getCurrentMap()?.tileSize || 32;
+
+    // Dining room is at tiles x: 25-29, y: 9-17
+    // Center around x: 27*32 = 864, y: 13*32 = 416
+    const diningRoomCenterX = 27 * tileSize;
+    const diningRoomCenterY = 13 * tileSize;
+    const spawnRadius = 2 * tileSize;
+
+    clients.forEach((clientData, index) => {
+      // Spawn NPCs in a circle around the dining room center
+      const angle = (index / clients.length) * Math.PI * 2;
+      const x = diningRoomCenterX + Math.cos(angle) * spawnRadius;
+      const y = diningRoomCenterY + Math.sin(angle) * spawnRadius;
+
+      const npc = new NPCClient(x, y, clientData);
+      this.npcClients.push(npc);
+    });
   }
 
   loadExpedition(level: number = 1): void {
@@ -407,6 +438,9 @@ export class GameScreen {
 
     this.player.update(deltaTime);
 
+    // Update NPC clients
+    this.npcClients.forEach(npc => npc.update(deltaTime));
+
     // Track enemy count before processing deaths
     const enemiesBeforeDeath = this.enemies.filter(e => e.alive).length;
 
@@ -533,6 +567,7 @@ export class GameScreen {
     this.renderer.renderTraps(this.traps);
     this.renderer.renderCorpses(this.combatSystem.getCorpses(), this.nearbyCorpse);
     this.renderer.renderEnemies(this.enemies);
+    this.renderer.renderNPCs(this.npcClients);
     this.renderer.renderProjectiles(this.combatSystem.getProjectiles());
     this.renderer.renderParticles(this.particleSystem.getParticles());
     this.renderer.renderPlayer(this.player);

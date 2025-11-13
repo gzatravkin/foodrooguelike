@@ -15,8 +15,8 @@ export class EntityRenderer {
   constructor(private renderer: CanvasRenderer) {}
 
   public renderPlayerWeapon(player: Player): void {
-    if (!player.weapon) {
-      // No weapon - show fists
+    if (!player.weapon || player.weapon.id === 'fists') {
+      // No weapon or fists - show fists
       const fistDist = 12;
       const fistX = player.x + Math.cos(player.facingAngle) * fistDist;
       const fistY = player.y + Math.sin(player.facingAngle) * fistDist;

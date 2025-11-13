@@ -46,6 +46,9 @@ import {
   createFloorTileSVG,
   createWallTileSVG,
 } from './SVGEnvironment';
+import {
+  createPatronSVG,
+} from './SVGPatron';
 
 // Re-export all
 export {
@@ -75,6 +78,7 @@ export {
   createCorpseSVG,
   createFloorTileSVG,
   createWallTileSVG,
+  createPatronSVG,
 };
 
 // Map enemy IDs to SVG generators

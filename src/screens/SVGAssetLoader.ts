@@ -15,8 +15,15 @@ export class SVGAssetLoader {
       // Player
       await canvasRenderer.preloadSVG(wrapSVG(SVGArt.createPlayerSVG()), 'player');
 
-      // Patron NPC
+      // Patron NPCs (default + theme-based)
       await canvasRenderer.preloadSVG(wrapSVG(SVGArt.createPatronSVG()), 'patron');
+      await canvasRenderer.preloadSVG(wrapSVG(SVGArt.createThemedPatronSVG('forest')), 'patron-forest');
+      await canvasRenderer.preloadSVG(wrapSVG(SVGArt.createThemedPatronSVG('cave')), 'patron-cave');
+      await canvasRenderer.preloadSVG(wrapSVG(SVGArt.createThemedPatronSVG('ruins')), 'patron-ruins');
+      await canvasRenderer.preloadSVG(wrapSVG(SVGArt.createThemedPatronSVG('dungeon')), 'patron-dungeon');
+      await canvasRenderer.preloadSVG(wrapSVG(SVGArt.createThemedPatronSVG('ice')), 'patron-ice');
+      await canvasRenderer.preloadSVG(wrapSVG(SVGArt.createThemedPatronSVG('lava')), 'patron-lava');
+      await canvasRenderer.preloadSVG(wrapSVG(SVGArt.createThemedPatronSVG('void')), 'patron-void');
 
       // All unique enemy sprites
       await canvasRenderer.preloadSVG(wrapSVG(SVGArt.createSlimeSVG()), 'slime');

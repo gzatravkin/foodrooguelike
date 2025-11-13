@@ -25,7 +25,6 @@ import { TileInteractionManager } from './TileInteractionManager';
 import { GameModeManager, GameMode } from './GameModeManager';
 import { SVGAssetLoader } from './SVGAssetLoader';
 import { TileRegistry } from '../plugins/tiles/TileRegistry';
-import { NPCClient } from '../entities/NPCClient';
 import { eventBus } from '../core/EventBus';
 
 export class GameScreen {
@@ -35,7 +34,7 @@ export class GameScreen {
   private player: Player;
   private enemies: Enemy[] = [];
   private traps: Trap[] = [];
-  private npcClients: NPCClient[] = [];
+  private npcClients: Enemy[] = []; // Patron NPCs using Enemy system with 'patron' behavior
   private combatSystem: CombatSystem;
   private inputHandler: InputHandler;
   private spawnManager: SpawnManager;
@@ -297,18 +296,54 @@ export class GameScreen {
     const diningRoomCenterY = 13 * tileSize;
     const spawnRadius = 2 * tileSize;
 
-    // Simple patron colors for variety
-    const patronColors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F'];
+    // Get dining room clients from game state (based on last visited location)
+    const clients = gameState.getDiningRoomClients();
+    if (clients.length === 0) {
+      // If no clients exist, spawn some based on current location
+      gameState.spawnDiningRoomClients(4 + Math.floor(Math.random() * 2));
+    }
 
-    // Spawn 4-5 background NPCs
-    const npcCount = 4 + Math.floor(Math.random() * 2);
-    for (let i = 0; i < npcCount; i++) {
-      const angle = (i / npcCount) * Math.PI * 2;
-      const x = diningRoomCenterX + Math.cos(angle) * spawnRadius;
-      const y = diningRoomCenterY + Math.sin(angle) * spawnRadius;
+    const clientsToSpawn = gameState.getDiningRoomClients();
 
-      const color = patronColors[i % patronColors.length];
-      const npc = new NPCClient(x, y, color);
+    // Spawn NPCs as Enemy instances with 'patron' behavior
+    for (let i = 0; i < clientsToSpawn.length; i++) {
+      const client = clientsToSpawn[i];
+      const angle = (i / clientsToSpawn.length) * Math.PI * 2;
+      let x = diningRoomCenterX + Math.cos(angle) * spawnRadius;
+      let y = diningRoomCenterY + Math.sin(angle) * spawnRadius;
+
+      // Validate spawn position and adjust if needed
+      const canMoveTo = (checkX: number, checkY: number) =>
+        this.mapSystem.canMoveTo(checkX, checkY, tileSize / 2);
+
+      // Find a valid spawn position near the desired location
+      let attempts = 0;
+      while (!canMoveTo(x, y) && attempts < 20) {
+        const randomAngle = Math.random() * Math.PI * 2;
+        const randomRadius = spawnRadius * (0.5 + Math.random() * 0.5);
+        x = diningRoomCenterX + Math.cos(randomAngle) * randomRadius;
+        y = diningRoomCenterY + Math.sin(randomAngle) * randomRadius;
+        attempts++;
+      }
+
+      // Create Enemy instance with patron behavior
+      const npcData = {
+        id: client.id,
+        name: client.name,
+        description: `A dining patron from ${gameState.getLastVisitedLocation() || 'the realm'}`,
+        type: 'enemy' as const,
+        health: 100,
+        attack: 0, // Patrons don't attack
+        defense: 0,
+        speed: 30, // Slow casual walk
+        aiBehavior: 'patron' as const,
+        lootTable: [], // Patrons don't drop loot
+      };
+
+      const npc = new Enemy(x, y, npcData);
+      npc.color = client.color; // Use client's color
+      // Store client data for rendering and interaction
+      (npc as any).clientData = client;
       this.npcClients.push(npc);
     }
   }
@@ -473,8 +508,14 @@ export class GameScreen {
 
     this.player.update(deltaTime);
 
-    // Update NPC clients
-    this.npcClients.forEach(npc => npc.update(deltaTime));
+    // Update NPC clients (patron enemies with proper collision detection)
+    this.npcClients.forEach(npc => {
+      npc.update(deltaTime);
+      // Update AI for movement with wall collision detection
+      npc.updateAI(this.player.x, this.player.y, deltaTime, (x, y) =>
+        this.mapSystem.canMoveTo(x, y, npc.size)
+      );
+    });
 
     // Track enemy count before processing deaths
     const enemiesBeforeDeath = this.enemies.filter(e => e.alive).length;

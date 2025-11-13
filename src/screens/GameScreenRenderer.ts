@@ -16,7 +16,6 @@ import { Trap } from '../entities/Trap';
 import { GameMode } from './GameModeManager';
 import { Weapon } from '../entities/types';
 import { Particle } from '../entities/Particle';
-import { NPCClient } from '../entities/NPCClient';
 
 export class GameScreenRenderer {
   private tileRenderer: TileRenderer;
@@ -227,10 +226,15 @@ export class GameScreenRenderer {
     }
   }
 
-  renderNPCs(npcs: NPCClient[]): void {
+  renderNPCs(npcs: Enemy[]): void {
+    // Render patron NPCs with dining patron appearance
     for (const npc of npcs) {
-      const color = npc.clientData?.color || npc.color || '#FF6B6B';
-      this.renderDiningPatron(npc.x, npc.y, npc.size, color, npc.facingAngle);
+      // Only render patron NPCs (not regular enemies)
+      if (npc.aiBehavior === 'patron') {
+        const clientData = (npc as any).clientData;
+        const color = clientData?.color || npc.color || '#FF6B6B';
+        this.renderDiningPatron(npc.x, npc.y, npc.size, color, npc.facingAngle);
+      }
     }
   }
 

@@ -79,14 +79,15 @@ export function FlexRow({ children, style = '' }: FlexRowProps) {
 interface ContentWrapperProps {
     children: ComponentChildren;
     maxWidth?: string;
+    style?: string;
 }
 
 /**
  * Wrapper for main content area
  */
-export function ContentWrapper({ children, maxWidth = '1200px' }: ContentWrapperProps) {
+export function ContentWrapper({ children, maxWidth = '1200px', style = '' }: ContentWrapperProps) {
     return (
-        <div style={`width: 100%; max-width: ${maxWidth};`}>
+        <div style={`width: 100%; max-width: ${maxWidth}; ${style}`}>
             {children}
         </div>
     );

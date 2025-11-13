@@ -43,14 +43,15 @@ export function Card({
 interface CardTitleProps {
     children: ComponentChildren;
     level?: { current: number; max: number };
+    style?: string;
 }
 
 /**
  * Card title with optional level display
  */
-export function CardTitle({ children, level }: CardTitleProps) {
+export function CardTitle({ children, level, style = '' }: CardTitleProps) {
     const levelText = level ? ` (Lv ${level.current}/${level.max})` : '';
-    return <h3>{children}{levelText}</h3>;
+    return <h3 style={style}>{children}{levelText}</h3>;
 }
 
 interface CardEffectProps {

@@ -251,9 +251,10 @@ export class GameScreenRenderer {
     showInteractionPrompt: boolean,
     interactionPromptText: string,
     combatLog: Array<{text: string; timestamp: number; color: string}> = [],
-    inventory: string[] = []
+    inventory: string[] = [],
+    isMobile: boolean = false
   ): void {
-    this.uiRenderer.renderUI(player, mode, enemies, corpses, showInteractionPrompt, interactionPromptText, combatLog, inventory);
+    this.uiRenderer.renderUI(player, mode, enemies, corpses, showInteractionPrompt, interactionPromptText, combatLog, inventory, isMobile);
   }
 
   renderShop(availableWeapons: Weapon[], playerGold: number, currentWeapon: Weapon | null): void {

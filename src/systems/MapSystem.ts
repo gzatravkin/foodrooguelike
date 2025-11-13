@@ -5,7 +5,6 @@
 import { TileType, GameMap } from './TileTypes';
 import { TileManager } from './TileManager';
 import { BaseCampGenerator } from './BaseCampGenerator';
-import { DiningRoomGenerator } from './DiningRoomGenerator';
 import { DungeonGenerator } from './DungeonGenerator';
 import { Theme } from './ThemeConfig';
 
@@ -69,10 +68,6 @@ export class MapSystem {
   // Static factory methods
   static createBaseCamp(restaurantLocation?: string): GameMap {
     return BaseCampGenerator.generate(restaurantLocation);
-  }
-
-  static createDiningRoom(): GameMap {
-    return DiningRoomGenerator.generate();
   }
 
   static createDungeon(level: number = 1, theme?: Theme): GameMap {

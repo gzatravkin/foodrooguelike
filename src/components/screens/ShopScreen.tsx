@@ -89,15 +89,6 @@ export function ShopScreen() {
         }
     };
 
-    const eatDish = (dish: Dish) => {
-        const player = gameState.getState().player;
-        const healthBonus = dish.effects?.health || 0;
-        const newHealth = Math.min(player.maxHealth, player.health + healthBonus);
-        gameState.updatePlayer({ health: newHealth });
-        gameState.removeDish(dish.id);
-        showMessage(`Ate ${dish.name}! Restored ${healthBonus} HP!`);
-    };
-
     const itemsPerPage = 4;
     const weaponStart = weaponPage * itemsPerPage;
     const equipmentStart = equipmentPage * itemsPerPage;
@@ -207,15 +198,7 @@ export function ShopScreen() {
                                         )}
                                         <p style="font-size: 12px; margin: 5px 0; line-height: 1.3;">{dish.description}</p>
                                         <CardEffect style="font-size: 11px;">{formatDishEffects(dish.effects)}</CardEffect>
-                                        <p style="color: #90EE90; font-size: 11px; margin-top: 8px;">Take to Dining Room to serve customers</p>
-                                        <div style="display: flex; gap: 8px; margin-top: 10px;">
-                                            <ActionButton
-                                                onClick={() => eatDish(dish)}
-                                                style="padding: 6px 12px; font-size: 12px; flex: 1;"
-                                            >
-                                                Eat
-                                            </ActionButton>
-                                        </div>
+                                        <p style="color: #90EE90; font-size: 11px; margin-top: 8px;">Serve in Dining Room or eat for health (Dining Room only)</p>
                                     </Card>
                                 );
                             })}

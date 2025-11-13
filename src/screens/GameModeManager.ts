@@ -12,7 +12,7 @@ import { Theme } from '../systems/ThemeConfig';
 import { isBossLevel, getLevelMultipliers } from '../types/expedition';
 import { gameState } from '../core/GameState';
 
-export type GameMode = 'base' | 'expedition' | 'diningroom';
+export type GameMode = 'base' | 'expedition';
 
 export class GameModeManager {
   private mode: GameMode = 'base';
@@ -39,27 +39,6 @@ export class GameModeManager {
 
     player.x = 320;
     player.y = 240;
-
-    return { enemies: [], traps: [] };
-  }
-
-  loadDiningRoom(mapSystem: MapSystem, player: Player): { enemies: Enemy[]; traps: Trap[] } {
-    this.mode = 'diningroom';
-
-    // Reset theme for dining room
-    TileManager.setTheme(null);
-
-    const diningRoom = MapSystem.createDiningRoom();
-    mapSystem.loadMap(diningRoom);
-
-    // Use spawn position from map if available
-    if (diningRoom.spawnX && diningRoom.spawnY) {
-      player.x = diningRoom.spawnX;
-      player.y = diningRoom.spawnY;
-    } else {
-      player.x = 320;
-      player.y = 240;
-    }
 
     return { enemies: [], traps: [] };
   }

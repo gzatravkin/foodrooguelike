@@ -16,6 +16,7 @@ import { Trap } from '../entities/Trap';
 import { GameMode } from './GameModeManager';
 import { Weapon } from '../entities/types';
 import { Particle } from '../entities/Particle';
+import { NPCClient } from '../entities/NPCClient';
 
 export class GameScreenRenderer {
   private tileRenderer: TileRenderer;
@@ -183,6 +184,30 @@ export class GameScreenRenderer {
       }
 
       this.entityRenderer.drawHealthBar(enemy.x, enemy.y - enemy.size, enemy.stats.health, enemy.stats.maxHealth);
+    }
+  }
+
+  renderNPCs(npcs: NPCClient[]): void {
+    for (const npc of npcs) {
+      // Draw NPC as a simple colored circle
+      this.renderer.drawCircle(npc.x, npc.y, npc.size, npc.clientData.color);
+
+      // Draw a white outline
+      const ctx = this.renderer.getContext();
+      ctx.save();
+      ctx.strokeStyle = '#FFF';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(npc.x, npc.y, npc.size, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+
+      // Show indicator if they want food
+      if (npc.wantsFood) {
+        // Draw a small food icon above their head
+        const iconY = npc.y - npc.size - 10;
+        this.renderer.drawText('🍽️', npc.x, iconY, '#FFD700', 16, 'center');
+      }
     }
   }
 

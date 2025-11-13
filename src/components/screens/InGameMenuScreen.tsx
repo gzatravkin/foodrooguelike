@@ -57,7 +57,7 @@ export function InGameMenuScreen() {
             </StatsPanel>
 
             {/* Navigation Buttons */}
-            <div style="display: grid; grid-template-columns: repeat(3, 200px); gap: 15px; margin: 40px 0;">
+            <div style="display: grid; grid-template-columns: repeat(3, 400px); gap: 30px; margin: 40px 0;">
                 {navButtons.map(btn => (
                     <NavButton
                         key={btn.screen}

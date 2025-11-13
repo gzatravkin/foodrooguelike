@@ -4,6 +4,7 @@
 
 import { TileType, GameMap } from './TileTypes';
 import { Theme, getThemeConfig } from './ThemeConfig';
+import { getTileSize } from '../utils/MobileUtils';
 
 export class DungeonGenerator {
   // Create a procedurally generated dungeon map with variety
@@ -52,7 +53,7 @@ export class DungeonGenerator {
     // Simple 3-room linear dungeon that always works
     const width = 30;
     const height = 20;
-    const tileSize = 32;
+    const tileSize = getTileSize();
     const tiles: TileType[][] = [];
 
     // Initialize with walls
@@ -144,7 +145,7 @@ export class DungeonGenerator {
       height = Math.floor(height * 0.9);
     }
 
-    const tileSize = 32;
+    const tileSize = getTileSize();
     const tiles: TileType[][] = [];
 
     // Initialize with walls

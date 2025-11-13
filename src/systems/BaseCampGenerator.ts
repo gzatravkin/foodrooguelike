@@ -3,6 +3,7 @@
  */
 
 import { TileType, GameMap } from './TileTypes';
+import { getTileSize } from '../utils/MobileUtils';
 
 export class BaseCampGenerator {
   static generate(): GameMap {
@@ -61,7 +62,7 @@ export class BaseCampGenerator {
     return {
       width,
       height,
-      tileSize: 32,
+      tileSize: getTileSize(),
       tiles,
       name: 'Base Camp',
     };

@@ -11,6 +11,7 @@ import { MapCameraManager } from './MapCameraManager';
 import { MapPlayerManager } from './MapPlayerManager';
 import { MapInteractionManager } from './MapInteractionManager';
 import { MapRenderHelper } from './MapRenderHelper';
+import { MobileControls } from '../ui/MobileControls';
 
 export class GlobalMapScreen {
   private renderer: CanvasRenderer;
@@ -21,6 +22,7 @@ export class GlobalMapScreen {
   private interactionManager: MapInteractionManager;
   private renderHelper: MapRenderHelper;
   private selectedLocation: MapLocation | null = null;
+  private mobileControls: MobileControls | null = null;
 
   constructor(renderer: CanvasRenderer, input: InputManager) {
     this.renderer = renderer;
@@ -36,9 +38,22 @@ export class GlobalMapScreen {
     this.interactionManager = new MapInteractionManager();
     this.interactionManager.setLocationManager(this.locationManager);
     this.renderHelper = new MapRenderHelper(renderer);
+
+    // Initialize mobile controls if on mobile device
+    if (this.input.isMobileDevice()) {
+      const canvas = renderer.getCanvas();
+      this.mobileControls = new MobileControls(canvas);
+    }
   }
 
   update(deltaTime: number): void {
+    // Update mobile controls state
+    if (this.mobileControls) {
+      const controlState = this.mobileControls.getState();
+      this.input.setVirtualJoystick(controlState.joystick.x, controlState.joystick.y);
+      this.input.setVirtualButton('interact', controlState.buttons.interact);
+    }
+
     // Update player position
     this.playerManager.update(deltaTime, this.input);
 
@@ -64,7 +79,11 @@ export class GlobalMapScreen {
   }
 
   private handleInteractionInput(): void {
-    if (this.input.isKeyJustPressed('e') || this.input.isKeyJustPressed(' ')) {
+    if (
+      this.input.isKeyJustPressed('e') ||
+      this.input.isKeyJustPressed(' ') ||
+      this.input.isVirtualButtonJustPressed('interact')
+    ) {
       if (this.selectedLocation && this.interactionManager.canInteract()) {
         this.interactionManager.interactWithLocation(
           this.selectedLocation,
@@ -91,6 +110,11 @@ export class GlobalMapScreen {
       this.selectedLocation,
       this.interactionManager.getMessage()
     );
+
+    // Render mobile controls if on mobile
+    if (this.mobileControls) {
+      this.mobileControls.render(this.renderer.getContext());
+    }
   }
 
   destroy(): void {

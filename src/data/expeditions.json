@@ -6,7 +6,7 @@
     "cost": 10,
     "unlockCost": 1000,
     "difficulty": 1,
-    "enemyTypes": ["slime", "rat"],
+    "enemyTypes": ["slime", "rat", "wolf", "spider"],
     "enemyCount": { "min": 5, "max": 8 },
     "lootMultiplier": 1.0,
     "theme": "forest"
@@ -18,7 +18,7 @@
     "cost": 50,
     "unlockCost": 3000,
     "difficulty": 2,
-    "enemyTypes": ["bat", "spider", "slime"],
+    "enemyTypes": ["bat", "spider", "slime", "giant_crab", "rat"],
     "enemyCount": { "min": 6, "max": 10 },
     "lootMultiplier": 1.5,
     "theme": "cave"
@@ -30,7 +30,7 @@
     "cost": 200,
     "unlockCost": 5000,
     "difficulty": 3,
-    "enemyTypes": ["goblin", "wolf", "skeleton"],
+    "enemyTypes": ["goblin", "wolf", "skeleton", "spider", "bat"],
     "enemyCount": { "min": 8, "max": 12 },
     "lootMultiplier": 2.0,
     "theme": "ruins"
@@ -42,7 +42,7 @@
     "cost": 500,
     "unlockCost": 10000,
     "difficulty": 4,
-    "enemyTypes": ["orc", "troll", "wolf"],
+    "enemyTypes": ["orc", "troll", "wolf", "skeleton", "goblin"],
     "enemyCount": { "min": 10, "max": 15 },
     "lootMultiplier": 2.5,
     "theme": "dungeon"
@@ -54,7 +54,7 @@
     "cost": 1000,
     "unlockCost": 20000,
     "difficulty": 5,
-    "enemyTypes": ["ice_golem", "troll", "spider"],
+    "enemyTypes": ["ice_golem", "troll", "spider", "giant_crab", "wolf"],
     "enemyCount": { "min": 12, "max": 18 },
     "lootMultiplier": 3.0,
     "theme": "ice"
@@ -66,7 +66,7 @@
     "cost": 2000,
     "unlockCost": 50000,
     "difficulty": 6,
-    "enemyTypes": ["fire_elemental", "dragon", "orc"],
+    "enemyTypes": ["fire_elemental", "dragon", "orc", "troll"],
     "enemyCount": { "min": 15, "max": 20 },
     "lootMultiplier": 4.0,
     "theme": "lava"
@@ -78,7 +78,7 @@
     "cost": 5000,
     "unlockCost": 100000,
     "difficulty": 7,
-    "enemyTypes": ["demon_lord", "fire_elemental", "ice_golem"],
+    "enemyTypes": ["demon_lord", "fire_elemental", "ice_golem", "dragon"],
     "enemyCount": { "min": 20, "max": 30 },
     "lootMultiplier": 5.0,
     "theme": "void"

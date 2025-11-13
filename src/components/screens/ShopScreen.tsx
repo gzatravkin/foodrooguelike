@@ -59,15 +59,28 @@ export function ShopScreen() {
     const allWeapons = entityFactory.getAllOfType('weapon') as Weapon[];
     const unlockedLocations = gameState.getUnlockedLocations();
 
+    console.log('[SHOP] Unlocked locations:', unlockedLocations);
+    console.log('[SHOP] Total weapons available:', allWeapons.length);
+
     // Filter weapons based on unlocked locations and cost
     const weapons = allWeapons.filter(weapon => {
         // Exclude weapons with no cost (like fists)
-        if (weapon.cost <= 0) return false;
+        if (weapon.cost <= 0) {
+            console.log(`[SHOP] Excluding ${weapon.id} - no cost`);
+            return false;
+        }
         // Always show weapons without location requirement
-        if (!weapon.requiredLocation) return true;
+        if (!weapon.requiredLocation) {
+            console.log(`[SHOP] Including ${weapon.id} - no location requirement`);
+            return true;
+        }
         // Show weapons for unlocked locations
-        return unlockedLocations.includes(weapon.requiredLocation);
+        const isUnlocked = unlockedLocations.includes(weapon.requiredLocation);
+        console.log(`[SHOP] ${weapon.id} requires ${weapon.requiredLocation} - ${isUnlocked ? 'UNLOCKED' : 'LOCKED'}`);
+        return isUnlocked;
     });
+
+    console.log('[SHOP] Filtered weapons count:', weapons.length);
 
     const equipment = entityFactory.getAllOfType('equipment') as Equipment[];
 

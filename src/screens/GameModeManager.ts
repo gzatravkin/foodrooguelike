@@ -66,9 +66,13 @@ export class GameModeManager {
     const theme = expeditionData?.theme as Theme | undefined;
     if (theme) {
       TileManager.setTheme(theme);
+      console.log(`[EXPEDITION] Loading expedition: ${expeditionData?.name || 'Unknown'}, Theme: ${theme}, Level: ${level}, Difficulty: ${expeditionData?.difficulty}`);
     }
 
-    const dungeon = MapSystem.createDungeon(expeditionData?.difficulty || level, theme);
+    // Use expedition difficulty for dungeon generation, NOT the level (1-50)
+    // Difficulty determines map complexity, level determines enemy strength
+    const difficulty = expeditionData?.difficulty || 1;
+    const dungeon = MapSystem.createDungeon(difficulty, theme);
     mapSystem.loadMap(dungeon);
 
     player.x = dungeon.spawnX || 3 * 32 + 16;
@@ -86,7 +90,7 @@ export class GameModeManager {
 
   private spawnExpeditionEnemies(expeditionData: any, player: Player, mapSystem: MapSystem): Enemy[] {
     const enemies: Enemy[] = [];
-    const { enemyTypes, enemyCount, lootMultiplier, level = 1 } = expeditionData;
+    const { enemyTypes, enemyCount, lootMultiplier, level = 1, name } = expeditionData;
 
     // Check if this is a boss level
     const isBoss = isBossLevel(level);
@@ -94,15 +98,19 @@ export class GameModeManager {
     // Get level multipliers
     const multipliers = getLevelMultipliers(level);
 
+    console.log(`[ENEMY SPAWN] Spawning enemies for ${name}, Level: ${level}, IsBoss: ${isBoss}, Available types: [${enemyTypes.join(', ')}]`);
+
     // Determine enemy count
     let numEnemies: number;
     if (isBoss) {
       // Boss levels: 1-3 boss enemies based on level
       numEnemies = 1 + Math.floor(level / 20); // 1 at levels 5,15, 2 at 25,30, 3 at 50
+      console.log(`[ENEMY SPAWN] Boss level - spawning ${numEnemies} boss enemies`);
     } else {
       // Normal levels: base count + level scaling
       const baseCount = enemyCount.min + Math.floor(Math.random() * (enemyCount.max - enemyCount.min + 1));
       numEnemies = baseCount + multipliers.count;
+      console.log(`[ENEMY SPAWN] Normal level - base count: ${baseCount}, level scaling: ${multipliers.count}, total: ${numEnemies}`);
     }
 
     // Filter enemy types for boss levels
@@ -120,6 +128,7 @@ export class GameModeManager {
       if (availableEnemyTypes.length === 0) {
         availableEnemyTypes = bossEnemies.map((e: any) => e.id);
       }
+      console.log(`[ENEMY SPAWN] Boss enemies available: [${availableEnemyTypes.join(', ')}]`);
     }
 
     for (let i = 0; i < numEnemies; i++) {
@@ -149,10 +158,16 @@ export class GameModeManager {
           }
 
           enemies.push(enemy);
+          console.log(`[ENEMY SPAWN] Spawned ${enemyType} - HP: ${enemy.stats.maxHealth}, ATK: ${enemy.stats.attack}, DEF: ${enemy.stats.defense}`);
+        } else {
+          console.warn(`[ENEMY SPAWN] Failed to find valid position for enemy ${i + 1}/${numEnemies}`);
         }
+      } else {
+        console.error(`[ENEMY SPAWN] Failed to get enemy template for type: ${enemyType}`);
       }
     }
 
+    console.log(`[ENEMY SPAWN] Successfully spawned ${enemies.length}/${numEnemies} enemies`);
     return enemies;
   }
 

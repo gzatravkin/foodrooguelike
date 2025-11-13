@@ -8,24 +8,26 @@ import { getTileSize } from '../utils/MobileUtils';
 
 export class DungeonGenerator {
   // Create a procedurally generated dungeon map with variety
-  static generate(level: number = 1, theme?: Theme): GameMap {
+  static generate(difficulty: number = 1, theme?: Theme): GameMap {
     const themeConfig = theme ? getThemeConfig(theme) : null;
+    console.log(`[DUNGEON] Generating dungeon - Difficulty: ${difficulty}, Theme: ${theme || 'default'}`);
 
     // Retry generation up to 5 times to ensure valid map
     for (let attempt = 0; attempt < 5; attempt++) {
-      const result = this.generateAttempt(level, theme, themeConfig);
+      const result = this.generateAttempt(difficulty, theme, themeConfig);
 
       // Validate the generated map
       if (result && this.validate(result)) {
+        console.log(`[DUNGEON] Successfully generated dungeon on attempt ${attempt + 1} - Size: ${result.width}x${result.height}, Theme: ${theme || 'default'}`);
         return result;
       }
 
-      console.warn(`Dungeon generation attempt ${attempt + 1} failed, retrying...`);
+      console.warn(`[DUNGEON] Generation attempt ${attempt + 1} failed - Invalid map generated`);
     }
 
     // Fallback: return a simple valid dungeon
-    console.error('Failed to generate valid dungeon after 5 attempts, using fallback');
-    return this.generateFallback(level);
+    console.error(`[DUNGEON] Failed to generate valid dungeon after 5 attempts, using fallback - Difficulty: ${difficulty}, Theme: ${theme || 'default'}`);
+    return this.generateFallback(difficulty);
   }
 
   private static validate(map: GameMap): boolean {
@@ -49,7 +51,7 @@ export class DungeonGenerator {
     return true;
   }
 
-  private static generateFallback(level: number): GameMap {
+  private static generateFallback(difficulty: number): GameMap {
     // Simple 3-room linear dungeon that always works
     const width = 30;
     const height = 20;
@@ -111,56 +113,57 @@ export class DungeonGenerator {
       height,
       tileSize,
       tiles,
-      name: `Dungeon Level ${level}`,
+      name: `Dungeon (Difficulty ${difficulty})`,
       spawnX: entranceX * tileSize + tileSize / 2,
       spawnY: entranceY * tileSize + tileSize / 2
     };
   }
 
-  private static generateAttempt(level: number, theme?: Theme, themeConfig?: any): GameMap | null {
+  private static generateAttempt(difficulty: number, theme?: Theme, themeConfig?: any): GameMap | null {
     // Progressive difficulty-based scaling with larger maps
+    // Difficulty 1-7 corresponds to different expeditions
     let width = 35;
     let height = 25;
     let minRooms = 5;
     let maxRooms = 9;
 
-    if (level === 1) {
+    if (difficulty === 1) {
       // Forest Outskirts - Small starting area
       width = 35;
       height = 25;
       minRooms = 5;
       maxRooms = 9;
-    } else if (level === 2) {
+    } else if (difficulty === 2) {
       // Dark Cave - Medium size
       width = 40;
       height = 30;
       minRooms = 6;
       maxRooms = 10;
-    } else if (level === 3) {
+    } else if (difficulty === 3) {
       // Goblin Camp - Larger
       width = 45;
       height = 35;
       minRooms = 7;
       maxRooms = 11;
-    } else if (level === 4) {
+    } else if (difficulty === 4) {
       // Orc Stronghold - Much larger
       width = 50;
       height = 40;
       minRooms = 8;
       maxRooms = 13;
-    } else if (level === 5) {
+    } else if (difficulty === 5) {
       // Frozen Wasteland - Massive
       width = 55;
       height = 45;
       minRooms = 10;
       maxRooms = 15;
-    } else if (level === 6) {
+    } else if (difficulty === 6) {
       // Volcano Depths - Huge
       width = 60;
       height = 50;
       minRooms = 12;
       maxRooms = 18;
-    } else if (level >= 7) {
+    } else if (difficulty >= 7) {
       // Demon Realm - Gigantic
       width = 70;
       height = 60;
@@ -415,7 +418,7 @@ export class DungeonGenerator {
       height,
       tileSize,
       tiles,
-      name: `Dungeon Level ${level}`,
+      name: `Dungeon (Difficulty ${difficulty})`,
       spawnX,
       spawnY
     };

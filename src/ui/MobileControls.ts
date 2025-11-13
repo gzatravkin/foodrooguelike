@@ -14,6 +14,7 @@ export interface MobileControlsState {
     dash: boolean;
     interact: boolean;
     loot: boolean;
+    escape: boolean;
   };
 }
 
@@ -37,13 +38,14 @@ export class MobileControls {
     dash: { x: 0, y: 0, label: '💨' },
     interact: { x: 0, y: 0, label: 'E' },
     loot: { x: 0, y: 0, label: 'F' },
+    escape: { x: 0, y: 0, label: 'ESC' },
   };
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
     this.state = {
       joystick: { active: false, x: 0, y: 0, touchId: null },
-      buttons: { attack: false, dash: false, interact: false, loot: false },
+      buttons: { attack: false, dash: false, interact: false, loot: false, escape: false },
     };
 
     this.setupTouchListeners();
@@ -87,6 +89,10 @@ export class MobileControls {
 
     this.buttons.loot.x = width - rightMargin - buttonSpacing - this.buttonRadius;
     this.buttons.loot.y = height - bottomMargin - buttonSpacing - this.buttonRadius;
+
+    // Escape button on top-left corner
+    this.buttons.escape.x = margin + this.buttonRadius;
+    this.buttons.escape.y = margin + this.buttonRadius;
   }
 
   private handleTouchStart(e: TouchEvent): void {
@@ -272,6 +278,7 @@ export class MobileControls {
       dash: '#2196F3',
       interact: '#FFC107',
       loot: '#4CAF50',
+      escape: '#9E9E9E',
     };
     return colors[buttonName];
   }

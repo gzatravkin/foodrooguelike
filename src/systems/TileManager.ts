@@ -23,6 +23,7 @@ export class TileManager {
     this.tileColors.set(TileType.EXPEDITION_PORTAL, '#9b59b6');
     this.tileColors.set(TileType.TRAINING_HALL, '#FFD700');
     this.tileColors.set(TileType.UPGRADES_HALL, '#b19cd9');
+    this.tileColors.set(TileType.DINING_ROOM, '#ff9999');
     this.tileColors.set(TileType.STAIRS_DOWN, '#95a5a6');
     this.tileColors.set(TileType.STAIRS_UP, '#ecf0f1');
     this.tileColors.set(TileType.WATER, '#1e90ff');

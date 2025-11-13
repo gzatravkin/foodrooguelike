@@ -177,6 +177,13 @@ export class StructureTileRenderer {
     this.renderer.drawText('⬆', worldX + size / 2, worldY + size / 2 + 5, '#FFF', 16, 'center');
   }
 
+  renderDiningRoom(worldX: number, worldY: number, size: number): void {
+    const floorColor = TileManager.getTileColor(TileType.FLOOR);
+    this.renderer.drawRect(worldX, worldY, size, size, floorColor);
+    this.renderer.drawRect(worldX + size * 0.2, worldY + size * 0.2, size * 0.6, size * 0.6, '#ff9999');
+    this.renderer.drawText('🍽', worldX + size / 2, worldY + size / 2 + 5, '#FFF', 16, 'center');
+  }
+
   // Helper method to adjust brightness of a hex color
   private adjustBrightness(hexColor: string, adjustment: number): string {
     // Remove # if present

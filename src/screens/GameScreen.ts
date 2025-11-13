@@ -248,6 +248,10 @@ export class GameScreen {
     if (wasExpedition) {
       this.addCombatLog('=== RETURNED TO BASE ===', '#90EE90');
       this.addCombatLog('You are safe now!', '#90EE90');
+
+      // Spawn new dining room clients after expedition
+      gameState.spawnDiningRoomClients(3);
+      this.addCombatLog('New customers arrived at the Dining Room!', '#FFD700');
     }
   }
 
@@ -269,6 +273,11 @@ export class GameScreen {
     const expeditionId = state.expeditionState.currentExpeditionId;
     const currentLevel = state.expeditionState.currentLevel || level;
 
+    // Track last visited location for dining room clients
+    if (expeditionId) {
+      gameState.setLastVisitedLocation(expeditionId);
+    }
+
     this.addCombatLog('=== EXPEDITION STARTED ===', '#FF6B6B');
     if (expeditionId) {
       this.addCombatLog(`Level ${currentLevel}`, '#4FC3F7');
@@ -288,6 +297,14 @@ export class GameScreen {
       this.input.setVirtualButton('dash', controlState.buttons.dash);
       this.input.setVirtualButton('interact', controlState.buttons.interact);
       this.input.setVirtualButton('loot', controlState.buttons.loot);
+
+      // Handle escape button on mobile
+      if (controlState.buttons.escape) {
+        const currentScreen = gameState.getState().currentScreen;
+        if (currentScreen === 'game' && !this.cheatPanel.isVisible()) {
+          gameState.setScreen('menu');
+        }
+      }
     }
 
     // Don't process game input if we're in a UI screen (cooking, shop, settings, etc.)
@@ -326,6 +343,8 @@ export class GameScreen {
           gameState.setScreen('training');
         } else if (tileType === TileType.UPGRADES_HALL) {
           gameState.setScreen('upgrades');
+        } else if (tileType === TileType.DINING_ROOM) {
+          gameState.setScreen('diningroom');
         }
       } else if (this.gameModeManager.getMode() === 'expedition' && tileType !== null) {
         // Special case for stairs

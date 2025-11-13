@@ -11,6 +11,7 @@ import { SettingsScreen } from './screens/SettingsScreen';
 import { UpgradesScreen } from './screens/UpgradesScreen';
 import { ExpeditionSelectionScreen } from './screens/ExpeditionSelectionScreen';
 import { InGameMenuScreen } from './screens/InGameMenuScreen';
+import { DiningRoomScreen } from './screens/DiningRoomScreen';
 
 export function App() {
     const currentScreen = useCurrentScreen();
@@ -33,6 +34,8 @@ export function App() {
             return <UpgradesScreen />;
         case 'expedition':
             return <ExpeditionSelectionScreen />;
+        case 'diningroom':
+            return <DiningRoomScreen />;
         default:
             return null; // No UI overlay for game/worldmap screens
     }

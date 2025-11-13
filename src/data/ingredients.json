@@ -6,7 +6,7 @@
     "icon": "🟣",
     "description": "Wobbly gelatin from slimes",
     "rarity": "common",
-    "baseValue": 5
+    "baseValue": 50
   },
   "sugar": {
     "id": "sugar",
@@ -15,7 +15,7 @@
     "icon": "🍬",
     "description": "Sweet crystalline substance",
     "rarity": "common",
-    "baseValue": 3
+    "baseValue": 30
   },
   "mushroom": {
     "id": "mushroom",
@@ -24,7 +24,7 @@
     "icon": "🍄",
     "description": "Earthy forest fungus",
     "rarity": "common",
-    "baseValue": 8
+    "baseValue": 80
   },
   "herb": {
     "id": "herb",
@@ -33,7 +33,7 @@
     "icon": "🌿",
     "description": "Aromatic herbs",
     "rarity": "common",
-    "baseValue": 6
+    "baseValue": 60
   },
   "meat": {
     "id": "meat",
@@ -42,7 +42,7 @@
     "icon": "🥩",
     "description": "Basic protein source",
     "rarity": "uncommon",
-    "baseValue": 12
+    "baseValue": 60
   },
   "dragon_fruit": {
     "id": "dragon_fruit",
@@ -51,7 +51,7 @@
     "icon": "🐉",
     "description": "Exotic fruit with magical properties",
     "rarity": "rare",
-    "baseValue": 50
+    "baseValue": 250
   },
   "fire_pepper": {
     "id": "fire_pepper",
@@ -60,7 +60,7 @@
     "icon": "🌶️",
     "description": "Extremely spicy pepper",
     "rarity": "rare",
-    "baseValue": 40
+    "baseValue": 200
   },
   "premium_meat": {
     "id": "premium_meat",
@@ -69,7 +69,7 @@
     "icon": "🍖",
     "description": "High quality dragon meat",
     "rarity": "rare",
-    "baseValue": 60
+    "baseValue": 300
   },
   "flour": {
     "id": "flour",
@@ -78,7 +78,7 @@
     "icon": "🌾",
     "description": "Ground wheat for baking",
     "rarity": "common",
-    "baseValue": 4
+    "baseValue": 40
   },
   "salt": {
     "id": "salt",
@@ -87,7 +87,7 @@
     "icon": "🧂",
     "description": "Essential seasoning mineral",
     "rarity": "common",
-    "baseValue": 3
+    "baseValue": 30
   },
   "egg": {
     "id": "egg",
@@ -96,7 +96,7 @@
     "icon": "🥚",
     "description": "Fresh protein-rich egg",
     "rarity": "common",
-    "baseValue": 7
+    "baseValue": 70
   },
   "onion": {
     "id": "onion",
@@ -105,7 +105,7 @@
     "icon": "🧅",
     "description": "Pungent aromatic bulb",
     "rarity": "common",
-    "baseValue": 5
+    "baseValue": 50
   },
   "garlic": {
     "id": "garlic",
@@ -114,7 +114,7 @@
     "icon": "🧄",
     "description": "Flavorful clove with healing properties",
     "rarity": "common",
-    "baseValue": 6
+    "baseValue": 60
   },
   "rice": {
     "id": "rice",
@@ -123,7 +123,7 @@
     "icon": "🍚",
     "description": "Versatile grain staple",
     "rarity": "common",
-    "baseValue": 5
+    "baseValue": 50
   },
   "fish": {
     "id": "fish",
@@ -132,7 +132,7 @@
     "icon": "🐟",
     "description": "Fresh catch from mountain streams",
     "rarity": "uncommon",
-    "baseValue": 15
+    "baseValue": 75
   },
   "cheese": {
     "id": "cheese",
@@ -141,7 +141,7 @@
     "icon": "🧀",
     "description": "Aged dairy delight",
     "rarity": "uncommon",
-    "baseValue": 18
+    "baseValue": 90
   },
   "honey": {
     "id": "honey",
@@ -150,7 +150,7 @@
     "icon": "🍯",
     "description": "Sweet golden nectar from giant bees",
     "rarity": "uncommon",
-    "baseValue": 20
+    "baseValue": 100
   },
   "spice_blend": {
     "id": "spice_blend",
@@ -159,7 +159,7 @@
     "icon": "🌶️",
     "description": "Exotic mixed seasonings",
     "rarity": "uncommon",
-    "baseValue": 14
+    "baseValue": 70
   },
   "butter": {
     "id": "butter",
@@ -168,7 +168,7 @@
     "icon": "🧈",
     "description": "Rich creamy fat for cooking",
     "rarity": "uncommon",
-    "baseValue": 16
+    "baseValue": 80
   },
   "tomato": {
     "id": "tomato",
@@ -177,7 +177,7 @@
     "icon": "🍅",
     "description": "Juicy red fruit with tangy flavor",
     "rarity": "uncommon",
-    "baseValue": 13
+    "baseValue": 65
   },
   "truffle": {
     "id": "truffle",
@@ -186,7 +186,7 @@
     "icon": "🍄",
     "description": "Rare underground fungus delicacy",
     "rarity": "rare",
-    "baseValue": 55
+    "baseValue": 275
   },
   "saffron": {
     "id": "saffron",
@@ -195,7 +195,7 @@
     "icon": "✨",
     "description": "World's most expensive spice",
     "rarity": "rare",
-    "baseValue": 45
+    "baseValue": 225
   },
   "crystal_salt": {
     "id": "crystal_salt",
@@ -204,7 +204,7 @@
     "icon": "💎",
     "description": "Magically-infused crystalline salt",
     "rarity": "rare",
-    "baseValue": 38
+    "baseValue": 190
   },
   "phoenix_egg": {
     "id": "phoenix_egg",
@@ -213,7 +213,7 @@
     "icon": "🔥",
     "description": "Egg from a mythical firebird",
     "rarity": "rare",
-    "baseValue": 65
+    "baseValue": 325
   },
   "mana_herb": {
     "id": "mana_herb",
@@ -222,7 +222,7 @@
     "icon": "🔮",
     "description": "Magical plant brimming with energy",
     "rarity": "rare",
-    "baseValue": 42
+    "baseValue": 210
   },
   "ancient_grain": {
     "id": "ancient_grain",
@@ -231,7 +231,7 @@
     "icon": "🌾",
     "description": "Prehistoric wheat with powerful nutrients",
     "rarity": "rare",
-    "baseValue": 48
+    "baseValue": 240
   },
   "void_essence": {
     "id": "void_essence",
@@ -240,7 +240,7 @@
     "icon": "🌌",
     "description": "Condensed essence from the void between worlds",
     "rarity": "legendary",
-    "baseValue": 150
+    "baseValue": 750
   },
   "celestial_nectar": {
     "id": "celestial_nectar",
@@ -249,6 +249,6 @@
     "icon": "⭐",
     "description": "Divine liquid from the heavens above",
     "rarity": "legendary",
-    "baseValue": 200
+    "baseValue": 1000
   }
 }

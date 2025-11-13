@@ -101,7 +101,7 @@ class GameState {
                 attack: 10,
                 defense: 5
             },
-            gold: 50, // Start with some gold for first expeditions
+            gold: 200, // Start with some gold for first expeditions
             inventory: [],
             dishes: [],
             discoveredRecipes: [],
@@ -396,8 +396,18 @@ class GameState {
         return this.state.expeditionProgress[expeditionId];
     }
 
+    isLocationUnlocked(expeditionId: string): boolean {
+        const progress = this.getExpeditionProgress(expeditionId);
+        return progress.highestLevelCompleted > 0;
+    }
+
+    getUnlockedLocations(): string[] {
+        return Object.keys(this.state.expeditionProgress).filter(id => this.isLocationUnlocked(id));
+    }
+
     completeExpeditionLevel(expeditionId: string, level: number): void {
         const progress = this.getExpeditionProgress(expeditionId);
+        const wasFirstCompletion = progress.highestLevelCompleted === 0;
 
         // Update highest level completed
         if (level > progress.highestLevelCompleted) {
@@ -409,7 +419,21 @@ class GameState {
             progress.currentLevel = level + 1;
         }
 
+        // Move restaurant to this location on first completion
+        if (wasFirstCompletion) {
+            this.updateRestaurantLocation(expeditionId);
+        }
+
         eventBus.emit('expedition:levelCompleted', { expeditionId, level });
+    }
+
+    updateRestaurantLocation(expeditionId: string): void {
+        this.state.restaurant.location = expeditionId;
+        eventBus.emit('restaurant:relocated', { location: expeditionId });
+    }
+
+    getRestaurantLocation(): string {
+        return this.state.restaurant.location;
     }
 
     spendGold(amount: number): boolean {

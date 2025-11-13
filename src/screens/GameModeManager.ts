@@ -10,6 +10,7 @@ import { SpawnManager } from './SpawnManager';
 import { TileManager } from '../systems/TileManager';
 import { Theme } from '../systems/ThemeConfig';
 import { isBossLevel, getLevelMultipliers } from '../types/expedition';
+import { gameState } from '../core/GameState';
 
 export type GameMode = 'base' | 'expedition';
 
@@ -31,7 +32,9 @@ export class GameModeManager {
     // Reset theme for base camp
     TileManager.setTheme(null);
 
-    const baseCamp = MapSystem.createBaseCamp();
+    // Get restaurant location from game state for themed base camp
+    const restaurantLocation = gameState.getRestaurantLocation();
+    const baseCamp = MapSystem.createBaseCamp(restaurantLocation);
     mapSystem.loadMap(baseCamp);
 
     player.x = 320;

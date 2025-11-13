@@ -18,6 +18,7 @@ interface TrainingSkill {
     baseCost: number;
     costMultiplier: number;
     maxLevel: number;
+    requiredRestaurantLocation?: string;
     effect: {
         stat: string;
         amount: number;
@@ -73,7 +74,28 @@ function SkillCard({ skill }: SkillCardProps) {
 }
 
 export function TrainingScreen() {
-    const skills = Object.values(trainingData as Record<string, TrainingSkill>);
+    const allSkills = Object.values(trainingData as Record<string, TrainingSkill>);
+    const restaurantLocation = gameState.getRestaurantLocation();
+
+    // Define location progression order
+    const locationOrder = [
+        'starter_kitchen',
+        'forest_outskirts',
+        'dark_cave',
+        'goblin_camp',
+        'orc_stronghold',
+        'frozen_wasteland',
+        'volcano_depths',
+        'demon_realm'
+    ];
+    const currentLocationIndex = locationOrder.indexOf(restaurantLocation);
+
+    // Filter skills based on restaurant location progression
+    const skills = allSkills.filter(skill => {
+        if (!skill.requiredRestaurantLocation) return true; // No requirement, always available
+        const requiredIndex = locationOrder.indexOf(skill.requiredRestaurantLocation);
+        return requiredIndex <= currentLocationIndex; // Show if we've reached or passed required location
+    });
 
     return (
         <ScreenContainer>

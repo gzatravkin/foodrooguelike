@@ -66,8 +66,8 @@ export class MapSystem {
   }
 
   // Static factory methods
-  static createBaseCamp(): GameMap {
-    return BaseCampGenerator.generate();
+  static createBaseCamp(restaurantLocation?: string): GameMap {
+    return BaseCampGenerator.generate(restaurantLocation);
   }
 
   static createDungeon(level: number = 1, theme?: Theme): GameMap {

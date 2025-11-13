@@ -95,6 +95,7 @@ export interface Weapon extends BaseEntity {
     spread?: number; // Angle spread for multi-projectile weapons
     rarity: 'common' | 'uncommon' | 'rare' | 'legendary';
     cost: number;
+    requiredLocation?: string; // Location that must be unlocked to see this weapon
     // Visual properties
     projectileColor?: string; // Color of projectiles
     projectileSize?: number; // Size of projectiles

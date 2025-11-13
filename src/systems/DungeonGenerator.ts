@@ -118,22 +118,54 @@ export class DungeonGenerator {
   }
 
   private static generateAttempt(level: number, theme?: Theme, themeConfig?: any): GameMap | null {
-    // Difficulty-based scaling
-    let width = 30;
-    let height = 20;
-    let minRooms = 4;
-    let maxRooms = 8;
+    // Progressive difficulty-based scaling with larger maps
+    let width = 35;
+    let height = 25;
+    let minRooms = 5;
+    let maxRooms = 9;
 
-    if (level >= 7) {
-      width = 40;
-      height = 30;
-      minRooms = 8;
-      maxRooms = 12;
-    } else if (level >= 4) {
+    if (level === 1) {
+      // Forest Outskirts - Small starting area
       width = 35;
       height = 25;
+      minRooms = 5;
+      maxRooms = 9;
+    } else if (level === 2) {
+      // Dark Cave - Medium size
+      width = 40;
+      height = 30;
       minRooms = 6;
       maxRooms = 10;
+    } else if (level === 3) {
+      // Goblin Camp - Larger
+      width = 45;
+      height = 35;
+      minRooms = 7;
+      maxRooms = 11;
+    } else if (level === 4) {
+      // Orc Stronghold - Much larger
+      width = 50;
+      height = 40;
+      minRooms = 8;
+      maxRooms = 13;
+    } else if (level === 5) {
+      // Frozen Wasteland - Massive
+      width = 55;
+      height = 45;
+      minRooms = 10;
+      maxRooms = 15;
+    } else if (level === 6) {
+      // Volcano Depths - Huge
+      width = 60;
+      height = 50;
+      minRooms = 12;
+      maxRooms = 18;
+    } else if (level >= 7) {
+      // Demon Realm - Gigantic
+      width = 70;
+      height = 60;
+      minRooms = 15;
+      maxRooms = 22;
     }
 
     // Adjust based on theme openness

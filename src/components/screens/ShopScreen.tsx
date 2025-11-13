@@ -56,7 +56,17 @@ export function ShopScreen() {
         .map(id => entityFactory.getTemplate(id))
         .filter(item => item != null) as Dish[];
 
-    const weapons = entityFactory.getAllOfType('weapon') as Weapon[];
+    const allWeapons = entityFactory.getAllOfType('weapon') as Weapon[];
+    const unlockedLocations = gameState.getUnlockedLocations();
+
+    // Filter weapons based on unlocked locations
+    const weapons = allWeapons.filter(weapon => {
+        // Always show weapons without location requirement
+        if (!weapon.requiredLocation) return true;
+        // Show weapons for unlocked locations
+        return unlockedLocations.includes(weapon.requiredLocation);
+    });
+
     const equipment = entityFactory.getAllOfType('equipment') as Equipment[];
 
     const buyWeapon = (weapon: Weapon) => {

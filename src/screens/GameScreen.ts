@@ -525,7 +525,8 @@ export class GameScreen {
       this.showInteractionPrompt,
       this.interactionPromptText,
       this.combatLogManager.getEntries(),
-      inventory
+      inventory,
+      this.input.isMobileDevice()
     );
 
     // Render cheat panel on top of everything

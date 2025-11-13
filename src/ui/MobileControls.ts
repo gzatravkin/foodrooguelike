@@ -63,25 +63,30 @@ export class MobileControls {
   private updateButtonPositions(): void {
     const width = this.canvas.width;
     const height = this.canvas.height;
-    const margin = 80;
-    const buttonSpacing = 90;
+
+    // Adaptive margins based on screen size
+    const margin = Math.min(80, Math.max(40, height * 0.08));
+    const buttonSpacing = Math.min(90, Math.max(70, height * 0.11));
 
     // Joystick on bottom-left
     this.joystickBase.x = margin + this.joystickRadius;
     this.joystickBase.y = height - margin - this.joystickRadius;
 
-    // Buttons on bottom-right
-    this.buttons.attack.x = width - margin - this.buttonRadius;
-    this.buttons.attack.y = height - margin - this.buttonRadius;
+    // Buttons on bottom-right - ensure they fit on screen
+    const rightMargin = Math.min(margin, width * 0.08);
+    const bottomMargin = Math.min(margin, height * 0.08);
 
-    this.buttons.dash.x = width - margin - buttonSpacing - this.buttonRadius;
-    this.buttons.dash.y = height - margin - this.buttonRadius;
+    this.buttons.attack.x = width - rightMargin - this.buttonRadius;
+    this.buttons.attack.y = height - bottomMargin - this.buttonRadius;
 
-    this.buttons.interact.x = width - margin - this.buttonRadius;
-    this.buttons.interact.y = height - margin - buttonSpacing - this.buttonRadius;
+    this.buttons.dash.x = width - rightMargin - buttonSpacing - this.buttonRadius;
+    this.buttons.dash.y = height - bottomMargin - this.buttonRadius;
 
-    this.buttons.loot.x = width - margin - buttonSpacing - this.buttonRadius;
-    this.buttons.loot.y = height - margin - buttonSpacing - this.buttonRadius;
+    this.buttons.interact.x = width - rightMargin - this.buttonRadius;
+    this.buttons.interact.y = height - bottomMargin - buttonSpacing - this.buttonRadius;
+
+    this.buttons.loot.x = width - rightMargin - buttonSpacing - this.buttonRadius;
+    this.buttons.loot.y = height - bottomMargin - buttonSpacing - this.buttonRadius;
   }
 
   private handleTouchStart(e: TouchEvent): void {

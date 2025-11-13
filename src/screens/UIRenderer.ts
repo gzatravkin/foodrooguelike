@@ -30,16 +30,16 @@ export class UIRenderer {
 
     // Player stats - more compact on mobile
     if (isMobile) {
-      // Mobile: compact stats panel
-      this.renderer.drawUIRectWithBorder(10, 10, 200, 100, 'rgba(0, 0, 0, 0.7)', '#4CAF50', 2);
-      this.renderer.drawUIText(`❤️ ${player.stats.health}/${player.stats.maxHealth}`, 20, 28, '#fff', 14);
-      this.renderer.drawUIText(`💰 ${player.gold}`, 20, 48, '#FFD700', 14);
-      this.renderer.drawUIText(`⚔️${player.getAttackDamage()} 🛡️${player.getTotalDefense()}`, 20, 68, '#fff', 12);
+      // Mobile: extra compact stats panel
+      this.renderer.drawUIRectWithBorder(8, 8, 160, 80, 'rgba(0, 0, 0, 0.6)', '#4CAF50', 1.5);
+      this.renderer.drawUIText(`❤️ ${player.stats.health}/${player.stats.maxHealth}`, 16, 22, '#fff', 11);
+      this.renderer.drawUIText(`💰 ${player.gold}`, 16, 38, '#FFD700', 11);
+      this.renderer.drawUIText(`⚔️${player.getAttackDamage()} 🛡️${player.getTotalDefense()}`, 16, 54, '#fff', 10);
 
       const weaponName = player.weapon?.name || 'Fists';
       const weaponType = player.isRangedWeapon() ? '🔫' : '⚔️';
-      const shortWeaponName = weaponName.length > 12 ? weaponName.substring(0, 10) + '..' : weaponName;
-      this.renderer.drawUIText(`${weaponType} ${shortWeaponName}`, 20, 88, '#FFD700', 12);
+      const shortWeaponName = weaponName.length > 10 ? weaponName.substring(0, 8) + '..' : weaponName;
+      this.renderer.drawUIText(`${weaponType} ${shortWeaponName}`, 16, 70, '#FFD700', 10);
     } else {
       // Desktop: full stats panel
       this.renderer.drawUIRectWithBorder(10, 10, 300, 150, 'rgba(0, 0, 0, 0.7)', '#4CAF50', 2);
@@ -56,17 +56,17 @@ export class UIRenderer {
     const activeBuffs = gameState.getState().activeBuffs;
     if (activeBuffs.length > 0) {
       if (isMobile) {
-        // Mobile: compact buffs below stats panel
-        let buffY = 120;
-        const buffWidth = 200;
-        this.renderer.drawUIRectWithBorder(10, buffY, buffWidth, 25 + (activeBuffs.length * 20), 'rgba(138, 43, 226, 0.3)', '#BA68C8', 2);
-        this.renderer.drawUIText('Buffs:', 20, buffY + 16, '#FFD700', 12, 'left');
+        // Mobile: extra compact buffs below stats panel
+        let buffY = 96;
+        const buffWidth = 160;
+        this.renderer.drawUIRectWithBorder(8, buffY, buffWidth, 20 + (activeBuffs.length * 16), 'rgba(138, 43, 226, 0.25)', '#BA68C8', 1.5);
+        this.renderer.drawUIText('Buffs:', 16, buffY + 13, '#FFD700', 10, 'left');
 
         activeBuffs.forEach((buff, i) => {
           const buffEmoji = buff.name.includes('health') ? '❤️' : buff.name.includes('attack') ? '⚔️' : '🛡️';
-          const buffName = buff.name.length > 12 ? buff.name.substring(0, 10) + '..' : buff.name;
+          const buffName = buff.name.length > 10 ? buff.name.substring(0, 8) + '..' : buff.name;
           const buffText = `${buffEmoji} ${buffName} ${Math.ceil(buff.duration / 60)}s`;
-          this.renderer.drawUIText(buffText, 20, buffY + 36 + (i * 20), '#90EE90', 11);
+          this.renderer.drawUIText(buffText, 16, buffY + 28 + (i * 16), '#90EE90', 9);
         });
       } else {
         // Desktop: full buffs display
@@ -115,8 +115,11 @@ export class UIRenderer {
       }
     }
 
-    // Mode indicator
-    this.renderer.drawUIText(mode === 'base' ? 'BASE CAMP' : 'EXPEDITION', canvas.width / 2, 30, '#fff', 24, 'center');
+    // Mode indicator - smaller on mobile
+    const modeText = mode === 'base' ? 'BASE CAMP' : 'EXPEDITION';
+    const modeFontSize = isMobile ? 16 : 24;
+    const modeY = isMobile ? 20 : 30;
+    this.renderer.drawUIText(modeText, canvas.width / 2, modeY, '#fff', modeFontSize, 'center');
 
     // Controls - ONLY show on desktop, hide on mobile (they see visual controls)
     if (!isMobile) {
@@ -133,13 +136,15 @@ export class UIRenderer {
 
     // Interaction prompt - adjust position on mobile to avoid joystick overlap
     if (showInteractionPrompt) {
-      const promptWidth = isMobile ? 280 : 350;
+      const promptWidth = isMobile ? 220 : 350;
+      const promptHeight = isMobile ? 40 : 50;
       const promptX = canvas.width / 2 - promptWidth / 2;
       // On mobile, position higher to avoid joystick (joystick is at ~height-140)
       const promptY = isMobile ? canvas.height / 2 : canvas.height - 180;
+      const fontSize = isMobile ? 13 : 20;
 
-      this.renderer.drawUIRectWithBorder(promptX, promptY, promptWidth, 50, 'rgba(0, 0, 0, 0.9)', '#FFD700', 3);
-      this.renderer.drawUIText(interactionPromptText, canvas.width / 2, promptY + 32, '#FFD700', isMobile ? 16 : 20, 'center');
+      this.renderer.drawUIRectWithBorder(promptX, promptY, promptWidth, promptHeight, 'rgba(0, 0, 0, 0.85)', '#FFD700', isMobile ? 2 : 3);
+      this.renderer.drawUIText(interactionPromptText, canvas.width / 2, promptY + promptHeight / 2 + 2, '#FFD700', fontSize, 'center');
     }
 
     // Enemy and corpse count in expedition
@@ -153,15 +158,15 @@ export class UIRenderer {
       const hungerColor = hungerPercent > 0.5 ? '#4CAF50' : hungerPercent > 0.25 ? '#FF8C00' : '#F44336';
 
       if (isMobile) {
-        // Mobile: compact hunger display
-        const boxWidth = 160;
-        const boxX = canvas.width - boxWidth - 10;
-        this.renderer.drawUIRectWithBorder(boxX, 10, boxWidth, 85, 'rgba(0, 0, 0, 0.7)', hungerColor, 2);
-        this.renderer.drawUIText('🍖 Hunger', boxX + boxWidth/2, 28, hungerColor, 12, 'center');
-        this.renderer.drawUIText(`${Math.ceil(hungerTime)}s`, boxX + boxWidth/2, 48, hungerColor, 20, 'center');
-        this.renderer.drawUIText(`👾 ${aliveEnemies}`, boxX + boxWidth/2, 68, '#F44336', 12, 'center');
+        // Mobile: extra compact hunger display
+        const boxWidth = 130;
+        const boxX = canvas.width - boxWidth - 8;
+        this.renderer.drawUIRectWithBorder(boxX, 8, boxWidth, 70, 'rgba(0, 0, 0, 0.6)', hungerColor, 1.5);
+        this.renderer.drawUIText('🍖 Hunger', boxX + boxWidth/2, 22, hungerColor, 10, 'center');
+        this.renderer.drawUIText(`${Math.ceil(hungerTime)}s`, boxX + boxWidth/2, 38, hungerColor, 16, 'center');
+        this.renderer.drawUIText(`👾 ${aliveEnemies}`, boxX + boxWidth/2, 55, '#F44336', 10, 'center');
         if (lootableCorpses > 0) {
-          this.renderer.drawUIText(`💀 ${lootableCorpses}`, boxX + boxWidth/2, 83, '#999', 10, 'center');
+          this.renderer.drawUIText(`💀 ${lootableCorpses}`, boxX + boxWidth/2, 68, '#999', 9, 'center');
         }
       } else {
         // Desktop: full hunger display
@@ -186,22 +191,22 @@ export class UIRenderer {
     const logEntries = combatLog.slice(0, isMobile ? 4 : 8); // Fewer entries on mobile
 
     if (isMobile) {
-      // Mobile: compact log at top-left, below player stats and buffs
-      const logX = 10;
-      const statsHeight = 100; // Mobile stats panel height
-      const buffHeight = activeBuffs.length > 0 ? (25 + activeBuffs.length * 20) : 0;
-      const spacing = 10;
-      const logY = 10 + statsHeight + buffHeight + spacing;
-      const logWidth = 200;
-      const logHeight = Math.max(50, logEntries.length * 18 + 30);
+      // Mobile: extra compact log at top-left, below player stats and buffs
+      const logX = 8;
+      const statsHeight = 80; // Mobile stats panel height
+      const buffHeight = activeBuffs.length > 0 ? (20 + activeBuffs.length * 16) : 0;
+      const spacing = 8;
+      const logY = 8 + statsHeight + buffHeight + spacing;
+      const logWidth = 160;
+      const logHeight = Math.max(40, logEntries.length * 14 + 24);
 
-      this.renderer.drawUIRectWithBorder(logX, logY, logWidth, logHeight, 'rgba(0, 0, 0, 0.85)', '#FFD700', 2);
-      this.renderer.drawUIText('Log', logX + 10, logY + 16, '#FFD700', 12, 'left');
+      this.renderer.drawUIRectWithBorder(logX, logY, logWidth, logHeight, 'rgba(0, 0, 0, 0.7)', '#FFD700', 1.5);
+      this.renderer.drawUIText('Log', logX + 8, logY + 13, '#FFD700', 10, 'left');
 
       if (logEntries.length > 0) {
         logEntries.forEach((entry, i) => {
-          const text = entry.text.length > 25 ? entry.text.substring(0, 22) + '...' : entry.text;
-          this.renderer.drawUIText(text, logX + 10, logY + 32 + i * 18, entry.color, 10, 'left');
+          const text = entry.text.length > 20 ? entry.text.substring(0, 18) + '...' : entry.text;
+          this.renderer.drawUIText(text, logX + 8, logY + 26 + i * 14, entry.color, 8, 'left');
         });
       }
     } else {
@@ -225,24 +230,24 @@ export class UIRenderer {
     // Inventory (top right, below enemy count) - more compact on mobile
     if (inventory.length > 0) {
       if (isMobile) {
-        // Mobile: very compact inventory
-        const invStartY = mode === 'expedition' ? 105 : 10;
-        const invWidth = 140;
-        const maxItems = 4;
-        const invHeight = Math.min(inventory.length * 18 + 28, maxItems * 18 + 28);
+        // Mobile: extra compact inventory
+        const invStartY = mode === 'expedition' ? 86 : 8;
+        const invWidth = 115;
+        const maxItems = 3;
+        const invHeight = Math.min(inventory.length * 14 + 22, maxItems * 14 + 22);
 
-        this.renderer.drawUIRectWithBorder(canvas.width - invWidth - 10, invStartY, invWidth, invHeight, 'rgba(0, 0, 0, 0.7)', '#90EE90', 2);
-        this.renderer.drawUIText('Inv', canvas.width - invWidth/2 - 10, invStartY + 16, '#90EE90', 12, 'center');
+        this.renderer.drawUIRectWithBorder(canvas.width - invWidth - 8, invStartY, invWidth, invHeight, 'rgba(0, 0, 0, 0.6)', '#90EE90', 1.5);
+        this.renderer.drawUIText('Inv', canvas.width - invWidth/2 - 8, invStartY + 12, '#90EE90', 10, 'center');
 
         inventory.slice(0, maxItems).forEach((itemId, i) => {
           const template = entityFactory.getTemplate(itemId);
           const itemName = template?.name || itemId;
-          const displayName = itemName.length > 12 ? itemName.substring(0, 10) + '..' : itemName;
-          this.renderer.drawUIText(displayName, canvas.width - invWidth - 5, invStartY + 32 + i * 18, '#FFF', 10, 'left');
+          const displayName = itemName.length > 10 ? itemName.substring(0, 8) + '..' : itemName;
+          this.renderer.drawUIText(displayName, canvas.width - invWidth - 4, invStartY + 24 + i * 14, '#FFF', 8, 'left');
         });
 
         if (inventory.length > maxItems) {
-          this.renderer.drawUIText(`+${inventory.length - maxItems}`, canvas.width - invWidth/2 - 10, invStartY + 32 + maxItems * 18, '#AAA', 9, 'center');
+          this.renderer.drawUIText(`+${inventory.length - maxItems}`, canvas.width - invWidth/2 - 8, invStartY + 24 + maxItems * 14, '#AAA', 8, 'center');
         }
       } else {
         // Desktop: full inventory

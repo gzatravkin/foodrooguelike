@@ -27,8 +27,8 @@ export class MobileControls {
   private canvas: HTMLCanvasElement;
   private state: MobileControlsState;
   private joystickBase = { x: 0, y: 0 };
-  private joystickRadius = 60;
-  private buttonRadius = 35;
+  private joystickRadius = 50;
+  private buttonRadius = 30;
   private activeTouches: Map<number, string> = new Map(); // touchId -> control name
 
   // Button positions (will be set based on canvas size)
@@ -64,17 +64,17 @@ export class MobileControls {
     const width = this.canvas.width;
     const height = this.canvas.height;
 
-    // Adaptive margins based on screen size
-    const margin = Math.min(80, Math.max(40, height * 0.08));
-    const buttonSpacing = Math.min(90, Math.max(70, height * 0.11));
+    // Smaller adaptive margins for more screen space
+    const margin = Math.min(65, Math.max(30, height * 0.06));
+    const buttonSpacing = Math.min(75, Math.max(60, height * 0.09));
 
     // Joystick on bottom-left
     this.joystickBase.x = margin + this.joystickRadius;
     this.joystickBase.y = height - margin - this.joystickRadius;
 
     // Buttons on bottom-right - ensure they fit on screen
-    const rightMargin = Math.min(margin, width * 0.08);
-    const bottomMargin = Math.min(margin, height * 0.08);
+    const rightMargin = Math.min(margin, width * 0.06);
+    const bottomMargin = Math.min(margin, height * 0.06);
 
     this.buttons.attack.x = width - rightMargin - this.buttonRadius;
     this.buttons.attack.y = height - bottomMargin - this.buttonRadius;
@@ -257,7 +257,7 @@ export class MobileControls {
       // Draw button label
       ctx.globalAlpha = 1.0;
       ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 20px Arial';
+      ctx.font = 'bold 18px Arial';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(button.label, button.x, button.y);

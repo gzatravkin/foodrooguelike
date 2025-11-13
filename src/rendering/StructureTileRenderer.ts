@@ -129,35 +129,38 @@ export class StructureTileRenderer {
     this.renderer.drawRect(worldX, worldY, size, size, floorColor);
 
     const ctx = this.renderer.getContext();
+    const camera = this.renderer.getCamera();
+    const screenX = worldX - camera.x;
+    const screenY = worldY - camera.y;
     const time = Date.now() / 1000;
 
     // Stove base (stone/brick)
     ctx.fillStyle = '#696969';
-    ctx.fillRect(worldX + size * 0.2, worldY + size * 0.5, size * 0.6, size * 0.4);
+    ctx.fillRect(screenX + size * 0.2, screenY + size * 0.5, size * 0.6, size * 0.4);
 
     // Stove top (metal)
     ctx.fillStyle = '#4a4a4a';
-    ctx.fillRect(worldX + size * 0.15, worldY + size * 0.45, size * 0.7, size * 0.1);
+    ctx.fillRect(screenX + size * 0.15, screenY + size * 0.45, size * 0.7, size * 0.1);
 
     // Cooking pot (centered)
     ctx.fillStyle = '#3a3a3a';
     ctx.beginPath();
-    ctx.ellipse(worldX + size / 2, worldY + size * 0.35, size * 0.2, size * 0.15, 0, 0, Math.PI * 2);
+    ctx.ellipse(screenX + size / 2, screenY + size * 0.35, size * 0.2, size * 0.15, 0, 0, Math.PI * 2);
     ctx.fill();
 
     // Pot rim (lighter metal)
     ctx.strokeStyle = '#5a5a5a';
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.ellipse(worldX + size / 2, worldY + size * 0.35, size * 0.2, size * 0.15, 0, 0, Math.PI);
+    ctx.ellipse(screenX + size / 2, screenY + size * 0.35, size * 0.2, size * 0.15, 0, 0, Math.PI);
     ctx.stroke();
 
     // Handles on pot
     ctx.strokeStyle = '#4a4a4a';
     ctx.lineWidth = size * 0.05;
     ctx.beginPath();
-    ctx.arc(worldX + size * 0.28, worldY + size * 0.35, size * 0.08, Math.PI * 0.7, Math.PI * 1.3);
-    ctx.arc(worldX + size * 0.72, worldY + size * 0.35, size * 0.08, Math.PI * 1.7, Math.PI * 0.3);
+    ctx.arc(screenX + size * 0.28, screenY + size * 0.35, size * 0.08, Math.PI * 0.7, Math.PI * 1.3);
+    ctx.arc(screenX + size * 0.72, screenY + size * 0.35, size * 0.08, Math.PI * 1.7, Math.PI * 0.3);
     ctx.stroke();
 
     // Fire/heat (animated flames)
@@ -168,33 +171,33 @@ export class StructureTileRenderer {
     // Flame shapes
     ctx.fillStyle = '#ff6b35';
     ctx.beginPath();
-    ctx.moveTo(worldX + size * 0.35, worldY + size * 0.55);
-    ctx.quadraticCurveTo(worldX + size * 0.33, worldY + size * (0.55 - flame1), worldX + size * 0.35, worldY + size * (0.55 - flame1 * 1.5));
-    ctx.quadraticCurveTo(worldX + size * 0.37, worldY + size * (0.55 - flame1), worldX + size * 0.35, worldY + size * 0.55);
+    ctx.moveTo(screenX + size * 0.35, screenY + size * 0.55);
+    ctx.quadraticCurveTo(screenX + size * 0.33, screenY + size * (0.55 - flame1), screenX + size * 0.35, screenY + size * (0.55 - flame1 * 1.5));
+    ctx.quadraticCurveTo(screenX + size * 0.37, screenY + size * (0.55 - flame1), screenX + size * 0.35, screenY + size * 0.55);
     ctx.fill();
 
     ctx.fillStyle = '#ff9f5e';
     ctx.beginPath();
-    ctx.moveTo(worldX + size * 0.5, worldY + size * 0.55);
-    ctx.quadraticCurveTo(worldX + size * 0.48, worldY + size * (0.55 - flame2), worldX + size * 0.5, worldY + size * (0.55 - flame2 * 1.5));
-    ctx.quadraticCurveTo(worldX + size * 0.52, worldY + size * (0.55 - flame2), worldX + size * 0.5, worldY + size * 0.55);
+    ctx.moveTo(screenX + size * 0.5, screenY + size * 0.55);
+    ctx.quadraticCurveTo(screenX + size * 0.48, screenY + size * (0.55 - flame2), screenX + size * 0.5, screenY + size * (0.55 - flame2 * 1.5));
+    ctx.quadraticCurveTo(screenX + size * 0.52, screenY + size * (0.55 - flame2), screenX + size * 0.5, screenY + size * 0.55);
     ctx.fill();
 
     ctx.fillStyle = '#ff6b35';
     ctx.beginPath();
-    ctx.moveTo(worldX + size * 0.65, worldY + size * 0.55);
-    ctx.quadraticCurveTo(worldX + size * 0.63, worldY + size * (0.55 - flame3), worldX + size * 0.65, worldY + size * (0.55 - flame3 * 1.5));
-    ctx.quadraticCurveTo(worldX + size * 0.67, worldY + size * (0.55 - flame3), worldX + size * 0.65, worldY + size * 0.55);
+    ctx.moveTo(screenX + size * 0.65, screenY + size * 0.55);
+    ctx.quadraticCurveTo(screenX + size * 0.63, screenY + size * (0.55 - flame3), screenX + size * 0.65, screenY + size * (0.55 - flame3 * 1.5));
+    ctx.quadraticCurveTo(screenX + size * 0.67, screenY + size * (0.55 - flame3), screenX + size * 0.65, screenY + size * 0.55);
     ctx.fill();
 
     // Steam from pot
     ctx.strokeStyle = `rgba(200, 200, 200, ${0.3 + Math.sin(time * 3) * 0.2})`;
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(worldX + size * 0.45, worldY + size * 0.28);
-    ctx.quadraticCurveTo(worldX + size * 0.42, worldY + size * 0.2, worldX + size * 0.4, worldY + size * 0.15);
-    ctx.moveTo(worldX + size * 0.55, worldY + size * 0.28);
-    ctx.quadraticCurveTo(worldX + size * 0.58, worldY + size * 0.2, worldX + size * 0.6, worldY + size * 0.15);
+    ctx.moveTo(screenX + size * 0.45, screenY + size * 0.28);
+    ctx.quadraticCurveTo(screenX + size * 0.42, screenY + size * 0.2, screenX + size * 0.4, screenY + size * 0.15);
+    ctx.moveTo(screenX + size * 0.55, screenY + size * 0.28);
+    ctx.quadraticCurveTo(screenX + size * 0.58, screenY + size * 0.2, screenX + size * 0.6, screenY + size * 0.15);
     ctx.stroke();
   }
 
@@ -210,17 +213,20 @@ export class StructureTileRenderer {
     this.renderer.drawRect(worldX, worldY, size, size, floorColor);
 
     const ctx = this.renderer.getContext();
+    const camera = this.renderer.getCamera();
+    const screenX = worldX - camera.x;
+    const screenY = worldY - camera.y;
     const time = Date.now() / 1000;
 
     // Stone archway (portal frame)
     ctx.fillStyle = '#5a5a5a';
     // Left pillar
-    ctx.fillRect(worldX + size * 0.15, worldY + size * 0.3, size * 0.12, size * 0.6);
+    ctx.fillRect(screenX + size * 0.15, screenY + size * 0.3, size * 0.12, size * 0.6);
     // Right pillar
-    ctx.fillRect(worldX + size * 0.73, worldY + size * 0.3, size * 0.12, size * 0.6);
+    ctx.fillRect(screenX + size * 0.73, screenY + size * 0.3, size * 0.12, size * 0.6);
     // Top arch
     ctx.beginPath();
-    ctx.arc(worldX + size / 2, worldY + size * 0.5, size * 0.35, Math.PI, Math.PI * 2);
+    ctx.arc(screenX + size / 2, screenY + size * 0.5, size * 0.35, Math.PI, Math.PI * 2);
     ctx.lineWidth = size * 0.12;
     ctx.strokeStyle = '#5a5a5a';
     ctx.stroke();
@@ -229,13 +235,13 @@ export class StructureTileRenderer {
     ctx.fillStyle = '#9b59b6';
     ctx.font = `${size * 0.15}px monospace`;
     ctx.textAlign = 'center';
-    ctx.fillText('⚡', worldX + size * 0.21, worldY + size * 0.5);
-    ctx.fillText('⚡', worldX + size * 0.79, worldY + size * 0.7);
+    ctx.fillText('⚡', screenX + size * 0.21, screenY + size * 0.5);
+    ctx.fillText('⚡', screenX + size * 0.79, screenY + size * 0.7);
 
     // Portal energy (swirling vortex)
     const gradient = ctx.createRadialGradient(
-      worldX + size / 2, worldY + size * 0.55, 0,
-      worldX + size / 2, worldY + size * 0.55, size * 0.3
+      screenX + size / 2, screenY + size * 0.55, 0,
+      screenX + size / 2, screenY + size * 0.55, size * 0.3
     );
     gradient.addColorStop(0, '#e0aaff');
     gradient.addColorStop(0.4, '#bb79d6');
@@ -244,15 +250,15 @@ export class StructureTileRenderer {
 
     ctx.fillStyle = gradient;
     ctx.beginPath();
-    ctx.arc(worldX + size / 2, worldY + size * 0.55, size * 0.3, 0, Math.PI * 2);
+    ctx.arc(screenX + size / 2, screenY + size * 0.55, size * 0.3, 0, Math.PI * 2);
     ctx.fill();
 
     // Spiraling energy particles
     for (let i = 0; i < 6; i++) {
       const angle = time * 2 + (i * Math.PI * 2) / 6;
       const radius = (Math.sin(time * 3 + i) * 0.5 + 0.5) * size * 0.25;
-      const px = worldX + size / 2 + Math.cos(angle) * radius;
-      const py = worldY + size * 0.55 + Math.sin(angle) * radius;
+      const px = screenX + size / 2 + Math.cos(angle) * radius;
+      const py = screenY + size * 0.55 + Math.sin(angle) * radius;
 
       ctx.fillStyle = `rgba(224, 170, 255, ${0.6 + Math.sin(time * 4 + i) * 0.4})`;
       ctx.fillRect(px - size * 0.03, py - size * 0.03, size * 0.06, size * 0.06);
@@ -263,10 +269,10 @@ export class StructureTileRenderer {
     ctx.lineWidth = 1;
     for (let i = 0; i < 3; i++) {
       ctx.beginPath();
-      const yOffset = worldY + size * (0.4 + i * 0.15);
+      const yOffset = screenY + size * (0.4 + i * 0.15);
       for (let x = 0; x < size * 0.6; x += 2) {
         const wave = Math.sin(x * 0.3 + time * 4) * size * 0.02;
-        const px = worldX + size * 0.2 + x;
+        const px = screenX + size * 0.2 + x;
         const py = yOffset + wave;
         if (x === 0) ctx.moveTo(px, py);
         else ctx.lineTo(px, py);
@@ -311,59 +317,62 @@ export class StructureTileRenderer {
     this.renderer.drawRect(worldX, worldY, size, size, floorColor);
 
     const ctx = this.renderer.getContext();
+    const camera = this.renderer.getCamera();
+    const screenX = worldX - camera.x;
+    const screenY = worldY - camera.y;
 
     // Dining table (wooden)
     ctx.fillStyle = '#8b4513';
-    ctx.fillRect(worldX + size * 0.15, worldY + size * 0.4, size * 0.7, size * 0.35);
+    ctx.fillRect(screenX + size * 0.15, screenY + size * 0.4, size * 0.7, size * 0.35);
 
     // Table legs
     ctx.fillStyle = '#654321';
-    ctx.fillRect(worldX + size * 0.18, worldY + size * 0.7, size * 0.08, size * 0.15);
-    ctx.fillRect(worldX + size * 0.74, worldY + size * 0.7, size * 0.08, size * 0.15);
+    ctx.fillRect(screenX + size * 0.18, screenY + size * 0.7, size * 0.08, size * 0.15);
+    ctx.fillRect(screenX + size * 0.74, screenY + size * 0.7, size * 0.08, size * 0.15);
 
     // Plate (ceramic)
     ctx.fillStyle = '#f5f5dc';
     ctx.beginPath();
-    ctx.ellipse(worldX + size * 0.35, worldY + size * 0.5, size * 0.1, size * 0.08, 0, 0, Math.PI * 2);
+    ctx.ellipse(screenX + size * 0.35, screenY + size * 0.5, size * 0.1, size * 0.08, 0, 0, Math.PI * 2);
     ctx.fill();
 
     // Plate rim
     ctx.strokeStyle = '#d3d3d3';
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.ellipse(worldX + size * 0.35, worldY + size * 0.5, size * 0.1, size * 0.08, 0, 0, Math.PI * 2);
+    ctx.ellipse(screenX + size * 0.35, screenY + size * 0.5, size * 0.1, size * 0.08, 0, 0, Math.PI * 2);
     ctx.stroke();
 
     // Fork (left side of plate)
     ctx.strokeStyle = '#C0C0C0';
     ctx.lineWidth = size * 0.02;
     ctx.beginPath();
-    ctx.moveTo(worldX + size * 0.22, worldY + size * 0.5);
-    ctx.lineTo(worldX + size * 0.22, worldY + size * 0.62);
+    ctx.moveTo(screenX + size * 0.22, screenY + size * 0.5);
+    ctx.lineTo(screenX + size * 0.22, screenY + size * 0.62);
     ctx.stroke();
 
     // Fork prongs
     ctx.lineWidth = 1;
     for (let i = 0; i < 3; i++) {
       ctx.beginPath();
-      ctx.moveTo(worldX + size * (0.2 + i * 0.02), worldY + size * 0.5);
-      ctx.lineTo(worldX + size * (0.2 + i * 0.02), worldY + size * 0.46);
+      ctx.moveTo(screenX + size * (0.2 + i * 0.02), screenY + size * 0.5);
+      ctx.lineTo(screenX + size * (0.2 + i * 0.02), screenY + size * 0.46);
       ctx.stroke();
     }
 
     // Knife (right side of plate)
     ctx.lineWidth = size * 0.02;
     ctx.beginPath();
-    ctx.moveTo(worldX + size * 0.48, worldY + size * 0.5);
-    ctx.lineTo(worldX + size * 0.48, worldY + size * 0.62);
+    ctx.moveTo(screenX + size * 0.48, screenY + size * 0.5);
+    ctx.lineTo(screenX + size * 0.48, screenY + size * 0.62);
     ctx.stroke();
 
     // Knife blade
     ctx.fillStyle = '#C0C0C0';
     ctx.beginPath();
-    ctx.moveTo(worldX + size * 0.48, worldY + size * 0.46);
-    ctx.lineTo(worldX + size * 0.485, worldY + size * 0.5);
-    ctx.lineTo(worldX + size * 0.475, worldY + size * 0.5);
+    ctx.moveTo(screenX + size * 0.48, screenY + size * 0.46);
+    ctx.lineTo(screenX + size * 0.485, screenY + size * 0.5);
+    ctx.lineTo(screenX + size * 0.475, screenY + size * 0.5);
     ctx.closePath();
     ctx.fill();
 
@@ -371,34 +380,34 @@ export class StructureTileRenderer {
     ctx.strokeStyle = '#87CEEB';
     ctx.lineWidth = size * 0.03;
     ctx.beginPath();
-    ctx.moveTo(worldX + size * 0.65, worldY + size * 0.45);
-    ctx.lineTo(worldX + size * 0.65, worldY + size * 0.52);
-    ctx.lineTo(worldX + size * 0.62, worldY + size * 0.56);
-    ctx.lineTo(worldX + size * 0.68, worldY + size * 0.56);
+    ctx.moveTo(screenX + size * 0.65, screenY + size * 0.45);
+    ctx.lineTo(screenX + size * 0.65, screenY + size * 0.52);
+    ctx.lineTo(screenX + size * 0.62, screenY + size * 0.56);
+    ctx.lineTo(screenX + size * 0.68, screenY + size * 0.56);
     ctx.stroke();
 
     // Wine glass bowl
     ctx.beginPath();
-    ctx.arc(worldX + size * 0.65, worldY + size * 0.4, size * 0.05, 0, Math.PI * 2);
+    ctx.arc(screenX + size * 0.65, screenY + size * 0.4, size * 0.05, 0, Math.PI * 2);
     ctx.stroke();
 
     // Candle (centerpiece)
     ctx.fillStyle = '#FFE5B4';
-    ctx.fillRect(worldX + size * 0.73, worldY + size * 0.48, size * 0.04, size * 0.12);
+    ctx.fillRect(screenX + size * 0.73, screenY + size * 0.48, size * 0.04, size * 0.12);
 
     // Candle flame
     ctx.fillStyle = '#FFA500';
     ctx.beginPath();
-    ctx.moveTo(worldX + size * 0.75, worldY + size * 0.48);
-    ctx.lineTo(worldX + size * 0.73, worldY + size * 0.44);
-    ctx.lineTo(worldX + size * 0.77, worldY + size * 0.44);
+    ctx.moveTo(screenX + size * 0.75, screenY + size * 0.48);
+    ctx.lineTo(screenX + size * 0.73, screenY + size * 0.44);
+    ctx.lineTo(screenX + size * 0.77, screenY + size * 0.44);
     ctx.closePath();
     ctx.fill();
 
     // Flame glow
     ctx.fillStyle = 'rgba(255, 200, 0, 0.3)';
     ctx.beginPath();
-    ctx.arc(worldX + size * 0.75, worldY + size * 0.44, size * 0.06, 0, Math.PI * 2);
+    ctx.arc(screenX + size * 0.75, screenY + size * 0.44, size * 0.06, 0, Math.PI * 2);
     ctx.fill();
   }
 

@@ -7,6 +7,7 @@ export interface ExpeditionLocation {
     name: string;
     description: string;
     cost: number;
+    unlockCost: number;
     difficulty: number;
     enemyTypes: string[];
     enemyCount?: { min: number; max: number };

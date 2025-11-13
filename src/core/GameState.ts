@@ -94,6 +94,7 @@ export interface GameData {
         currentLevel?: number; // Current level being attempted
     };
     expeditionProgress: { [expeditionId: string]: ExpeditionProgress }; // Level progression per expedition
+    unlockedExpeditions: string[]; // IDs of expeditions that have been unlocked
     lastVisitedLocation?: string; // Last expedition location visited
     diningRoomClients: NPCClientData[]; // NPCs waiting for food in the dining room
 }
@@ -115,7 +116,7 @@ class GameState {
                 defense: 5
             },
             gold: 200, // Start with some gold for first expeditions
-            inventory: [],
+            inventory: ['fists'], // Start with fists so player can always switch back
             dishes: [],
             discoveredRecipes: [],
             savedRecipeConfigs: [],
@@ -151,6 +152,7 @@ class GameState {
                 'volcano_depths': { currentLevel: 1, highestLevelCompleted: 0 },
                 'demon_realm': { currentLevel: 1, highestLevelCompleted: 0 }
             },
+            unlockedExpeditions: ['forest_outskirts'], // Start with first expedition unlocked
             lastVisitedLocation: undefined,
             diningRoomClients: []
         };
@@ -421,12 +423,27 @@ class GameState {
     }
 
     isLocationUnlocked(expeditionId: string): boolean {
-        const progress = this.getExpeditionProgress(expeditionId);
-        return progress.highestLevelCompleted > 0;
+        return this.state.unlockedExpeditions.includes(expeditionId);
     }
 
     getUnlockedLocations(): string[] {
-        return Object.keys(this.state.expeditionProgress).filter(id => this.isLocationUnlocked(id));
+        return this.state.unlockedExpeditions;
+    }
+
+    unlockExpedition(expeditionId: string, unlockCost: number): boolean {
+        // Check if already unlocked
+        if (this.isLocationUnlocked(expeditionId)) {
+            return true;
+        }
+
+        // Check if player has enough gold
+        if (this.spendGold(unlockCost)) {
+            this.state.unlockedExpeditions.push(expeditionId);
+            eventBus.emit('expedition:unlocked', expeditionId);
+            return true;
+        }
+
+        return false;
     }
 
     completeExpeditionLevel(expeditionId: string, level: number): void {

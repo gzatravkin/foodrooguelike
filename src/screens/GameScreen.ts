@@ -26,6 +26,7 @@ import { GameModeManager, GameMode } from './GameModeManager';
 import { SVGAssetLoader } from './SVGAssetLoader';
 import { TileRegistry } from '../plugins/tiles/TileRegistry';
 import { NPCClient } from '../entities/NPCClient';
+import { eventBus } from '../core/EventBus';
 
 export class GameScreen {
   private renderer: GameScreenRenderer;
@@ -151,61 +152,59 @@ export class GameScreen {
   }
 
   private setupEventListeners(): void {
-    import('../core/EventBus').then(({ eventBus }) => {
-      eventBus.on('weapon:equipped', (weaponId: string) => {
-        const weapon = entityFactory.createWeapon(weaponId);
-        if (weapon) {
-          this.player.equipWeapon(weapon);
+    eventBus.on('weapon:equipped', (weaponId: string) => {
+      const weapon = entityFactory.createWeapon(weaponId);
+      if (weapon) {
+        this.player.equipWeapon(weapon);
+      }
+    });
+
+    eventBus.on('weapon-equipment:equipped', (equipmentId: string) => {
+      const equipment = entityFactory.getTemplate(equipmentId) as any;
+      if (equipment && equipment.type === 'equipment') {
+        this.player.equipWeaponEquipment(equipment);
+      }
+    });
+
+    eventBus.on('armor:equipped', (armorId: string) => {
+      const armor = entityFactory.getTemplate(armorId) as any;
+      if (armor && armor.type === 'equipment') {
+        this.player.equipArmor(armor);
+      }
+    });
+
+    eventBus.on('gold:changed', (gold: number) => {
+      this.player.gold = gold;
+    });
+
+    // Listen for player stat updates (from upgrades, training, etc.)
+    eventBus.on('player:updated', (playerStats: any) => {
+      this.player.stats.maxHealth = playerStats.maxHealth;
+      this.player.stats.health = playerStats.health;
+      this.player.stats.attack = playerStats.attack;
+      this.player.stats.defense = playerStats.defense;
+    });
+
+    // Listen for training purchases to apply dash bonuses
+    eventBus.on('training:purchased', () => {
+      const state = gameState.getState();
+      const trainingLevels: { [key: string]: number } = {};
+      state.trainingSkills.forEach(skill => {
+        trainingLevels[skill.id] = skill.level;
+      });
+      this.player.applyDashTrainingBonuses(trainingLevels);
+    });
+
+    // Listen for screen changes to handle expedition starts
+    eventBus.on('screen:changed', (screen: string) => {
+      if (screen === 'game') {
+        // Check if we should load an expedition
+        const storedData = localStorage.getItem('selectedExpedition');
+        if (storedData) {
+          console.log('Starting expedition from stored data');
+          this.loadExpedition();
         }
-      });
-
-      eventBus.on('weapon-equipment:equipped', (equipmentId: string) => {
-        const equipment = entityFactory.getTemplate(equipmentId) as any;
-        if (equipment && equipment.type === 'equipment') {
-          this.player.equipWeaponEquipment(equipment);
-        }
-      });
-
-      eventBus.on('armor:equipped', (armorId: string) => {
-        const armor = entityFactory.getTemplate(armorId) as any;
-        if (armor && armor.type === 'equipment') {
-          this.player.equipArmor(armor);
-        }
-      });
-
-      eventBus.on('gold:changed', (gold: number) => {
-        this.player.gold = gold;
-      });
-
-      // Listen for player stat updates (from upgrades, training, etc.)
-      eventBus.on('player:updated', (playerStats: any) => {
-        this.player.stats.maxHealth = playerStats.maxHealth;
-        this.player.stats.health = playerStats.health;
-        this.player.stats.attack = playerStats.attack;
-        this.player.stats.defense = playerStats.defense;
-      });
-
-      // Listen for training purchases to apply dash bonuses
-      eventBus.on('training:purchased', () => {
-        const state = gameState.getState();
-        const trainingLevels: { [key: string]: number } = {};
-        state.trainingSkills.forEach(skill => {
-          trainingLevels[skill.id] = skill.level;
-        });
-        this.player.applyDashTrainingBonuses(trainingLevels);
-      });
-
-      // Listen for screen changes to handle expedition starts
-      eventBus.on('screen:changed', (screen: string) => {
-        if (screen === 'game') {
-          // Check if we should load an expedition
-          const storedData = localStorage.getItem('selectedExpedition');
-          if (storedData) {
-            console.log('Starting expedition from stored data');
-            this.loadExpedition();
-          }
-        }
-      });
+      }
     });
   }
 
@@ -482,6 +481,10 @@ export class GameScreen {
 
     this.updater.updateEnemies(this.enemies, this.player, deltaTime);
     this.updater.updateTraps(this.traps, this.player, this.enemies, deltaTime);
+
+    // Remove destroyed traps
+    this.traps = this.traps.filter(trap => !trap.destroyed);
+
     this.combatSystem.updateProjectiles(deltaTime, this.enemies, this.player);
     this.combatSystem.updateCorpses(deltaTime);
     this.particleSystem.update(deltaTime);

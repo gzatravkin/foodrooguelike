@@ -25,6 +25,7 @@ export function ExpeditionSelectionScreen() {
 
     const expedition = expeditions[expeditionIds[currentExpeditionIndex]];
     const progress = expedition ? gameState.getExpeditionProgress(expedition.id) : null;
+    const isUnlocked = expedition ? gameState.isLocationUnlocked(expedition.id) : false;
 
     const getCost = (level: number) => {
         if (!expedition) return 0;
@@ -32,8 +33,13 @@ export function ExpeditionSelectionScreen() {
         return Math.floor(expedition.cost * levelMultiplier);
     };
 
-    const startExpedition = () => {
+    const unlockExpedition = () => {
         if (!expedition) return;
+        gameState.unlockExpedition(expedition.id, expedition.unlockCost);
+    };
+
+    const startExpedition = () => {
+        if (!expedition || !isUnlocked) return;
 
         const cost = getCost(selectedLevel);
 
@@ -103,52 +109,72 @@ export function ExpeditionSelectionScreen() {
                 {/* Expedition Details */}
                 {expedition && progress && (
                     <Card style="padding: 15px;">
-                        <CardTitle style="font-size: 20px;">{expedition.name}</CardTitle>
+                        <CardTitle style="font-size: 20px;">
+                            {expedition.name} {!isUnlocked && '🔒'}
+                        </CardTitle>
                         <p style="font-size: 14px; margin: 8px 0;">{expedition.description}</p>
                         <CardEffect style="font-size: 13px;">Difficulty: {expedition.difficulty}</CardEffect>
-                        <p style={`color: ${colors.textMuted}; font-size: 13px; margin: 5px 0;`}>
-                            Progress: Level {selectedLevel} / 50
-                        </p>
-                        <p style={`color: ${colors.textMuted}; font-size: 13px; margin: 5px 0;`}>
-                            Highest Completed: Level {progress.highestLevelCompleted}
-                        </p>
 
-                        <div style="margin: 15px 0;">
-                            <label style="font-size: 14px;">Select Level:</label>
-                            <input
-                                type="range"
-                                min="1"
-                                max={progress.currentLevel}
-                                value={selectedLevel}
-                                onInput={(e) => setSelectedLevel(parseInt((e.target as HTMLInputElement).value))}
-                                style="width: 100%; margin-top: 8px;"
-                            />
-                            <p style="font-size: 13px; margin-top: 5px;">Level: {selectedLevel} (Cost: {formatGold(getCost(selectedLevel))})</p>
-                        </div>
-
-                        {dishes.length > 0 && (
-                            <div style="margin: 15px 0;">
-                                <label style="font-size: 14px;">Select Food Buff (Optional):</label>
-                                <select
-                                    value={selectedFoodBuff || ''}
-                                    onChange={(e) => setSelectedFoodBuff((e.target as HTMLSelectElement).value || undefined)}
-                                    style={`width: 100%; padding: 8px; margin-top: 8px; font-size: 13px; background: ${colors.bgMedium}; color: white; border: 1px solid ${colors.borderDark}; border-radius: 5px;`}
+                        {!isUnlocked ? (
+                            <>
+                                <p style={`color: ${colors.textMuted}; font-size: 14px; margin: 10px 0;`}>
+                                    This expedition is locked. Unlock it to begin your adventure!
+                                </p>
+                                <ActionButton
+                                    onClick={unlockExpedition}
+                                    disabled={gold < expedition.unlockCost}
+                                    style="width: 100%; margin-top: 15px; padding: 12px; font-size: 15px; background: #9C27B0;"
                                 >
-                                    <option value="">None</option>
-                                    {dishes.map(dishId => (
-                                        <option key={dishId} value={dishId}>{dishId}</option>
-                                    ))}
-                                </select>
-                            </div>
-                        )}
+                                    🔓 UNLOCK EXPEDITION ({formatGold(expedition.unlockCost)})
+                                </ActionButton>
+                            </>
+                        ) : (
+                            <>
+                                <p style={`color: ${colors.textMuted}; font-size: 13px; margin: 5px 0;`}>
+                                    Progress: Level {selectedLevel} / 50
+                                </p>
+                                <p style={`color: ${colors.textMuted}; font-size: 13px; margin: 5px 0;`}>
+                                    Highest Completed: Level {progress.highestLevelCompleted}
+                                </p>
 
-                        <ActionButton
-                            onClick={startExpedition}
-                            disabled={gold < getCost(selectedLevel)}
-                            style="width: 100%; margin-top: 15px; padding: 12px; font-size: 15px;"
-                        >
-                            START EXPEDITION ({formatGold(getCost(selectedLevel))})
-                        </ActionButton>
+                                <div style="margin: 15px 0;">
+                                    <label style="font-size: 14px;">Select Level:</label>
+                                    <input
+                                        type="range"
+                                        min="1"
+                                        max={progress.currentLevel}
+                                        value={selectedLevel}
+                                        onInput={(e) => setSelectedLevel(parseInt((e.target as HTMLInputElement).value))}
+                                        style="width: 100%; margin-top: 8px;"
+                                    />
+                                    <p style="font-size: 13px; margin-top: 5px;">Level: {selectedLevel} (Cost: {formatGold(getCost(selectedLevel))})</p>
+                                </div>
+
+                                {dishes.length > 0 && (
+                                    <div style="margin: 15px 0;">
+                                        <label style="font-size: 14px;">Select Food Buff (Optional):</label>
+                                        <select
+                                            value={selectedFoodBuff || ''}
+                                            onChange={(e) => setSelectedFoodBuff((e.target as HTMLSelectElement).value || undefined)}
+                                            style={`width: 100%; padding: 8px; margin-top: 8px; font-size: 13px; background: ${colors.bgMedium}; color: white; border: 1px solid ${colors.borderDark}; border-radius: 5px;`}
+                                        >
+                                            <option value="">None</option>
+                                            {dishes.map(dishId => (
+                                                <option key={dishId} value={dishId}>{dishId}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                )}
+
+                                <ActionButton
+                                    onClick={startExpedition}
+                                    disabled={gold < getCost(selectedLevel)}
+                                    style="width: 100%; margin-top: 15px; padding: 12px; font-size: 15px;"
+                                >
+                                    START EXPEDITION ({formatGold(getCost(selectedLevel))})
+                                </ActionButton>
+                            </>
+                        )}
                     </Card>
                 )}
             </div>

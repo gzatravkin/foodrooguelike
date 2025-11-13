@@ -112,17 +112,17 @@ export class UIRenderer {
       const textPadding = scaleSize(20);
       const textY = scaleSize(135);
       const barY = scaleSize(123);
-      const barWidth = scaleSize(80);
+      const barWidth = scaleSize(70);
       const barHeight = scaleSize(14);
       const fontSize = scaleSize(14);
 
       this.renderer.drawUIText('💨 Dash:', textPadding, textY, dashColor, fontSize);
-      this.renderer.drawUIRect(scaleSize(100), barY, barWidth, barHeight, '#222');
+      this.renderer.drawUIRect(scaleSize(95), barY, barWidth, barHeight, '#222');
       if (!player.canDash()) {
         const fillWidth = barWidth * (1 - dashCooldownPercent);
-        this.renderer.drawUIRect(scaleSize(100), barY, fillWidth, barHeight, '#4CAF50');
+        this.renderer.drawUIRect(scaleSize(95), barY, fillWidth, barHeight, '#4CAF50');
       } else {
-        this.renderer.drawUIRect(scaleSize(100), barY, barWidth, barHeight, '#4CAF50');
+        this.renderer.drawUIRect(scaleSize(95), barY, barWidth, barHeight, '#4CAF50');
       }
 
       // Weapon cooldown
@@ -130,14 +130,14 @@ export class UIRenderer {
       const weaponCooldownPercent = Math.max(0, Math.min(1, player.attackCooldown / weaponCooldownMax));
       const weaponColor = player.canAttack() ? '#FFD700' : '#666';
       const weaponIcon = player.isRangedWeapon() ? '🔫' : '⚔️';
-      this.renderer.drawUIText(`${weaponIcon} Weapon:`, scaleSize(200), textY, weaponColor, fontSize);
+      this.renderer.drawUIText(`${weaponIcon} Wpn:`, scaleSize(180), textY, weaponColor, fontSize);
 
-      this.renderer.drawUIRect(scaleSize(285), barY, barWidth, barHeight, '#222');
+      this.renderer.drawUIRect(scaleSize(235), barY, barWidth, barHeight, '#222');
       if (!player.canAttack()) {
         const fillWidth = barWidth * (1 - weaponCooldownPercent);
-        this.renderer.drawUIRect(scaleSize(285), barY, fillWidth, barHeight, '#FFD700');
+        this.renderer.drawUIRect(scaleSize(235), barY, fillWidth, barHeight, '#FFD700');
       } else {
-        this.renderer.drawUIRect(scaleSize(285), barY, barWidth, barHeight, '#FFD700');
+        this.renderer.drawUIRect(scaleSize(235), barY, barWidth, barHeight, '#FFD700');
       }
     }
 
@@ -257,11 +257,13 @@ export class UIRenderer {
       }
     } else {
       // Desktop: full log at bottom-left with responsive sizing
+      // Position above the controls panel to avoid overlap
       const padding = scaleSize(10);
       const logWidth = scaleSize(380);
       const logBaseHeight = scaleSize(80);
       const entryHeight = scaleSize(22);
-      const logY = canvas.height - scaleSize(240);
+      const controlsHeight = scaleSize(185);
+      const logY = canvas.height - controlsHeight - scaleSize(20) - scaleSize(200); // Position above controls with spacing
       const logHeight = Math.max(logBaseHeight, logEntries.length * entryHeight + scaleSize(40));
 
       this.renderer.drawUIRectWithBorder(padding, logY, logWidth, logHeight, 'rgba(0, 0, 0, 0.85)', '#FFD700', 2);

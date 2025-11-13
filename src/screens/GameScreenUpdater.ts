@@ -59,18 +59,44 @@ export class GameScreenUpdater {
     }
   }
 
-  updateTraps(traps: Trap[], player: Player, deltaTime: number): void {
+  updateTraps(traps: Trap[], player: Player, enemies: Enemy[], deltaTime: number): void {
     for (const trap of traps) {
       trap.update(deltaTime);
 
-      if (trap.canDamage() && !player.isDashing && trap.isPlayerNear(player.x, player.y)) {
-        trap.activate();
-        const trapDamage = trap.damage;
-        player.takeDamage(trapDamage);
+      // Check if trap can damage and is not currently active
+      if (trap.canDamage()) {
+        // Check player collision (player can still avoid traps by dashing)
+        if (!player.isDashing && trap.isPlayerNear(player.x, player.y)) {
+          trap.activate();
+          const trapDamage = trap.damage;
+          player.takeDamage(trapDamage);
 
-        const dx = player.x - trap.x;
-        const dy = player.y - trap.y;
-        this.particleSystem.createBlood(player.x, player.y, dx, dy);
+          const dx = player.x - trap.x;
+          const dy = player.y - trap.y;
+          this.particleSystem.createBlood(player.x, player.y, dx, dy);
+        }
+
+        // Check enemy collisions (enemies cannot avoid traps)
+        for (const enemy of enemies) {
+          if (enemy.alive) {
+            const distance = Math.sqrt(
+              Math.pow(enemy.x - trap.x, 2) + Math.pow(enemy.y - trap.y, 2)
+            );
+
+            if (distance <= trap.triggerRadius) {
+              trap.activate();
+              const trapDamage = trap.damage;
+              enemy.takeDamage(trapDamage);
+
+              const dx = enemy.x - trap.x;
+              const dy = enemy.y - trap.y;
+              this.particleSystem.createBlood(enemy.x, enemy.y, dx, dy);
+
+              // Only one entity per trap activation
+              break;
+            }
+          }
+        }
       }
     }
   }
@@ -175,24 +201,39 @@ export class GameScreenUpdater {
         showPrompt = true;
         promptText = 'Press E to enter Upgrades Hall';
       }
-    } else if (mode === 'expedition' && tileType !== null) {
+    } else if (mode === 'expedition') {
+      // Check for stairs down on the exact tile
       if (tileType === TileType.STAIRS_DOWN) {
         showPrompt = true;
         promptText = 'Press E to return to Base Camp';
-      } else {
-        // Check if the tile has interactive capabilities via TileRegistry
-        const tileId = this.getTileIdFromType(tileType);
-        if (tileId) {
-          const tilePlugin = TileRegistry.getTileById(tileId);
-          if (tilePlugin?.interaction) {
-            const map = mapSystem.getCurrentMap();
-            if (map) {
-              const tileX = Math.floor(player.x / map.tileSize);
-              const tileY = Math.floor(player.y / map.tileSize);
+      }
 
-              if (tilePlugin.interaction.canInteract(player, tileX, tileY, mapSystem)) {
-                showPrompt = true;
-                promptText = `Press E to interact with ${tilePlugin.name}`;
+      // Check nearby tiles for interactive elements (increased interaction range)
+      const map = mapSystem.getCurrentMap();
+      if (map) {
+        const playerTileX = Math.floor(player.x / map.tileSize);
+        const playerTileY = Math.floor(player.y / map.tileSize);
+        const interactionRadius = 1; // Check 1 tile in each direction
+
+        // Check tiles in a 3x3 grid around the player
+        for (let dy = -interactionRadius; dy <= interactionRadius; dy++) {
+          for (let dx = -interactionRadius; dx <= interactionRadius; dx++) {
+            const checkX = playerTileX + dx;
+            const checkY = playerTileY + dy;
+            const checkTileType = mapSystem.getTileAt(checkX * map.tileSize + map.tileSize/2, checkY * map.tileSize + map.tileSize/2);
+
+            if (checkTileType !== null) {
+              const tileId = this.getTileIdFromType(checkTileType);
+              if (tileId) {
+                const tilePlugin = TileRegistry.getTileById(tileId);
+                if (tilePlugin?.interaction) {
+                  if (tilePlugin.interaction.canInteract(player, checkX, checkY, mapSystem)) {
+                    showPrompt = true;
+                    promptText = `Press E to interact with ${tilePlugin.name}`;
+                    // Return first interactive tile found
+                    return { showPrompt, promptText };
+                  }
+                }
               }
             }
           }

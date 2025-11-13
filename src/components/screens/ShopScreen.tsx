@@ -84,7 +84,13 @@ export function ShopScreen() {
     const buyEquipment = (equip: Equipment) => {
         if (gameState.spendGold(equip.cost)) {
             gameState.addToInventory(equip.id);
-            showMessage(`Bought ${equip.name} for ${formatGold(equip.cost)}!`);
+            // Equip the item based on its slot
+            if (equip.slot === 'weapon') {
+                gameState.equipWeaponEquipment(equip.id);
+            } else if (equip.slot === 'armor') {
+                gameState.equipArmor(equip.id);
+            }
+            showMessage(`Bought and equipped ${equip.name} for ${formatGold(equip.cost)}!`);
         } else {
             showMessage('Not enough gold!');
         }

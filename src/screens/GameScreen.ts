@@ -261,6 +261,9 @@ export class GameScreen {
     this.tileInteractionManager.reset();
     this.tileInteractionManager.findTeleporters(this.mapSystem);
 
+    // Reset hunger timer for new expedition
+    gameState.resetHungerTimer();
+
     // Get current expedition info
     const state = gameState.getState();
     const expeditionId = state.expeditionState.currentExpeditionId;

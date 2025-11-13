@@ -310,28 +310,16 @@ export class DungeonGenerator {
     const interactiveDensity = themeConfig?.generation.interactiveDensity || 0.4;
     const interactiveTiles = themeConfig?.generation.interactiveTiles || ['health_fountain', 'treasure_chest', 'shrine', 'teleporter'];
 
+    // Separate harvestable items from other interactive tiles
+    const harvestableItems = ['berry_bush', 'herb_plant', 'mushroom_patch', 'crystal_formation', 'fire_plant', 'void_plant', 'ancient_tree'];
+    const regularInteractiveTiles = interactiveTiles.filter((t: string) => !harvestableItems.includes(t));
+    const themeHarvestables = interactiveTiles.filter((t: string) => harvestableItems.includes(t));
+
     for (const room of rooms) {
       const centerX = Math.floor(room.x + room.w / 2);
       const centerY = Math.floor(room.y + room.h / 2);
 
-      // Only place feature if the tile is still floor (not overwritten by corridor)
-      if (tiles[centerY][centerX] === TileType.FLOOR ||
-          tiles[centerY][centerX] === TileType.GRASS ||
-          tiles[centerY][centerX] === TileType.ICE) {
-        if (room.type === 'treasure' && room.w >= 6 && room.h >= 6) {
-          // Always place treasure chest in treasure rooms
-          tiles[centerY][centerX] = TileType.TREASURE_CHEST;
-        } else if (Math.random() < interactiveDensity) {
-          // Place theme-appropriate interactive tile
-          const tileChoice = interactiveTiles[Math.floor(Math.random() * interactiveTiles.length)];
-          const tileType = this.getInteractiveTileType(tileChoice);
-          if (tileType !== null) {
-            tiles[centerY][centerX] = tileType;
-          }
-        }
-      }
-
-      // Add traps based on theme
+      // Add traps first (so harvestable items don't overwrite them)
       const trapChance = interactiveTiles.some((t: string) => t.includes('trap')) ? 0.5 : 0.3;
       if (Math.random() < trapChance) {
         const numTraps = 1 + Math.floor(Math.random() * 3);
@@ -348,6 +336,58 @@ export class DungeonGenerator {
               tiles[ty][tx] = TileType.POISON_TRAP;
             } else {
               tiles[ty][tx] = Math.random() < 0.5 ? TileType.SPIKE_TRAP : TileType.POISON_TRAP;
+            }
+          }
+        }
+      }
+
+      // Place regular interactive tile in center (treasure chest, shrine, etc.)
+      if (tiles[centerY][centerX] === TileType.FLOOR ||
+          tiles[centerY][centerX] === TileType.GRASS ||
+          tiles[centerY][centerX] === TileType.ICE) {
+        if (room.type === 'treasure' && room.w >= 6 && room.h >= 6) {
+          // Always place treasure chest in treasure rooms
+          tiles[centerY][centerX] = TileType.TREASURE_CHEST;
+        } else if (Math.random() < interactiveDensity && regularInteractiveTiles.length > 0) {
+          // Place theme-appropriate interactive tile (non-harvestable)
+          const tileChoice = regularInteractiveTiles[Math.floor(Math.random() * regularInteractiveTiles.length)];
+          const tileType = this.getInteractiveTileType(tileChoice);
+          if (tileType !== null) {
+            tiles[centerY][centerX] = tileType;
+          }
+        }
+      }
+
+      // Place harvestable items throughout the room if theme has them
+      // Smaller rooms get fewer items, larger rooms get more
+      if (themeHarvestables.length > 0 && room.w >= 5 && room.h >= 5) {
+        const roomSize = room.w * room.h;
+        const baseItems = Math.floor(roomSize / 30); // ~1 item per 30 tiles
+        const numHarvestables = Math.max(2, baseItems + Math.floor(Math.random() * 3)); // At least 2, up to baseItems+2
+
+        for (let i = 0; i < numHarvestables; i++) {
+          // Try to place harvestable item in random position within room
+          let placed = false;
+          for (let attempt = 0; attempt < 10 && !placed; attempt++) {
+            const hx = room.x + 1 + Math.floor(Math.random() * (room.w - 2));
+            const hy = room.y + 1 + Math.floor(Math.random() * (room.h - 2));
+
+            // Don't place on center tile or on traps, and only on floor/grass/ice
+            const isCenter = (hx === centerX && hy === centerY);
+            const tileAtPos = tiles[hy][hx];
+            const isTrap = (tileAtPos === TileType.SPIKE_TRAP || tileAtPos === TileType.POISON_TRAP);
+            const canPlace = !isCenter && !isTrap &&
+                           (tileAtPos === TileType.FLOOR ||
+                            tileAtPos === TileType.GRASS ||
+                            tileAtPos === TileType.ICE);
+
+            if (canPlace) {
+              const harvestChoice = themeHarvestables[Math.floor(Math.random() * themeHarvestables.length)];
+              const harvestType = this.getInteractiveTileType(harvestChoice);
+              if (harvestType !== null) {
+                tiles[hy][hx] = harvestType;
+                placed = true;
+              }
             }
           }
         }

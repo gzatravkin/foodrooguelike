@@ -33,7 +33,7 @@ export function MessageDisplay({ message, type = 'success' }: MessageDisplayProp
     };
 
     return (
-        <p style={`color: ${colorMap[type]}; font-size: 20px; margin: 10px 0;`}>
+        <p style={`color: ${colorMap[type]}; font-size: 10px; margin: 5px 0;`}>
             {message}
         </p>
     );
@@ -51,7 +51,7 @@ interface StatDisplayProps {
 export function StatDisplay({ label, value, color = colors.textPrimary }: StatDisplayProps) {
     return (
         <div>
-            <p style={`color: ${colors.textDark}; font-size: ${fontSize.xs}; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;`}>
+            <p style={`color: ${colors.textDark}; font-size: ${fontSize.xs}; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;`}>
                 {label}
             </p>
             <p style={`color: ${color}; font-size: ${fontSize.xl}; font-weight: bold;`}>
@@ -71,7 +71,7 @@ interface StatsGridProps {
  */
 export function StatsGrid({ children, columns = 4 }: StatsGridProps) {
     return (
-        <div style={`display: grid; grid-template-columns: repeat(${columns}, 1fr); gap: 20px; text-align: center;`}>
+        <div style={`display: grid; grid-template-columns: repeat(${columns}, 1fr); gap: 10px; text-align: center;`}>
             {children}
         </div>
     );
@@ -86,7 +86,7 @@ interface StatsPanelProps {
  */
 export function StatsPanel({ children }: StatsPanelProps) {
     return (
-        <div style={`background: ${colors.bgMedium}; border: 2px solid ${colors.borderDark}; border-radius: 12px; padding: 25px; margin: 20px 0; max-width: 800px; width: 100%; box-shadow: 0 4px 20px rgba(0,0,0,0.5);`}>
+        <div style={`background: ${colors.bgMedium}; border: 1px solid ${colors.borderDark}; border-radius: 6px; padding: 12px; margin: 10px 0; max-width: 400px; width: 100%; box-shadow: 0 2px 10px rgba(0,0,0,0.5);`}>
             {children}
         </div>
     );
@@ -103,7 +103,7 @@ interface SectionTitleProps {
  */
 export function SectionTitle({ children, emoji, style = '' }: SectionTitleProps) {
     return (
-        <h2 style={`color: ${colors.gold}; margin-top: 30px; ${style}`}>
+        <h2 style={`color: ${colors.gold}; margin-top: 15px; ${style}`}>
             {emoji && `${emoji} `}{children}
         </h2>
     );

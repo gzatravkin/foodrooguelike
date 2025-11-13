@@ -37,7 +37,7 @@ export function ScreenHeader({ title, emoji, subtitle }: ScreenHeaderProps) {
         <>
             <h1>{emoji && `${emoji} `}{title}{emoji && ` ${emoji}`}</h1>
             {subtitle && (
-                <p style="color: #AAA; margin-bottom: 20px;">{subtitle}</p>
+                <p style="color: #AAA; margin-bottom: 10px;">{subtitle}</p>
             )}
         </>
     );
@@ -52,7 +52,7 @@ interface GridLayoutProps {
 /**
  * Responsive grid layout
  */
-export function GridLayout({ children, columns = 2, minColumnWidth = '450px' }: GridLayoutProps) {
+export function GridLayout({ children, columns = 2, minColumnWidth = '225px' }: GridLayoutProps) {
     return (
         <div class="grid-2col" style={`grid-template-columns: repeat(auto-fit, minmax(${minColumnWidth}, 1fr));`}>
             {children}
@@ -85,7 +85,7 @@ interface ContentWrapperProps {
 /**
  * Wrapper for main content area
  */
-export function ContentWrapper({ children, maxWidth = '1200px', style = '' }: ContentWrapperProps) {
+export function ContentWrapper({ children, maxWidth = '600px', style = '' }: ContentWrapperProps) {
     return (
         <div style={`width: 100%; max-width: ${maxWidth}; ${style}`}>
             {children}

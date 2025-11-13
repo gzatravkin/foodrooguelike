@@ -60,29 +60,29 @@ export const shadows = {
 };
 
 export const borderRadius = {
-    small: '8px',
-    medium: '12px',
-    large: '16px',
+    small: '4px',
+    medium: '6px',
+    large: '8px',
 };
 
 export const spacing = {
-    xs: '5px',
-    sm: '10px',
-    md: '15px',
-    lg: '20px',
-    xl: '30px',
-    xxl: '40px',
+    xs: '3px',
+    sm: '5px',
+    md: '8px',
+    lg: '10px',
+    xl: '15px',
+    xxl: '20px',
 };
 
 export const fontSize = {
-    xs: '13px',
-    sm: '14px',
-    base: '15px',
-    md: '18px',
-    lg: '20px',
-    xl: '24px',
-    xxl: '42px',
-    xxxl: '48px',
+    xs: '7px',
+    sm: '7px',
+    base: '8px',
+    md: '9px',
+    lg: '10px',
+    xl: '12px',
+    xxl: '21px',
+    xxxl: '24px',
 };
 
 /**
@@ -92,18 +92,18 @@ export const commonStyles = {
     screenBackground: `background: rgba(0, 0, 0, 0.9);`,
 
     closeButton: `
-        min-width: 100px;
+        min-width: 50px;
         background: ${colors.textDarker};
-        padding: 10px 20px;
+        padding: 5px 10px;
     `,
 
     statsPanel: `
         background: ${colors.bgMedium};
-        border: 2px solid ${colors.borderDark};
+        border: 1px solid ${colors.borderDark};
         border-radius: ${borderRadius.medium};
-        padding: 25px;
-        margin: 20px 0;
-        max-width: 800px;
+        padding: 12px;
+        margin: 10px 0;
+        max-width: 400px;
         width: 100%;
         box-shadow: ${shadows.xlarge};
     `,
@@ -111,9 +111,9 @@ export const commonStyles = {
     statLabel: `
         color: ${colors.textDark};
         font-size: ${fontSize.xs};
-        margin-bottom: 8px;
+        margin-bottom: 4px;
         text-transform: uppercase;
-        letter-spacing: 1px;
+        letter-spacing: 0.5px;
     `,
 
     statValue: (color: string) => `
@@ -138,11 +138,11 @@ export const commonStyles = {
     `,
 
     navButton: (gradient: string, glowColor: string) => `
-        height: 70px;
-        font-size: 16px;
+        height: 35px;
+        font-size: 8px;
         background: ${gradient};
         border: none;
-        box-shadow: 0 4px 15px ${glowColor};
+        box-shadow: 0 2px 8px ${glowColor};
     `,
 };
 

@@ -9,6 +9,7 @@ import { EnemyMovement } from './EnemyMovement';
 import { EnemyAttack } from './EnemyAttack';
 import { EnemyCombat } from './EnemyCombat';
 import { EnemyLoot } from './EnemyLoot';
+import { getEnemySize } from '../utils/MobileUtils';
 
 export class Enemy extends Entity {
   public enemyData: EnemyData;
@@ -42,14 +43,16 @@ export class Enemy extends Entity {
       speed: baseSpeed,
     };
 
-    super(EntityType.ENEMY, x, y, 20, stats, '#F44336');
+    // Use responsive enemy size based on tile size
+    const enemySize = getEnemySize();
+    super(EntityType.ENEMY, x, y, enemySize, stats, '#F44336');
     this.enemyData = enemyData;
 
     // Initialize component modules
     this.ai = new EnemyAI(enemyData.aiBehavior || 'standard');
     this.movement = new EnemyMovement();
     this.attack = new EnemyAttack(enemyData.attackPattern || 'standard');
-    this.combat = new EnemyCombat(weapon, stats.attack, 20);
+    this.combat = new EnemyCombat(weapon, stats.attack, enemySize);
     this.loot = new EnemyLoot(enemyData.lootTable);
 
     // Configure behavior and apply speed multipliers

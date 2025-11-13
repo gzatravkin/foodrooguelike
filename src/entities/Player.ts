@@ -4,6 +4,7 @@
 
 import { Entity, EntityType, EntityStats } from './Entity';
 import { Equipment, Weapon } from './types';
+import { getPlayerSize } from '../utils/MobileUtils';
 
 export class Player extends Entity {
   public weapon: Weapon | null = null;
@@ -35,7 +36,9 @@ export class Player extends Entity {
       speed: 150, // pixels per second
     };
 
-    super(EntityType.PLAYER, x, y, 24, stats, '#4CAF50');
+    // Use responsive player size based on tile size
+    const playerSize = getPlayerSize();
+    super(EntityType.PLAYER, x, y, playerSize, stats, '#4CAF50');
     this.weapon = initialWeapon || null;
 
     // Initialize with 1 dash charge

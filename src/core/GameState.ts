@@ -51,6 +51,16 @@ export interface ExpeditionProgress {
     highestLevelCompleted: number; // Highest level successfully completed
 }
 
+export interface NPCClientData {
+    id: string;
+    name: string;
+    color: string;
+    goldReward: number;
+    preferredBuffType?: 'health' | 'attack' | 'defense';
+    locationTier: number;
+    wantsFood: boolean;
+}
+
 export interface GameData {
     player: PlayerStats;
     gold: number;
@@ -58,7 +68,7 @@ export interface GameData {
     dishes: string[]; // IDs of cooked dishes available to sell/eat
     discoveredRecipes: string[];
     savedRecipeConfigs: SavedRecipeConfig[]; // Quick-select recipe configurations
-    currentScreen: 'menu' | 'shop' | 'cooking' | 'settings' | 'restaurant' | 'upgrades' | 'recipebook' | 'game' | 'training' | 'expedition' | 'worldmap';
+    currentScreen: 'menu' | 'shop' | 'cooking' | 'settings' | 'restaurant' | 'upgrades' | 'recipebook' | 'game' | 'training' | 'expedition' | 'worldmap' | 'diningroom';
     equipment: {
         weapon?: string;
         armor?: string;
@@ -83,6 +93,8 @@ export interface GameData {
         currentLevel?: number; // Current level being attempted
     };
     expeditionProgress: { [expeditionId: string]: ExpeditionProgress }; // Level progression per expedition
+    lastVisitedLocation?: string; // Last expedition location visited
+    diningRoomClients: NPCClientData[]; // NPCs waiting for food in the dining room
 }
 
 class GameState {
@@ -136,7 +148,9 @@ class GameState {
                 'frozen_wasteland': { currentLevel: 1, highestLevelCompleted: 0 },
                 'volcano_depths': { currentLevel: 1, highestLevelCompleted: 0 },
                 'demon_realm': { currentLevel: 1, highestLevelCompleted: 0 }
-            }
+            },
+            lastVisitedLocation: undefined,
+            diningRoomClients: []
         };
     }
 
@@ -544,6 +558,70 @@ class GameState {
         };
 
         eventBus.emit('player:updated', this.state.player);
+    }
+
+    // Dining room management methods
+    setLastVisitedLocation(locationId: string): void {
+        this.state.lastVisitedLocation = locationId;
+    }
+
+    getLastVisitedLocation(): string | undefined {
+        return this.state.lastVisitedLocation;
+    }
+
+    spawnDiningRoomClients(count: number = 3): void {
+        const locationTiers: { [key: string]: number } = {
+            'starter_kitchen': 1,
+            'forest_outskirts': 1,
+            'dark_cave': 2,
+            'goblin_camp': 3,
+            'orc_stronghold': 4,
+            'frozen_wasteland': 5,
+            'volcano_depths': 6,
+            'demon_realm': 7
+        };
+
+        const lastLocation = this.state.lastVisitedLocation || 'forest_outskirts';
+        const tier = locationTiers[lastLocation] || 1;
+
+        const clientNames = [
+            'Adventurer Bob', 'Merchant Sarah', 'Knight John', 'Wizard Alice',
+            'Ranger Tom', 'Cleric Emma', 'Bard Jack', 'Rogue Lily',
+            'Paladin Mike', 'Druid Anna', 'Monk Chen', 'Barbarian Grog'
+        ];
+
+        const colors = ['#4CAF50', '#2196F3', '#FF9800', '#9C27B0', '#F44336', '#00BCD4'];
+        const buffTypes: ('health' | 'attack' | 'defense')[] = ['health', 'attack', 'defense'];
+
+        // Clear existing clients
+        this.state.diningRoomClients = [];
+
+        for (let i = 0; i < count; i++) {
+            const clientName = clientNames[Math.floor(Math.random() * clientNames.length)];
+            const client: NPCClientData = {
+                id: `client_${Date.now()}_${i}`,
+                name: clientName,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                goldReward: 50 * tier + Math.floor(Math.random() * 20 * tier),
+                preferredBuffType: buffTypes[Math.floor(Math.random() * buffTypes.length)],
+                locationTier: tier,
+                wantsFood: true
+            };
+            this.state.diningRoomClients.push(client);
+        }
+
+        eventBus.emit('diningroom:clientsSpawned', this.state.diningRoomClients);
+    }
+
+    serveDishToClient(clientIndex: number): void {
+        if (clientIndex >= 0 && clientIndex < this.state.diningRoomClients.length) {
+            this.state.diningRoomClients[clientIndex].wantsFood = false;
+            eventBus.emit('diningroom:clientServed', clientIndex);
+        }
+    }
+
+    getDiningRoomClients(): NPCClientData[] {
+        return this.state.diningRoomClients;
     }
 }
 

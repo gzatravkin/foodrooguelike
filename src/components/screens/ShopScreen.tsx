@@ -87,13 +87,6 @@ export function ShopScreen() {
         }
     };
 
-    const sellDish = (dish: Dish) => {
-        const sellPrice = Math.floor(dish.value * 0.5);
-        gameState.addGold(sellPrice);
-        gameState.removeDish(dish.id);
-        showMessage(`Sold ${dish.name} for ${formatGold(sellPrice)}!`);
-    };
-
     const eatDish = (dish: Dish) => {
         const player = gameState.getState().player;
         const healthBonus = dish.effects?.health || 0;
@@ -188,7 +181,6 @@ export function ShopScreen() {
                         <SectionTitle style="font-size: 18px; margin-bottom: 10px;">Your Dishes</SectionTitle>
                         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px; margin-bottom: 15px;">
                             {dishes.map(dish => {
-                                const sellPrice = Math.floor(dish.value * 0.5);
                                 // Get dish emoji based on buffType
                                 const dishIcon = dish.buffType === 'health' ? '🍜' :
                                                 dish.buffType === 'attack' ? '🍖' :
@@ -213,18 +205,13 @@ export function ShopScreen() {
                                         )}
                                         <p style="font-size: 12px; margin: 5px 0; line-height: 1.3;">{dish.description}</p>
                                         <CardEffect style="font-size: 11px;">{formatDishEffects(dish.effects)}</CardEffect>
+                                        <p style="color: #90EE90; font-size: 11px; margin-top: 8px;">Take to Dining Room to serve customers</p>
                                         <div style="display: flex; gap: 8px; margin-top: 10px;">
                                             <ActionButton
                                                 onClick={() => eatDish(dish)}
                                                 style="padding: 6px 12px; font-size: 12px; flex: 1;"
                                             >
                                                 Eat
-                                            </ActionButton>
-                                            <ActionButton
-                                                onClick={() => sellDish(dish)}
-                                                style="padding: 6px 12px; font-size: 12px; flex: 1;"
-                                            >
-                                                Sell ({formatGold(sellPrice)})
                                             </ActionButton>
                                         </div>
                                     </Card>

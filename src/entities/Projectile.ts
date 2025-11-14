@@ -19,6 +19,9 @@ export class Projectile {
   public trailColor?: string;
   public impactColor?: string;
   public angle: number; // Store angle for directional rendering
+  public speed: number; // Cached speed to avoid recalculation
+  public normalizedVx: number; // Cached normalized direction
+  public normalizedVy: number; // Cached normalized direction
 
   constructor(
     x: number,
@@ -47,17 +50,19 @@ export class Projectile {
     this.trailColor = trailColor;
     this.impactColor = impactColor;
     this.angle = angle;
+
+    // Cache speed and normalized direction to avoid recalculation in renderer
+    this.speed = speed;
+    this.normalizedVx = Math.cos(angle);
+    this.normalizedVy = Math.sin(angle);
   }
 
   update(deltaTime: number): void {
-    const dx = this.vx * deltaTime;
-    const dy = this.vy * deltaTime;
+    this.x += this.vx * deltaTime;
+    this.y += this.vy * deltaTime;
 
-    this.x += dx;
-    this.y += dy;
-
-    const distance = Math.sqrt(dx * dx + dy * dy);
-    this.distanceTraveled += distance;
+    // Use cached speed instead of recalculating from dx/dy
+    this.distanceTraveled += this.speed * deltaTime;
 
     // Destroy projectile if it traveled too far
     if (this.distanceTraveled >= this.maxDistance) {
@@ -69,9 +74,11 @@ export class Projectile {
   checkCollision(entityX: number, entityY: number, entitySize: number): boolean {
     const dx = this.x - entityX;
     const dy = this.y - entityY;
-    const distance = Math.sqrt(dx * dx + dy * dy);
+    const distanceSquared = dx * dx + dy * dy;
 
-    return distance <= (this.size + entitySize / 2);
+    // Use squared distance comparison to avoid expensive sqrt()
+    const radiusSum = this.size + entitySize / 2;
+    return distanceSquared <= (radiusSum * radiusSum);
   }
 
   // Check if projectile hits a wall

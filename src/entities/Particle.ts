@@ -19,7 +19,7 @@ export class ParticleSystem {
   private particles: Particle[] = [];
 
   update(deltaTime: number): void {
-    // Update all particles
+    // Update all particles using swap-with-last pattern for efficient removal
     for (let i = this.particles.length - 1; i >= 0; i--) {
       const p = this.particles[i];
 
@@ -42,9 +42,10 @@ export class ParticleSystem {
       p.vx *= 0.98;
       p.vy *= 0.98;
 
-      // Remove dead particles
+      // Remove dead particles using swap-with-last for O(1) removal
       if (p.life <= 0) {
-        this.particles.splice(i, 1);
+        this.particles[i] = this.particles[this.particles.length - 1];
+        this.particles.pop();
       }
     }
   }

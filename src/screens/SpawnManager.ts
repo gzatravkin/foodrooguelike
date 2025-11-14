@@ -132,8 +132,11 @@ export class SpawnManager {
       if (this.mapSystem.canMoveTo(x, y) && distFromPlayer > 100) {
         let tooClose = false;
         for (const trap of existingTraps) {
-          const distToTrap = Math.sqrt((x - trap.x) ** 2 + (y - trap.y) ** 2);
-          if (distToTrap < 64) { // Minimum 64 pixels apart
+          // Use squared distance to avoid expensive sqrt()
+          const dx = x - trap.x;
+          const dy = y - trap.y;
+          const distSquared = dx * dx + dy * dy;
+          if (distSquared < 64 * 64) { // Minimum 64 pixels apart
             tooClose = true;
             break;
           }

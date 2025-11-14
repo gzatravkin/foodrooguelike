@@ -23,6 +23,9 @@ export class GameScreenRenderer {
   private entityRenderer: EntityRenderer;
   private uiRenderer: UIRenderer;
   private projectileRenderer: ProjectileRenderer;
+  private cachedGradient: CanvasGradient | null = null;
+  private cachedCanvasWidth: number = 0;
+  private cachedCanvasHeight: number = 0;
 
   constructor(private renderer: CanvasRenderer) {
     this.tileRenderer = new TileRenderer(renderer);
@@ -46,19 +49,6 @@ export class GameScreenRenderer {
     return `rgba(${r}, ${g}, ${b}, ${alpha})`;
   }
 
-  private isEntityVisible(x: number, y: number, size: number): boolean {
-    const camera = this.renderer.getCamera();
-    const canvas = this.renderer.getCanvas();
-    const buffer = size * 2; // Extra buffer around viewport
-
-    const screenX = x + camera.x;
-    const screenY = y + camera.y;
-
-    return screenX + buffer >= 0 &&
-           screenX - buffer <= canvas.width &&
-           screenY + buffer >= 0 &&
-           screenY - buffer <= canvas.height;
-  }
 
   private adjustBrightness(color: string, amount: number): string {
     if (color.startsWith('#')) {
@@ -76,26 +66,34 @@ export class GameScreenRenderer {
     const ctx = this.renderer.getContext();
     const canvas = this.renderer.getCanvas();
 
-    // Use a very dark base color
-    const baseColor = '#0a0a0a';
+    // Check if we need to recreate the gradient (canvas size changed)
+    if (!this.cachedGradient ||
+        this.cachedCanvasWidth !== canvas.width ||
+        this.cachedCanvasHeight !== canvas.height) {
+      // Use a very dark base color
+      const baseColor = '#0a0a0a';
 
-    // Create a subtle gradient background
-    const gradient = ctx.createRadialGradient(
-      canvas.width / 2,
-      canvas.height / 2,
-      0,
-      canvas.width / 2,
-      canvas.height / 2,
-      Math.max(canvas.width, canvas.height)
-    );
+      // Create and cache the gradient
+      this.cachedGradient = ctx.createRadialGradient(
+        canvas.width / 2,
+        canvas.height / 2,
+        0,
+        canvas.width / 2,
+        canvas.height / 2,
+        Math.max(canvas.width, canvas.height)
+      );
 
-    gradient.addColorStop(0, this.adjustBrightness(baseColor, 15));
-    gradient.addColorStop(1, baseColor);
+      this.cachedGradient.addColorStop(0, this.adjustBrightness(baseColor, 15));
+      this.cachedGradient.addColorStop(1, baseColor);
 
-    // Fill the entire canvas with the gradient background
+      this.cachedCanvasWidth = canvas.width;
+      this.cachedCanvasHeight = canvas.height;
+    }
+
+    // Fill the entire canvas with the cached gradient background
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform to draw in screen space
-    ctx.fillStyle = gradient;
+    ctx.fillStyle = this.cachedGradient;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.restore();
   }
@@ -103,20 +101,9 @@ export class GameScreenRenderer {
   renderMap(map: GameMap | null): void {
     if (!map) return;
 
-    // Get camera viewport for culling
-    const camera = this.renderer.getCamera();
-    const canvas = this.renderer.getCanvas();
-
-    // Calculate visible tile range with a small buffer to prevent pop-in
-    const buffer = 2; // Extra tiles to render outside viewport
-    const startX = Math.max(0, Math.floor(-camera.x / map.tileSize) - buffer);
-    const startY = Math.max(0, Math.floor(-camera.y / map.tileSize) - buffer);
-    const endX = Math.min(map.width, Math.ceil((canvas.width - camera.x) / map.tileSize) + buffer);
-    const endY = Math.min(map.height, Math.ceil((canvas.height - camera.y) / map.tileSize) + buffer);
-
-    // Only render tiles that are visible in the viewport
-    for (let y = startY; y < endY; y++) {
-      for (let x = startX; x < endX; x++) {
+    // Render all tiles
+    for (let y = 0; y < map.height; y++) {
+      for (let x = 0; x < map.width; x++) {
         const tileType = map.tiles[y][x];
         const worldX = x * map.tileSize;
         const worldY = y * map.tileSize;
@@ -135,9 +122,6 @@ export class GameScreenRenderer {
 
   renderParticles(particles: Particle[]): void {
     for (const particle of particles) {
-      // Skip rendering if particle is not visible in viewport
-      if (!this.isEntityVisible(particle.x, particle.y, particle.size)) continue;
-
       const alpha = particle.alpha;
       const color = particle.color.startsWith('#')
         ? this.hexToRgba(particle.color, alpha)
@@ -150,9 +134,6 @@ export class GameScreenRenderer {
 
   renderTraps(traps: Trap[]): void {
     for (const trap of traps) {
-      // Skip rendering if trap is not visible in viewport
-      if (!this.isEntityVisible(trap.x, trap.y, trap.size * 2)) continue;
-
       if (trap.active || trap.activationTimer > 0) {
         // Activated trap - more visible with orange glow
         const glowIntensity = trap.activationTimer / trap.activationDelay;
@@ -183,9 +164,6 @@ export class GameScreenRenderer {
 
   renderCorpses(corpses: Corpse[], nearbyCorpse: Corpse | null = null): void {
     for (const corpse of corpses) {
-      // Skip rendering if corpse is not visible in viewport
-      if (!this.isEntityVisible(corpse.x, corpse.y, corpse.size * 2)) continue;
-
       const opacity = corpse.looted ? 0.3 : 0.6;
       const size = corpse.size;
       const isNearby = nearbyCorpse === corpse && !corpse.looted;
@@ -211,9 +189,6 @@ export class GameScreenRenderer {
   renderEnemies(enemies: Enemy[]): void {
     for (const enemy of enemies) {
       if (!enemy.alive) continue;
-
-      // Skip rendering if enemy is not visible in viewport
-      if (!this.isEntityVisible(enemy.x, enemy.y, enemy.size * 2)) continue;
 
       // Show attack indicator when enemy is attacking
       if (enemy.aiState === 'attack' && enemy.attackCooldown > 0.3) {
@@ -270,9 +245,6 @@ export class GameScreenRenderer {
     for (const npc of npcs) {
       // Only render patron NPCs (not regular enemies)
       if (npc.aiBehavior === 'patron') {
-        // Skip rendering if NPC is not visible in viewport
-        if (!this.isEntityVisible(npc.x, npc.y, npc.size * 2)) continue;
-
         // Get theme from client data (stored when NPC was created)
         const clientData = (npc as any).clientData;
         const theme = clientData?.theme;

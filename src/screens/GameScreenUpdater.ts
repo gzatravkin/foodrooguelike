@@ -79,11 +79,12 @@ export class GameScreenUpdater {
         // Check enemy collisions (enemies cannot avoid traps)
         for (const enemy of enemies) {
           if (enemy.alive) {
-            const distance = Math.sqrt(
-              Math.pow(enemy.x - trap.x, 2) + Math.pow(enemy.y - trap.y, 2)
-            );
+            // Use squared distance to avoid expensive sqrt()
+            const dx = enemy.x - trap.x;
+            const dy = enemy.y - trap.y;
+            const distanceSquared = dx * dx + dy * dy;
 
-            if (distance <= trap.triggerRadius) {
+            if (distanceSquared <= trap.triggerRadius * trap.triggerRadius) {
               trap.activate();
               const trapDamage = trap.damage;
               enemy.takeDamage(trapDamage);
@@ -120,11 +121,16 @@ export class GameScreenUpdater {
   }
 
   handleDeadEnemies(enemies: Enemy[]): Enemy[] {
-    const aliveEnemies: Enemy[] = [];
+    // Use swap-remove pattern for better performance
+    let writeIndex = 0;
 
-    for (const enemy of enemies) {
+    for (let readIndex = 0; readIndex < enemies.length; readIndex++) {
+      const enemy = enemies[readIndex];
       if (enemy.alive) {
-        aliveEnemies.push(enemy);
+        if (writeIndex !== readIndex) {
+          enemies[writeIndex] = enemies[readIndex];
+        }
+        writeIndex++;
       } else if (!this.deadEnemiesSet.has(enemy)) {
         // Create corpse with loot
         const enemyLoot = enemy.getLoot();
@@ -144,7 +150,8 @@ export class GameScreenUpdater {
       }
     }
 
-    return aliveEnemies;
+    enemies.length = writeIndex;
+    return enemies;
   }
 
   checkInteractions(

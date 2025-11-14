@@ -59,6 +59,7 @@ export interface NPCClientData {
     preferredBuffType?: 'health' | 'attack' | 'defense';
     locationTier: number;
     wantsFood: boolean;
+    theme?: string; // Theme from last visited location for visual appearance
 }
 
 export interface GameData {
@@ -597,19 +598,19 @@ class GameState {
     }
 
     spawnDiningRoomClients(count: number = 3): void {
-        const locationTiers: { [key: string]: number } = {
-            'starter_kitchen': 1,
-            'forest_outskirts': 1,
-            'dark_cave': 2,
-            'goblin_camp': 3,
-            'orc_stronghold': 4,
-            'frozen_wasteland': 5,
-            'volcano_depths': 6,
-            'demon_realm': 7
+        const locationData: { [key: string]: { tier: number; theme: string } } = {
+            'starter_kitchen': { tier: 1, theme: 'forest' },
+            'forest_outskirts': { tier: 1, theme: 'forest' },
+            'dark_cave': { tier: 2, theme: 'cave' },
+            'goblin_camp': { tier: 3, theme: 'ruins' },
+            'orc_stronghold': { tier: 4, theme: 'dungeon' },
+            'frozen_wasteland': { tier: 5, theme: 'ice' },
+            'volcano_depths': { tier: 6, theme: 'lava' },
+            'demon_realm': { tier: 7, theme: 'void' }
         };
 
         const lastLocation = this.state.lastVisitedLocation || 'forest_outskirts';
-        const tier = locationTiers[lastLocation] || 1;
+        const locationInfo = locationData[lastLocation] || { tier: 1, theme: 'forest' };
 
         const clientNames = [
             'Adventurer Bob', 'Merchant Sarah', 'Knight John', 'Wizard Alice',
@@ -629,10 +630,11 @@ class GameState {
                 id: `client_${Date.now()}_${i}`,
                 name: clientName,
                 color: colors[Math.floor(Math.random() * colors.length)],
-                goldReward: 50 * tier + Math.floor(Math.random() * 20 * tier),
+                goldReward: 50 * locationInfo.tier + Math.floor(Math.random() * 20 * locationInfo.tier),
                 preferredBuffType: buffTypes[Math.floor(Math.random() * buffTypes.length)],
-                locationTier: tier,
-                wantsFood: true
+                locationTier: locationInfo.tier,
+                wantsFood: true,
+                theme: locationInfo.theme
             };
             this.state.diningRoomClients.push(client);
         }

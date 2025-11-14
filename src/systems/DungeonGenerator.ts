@@ -140,35 +140,35 @@ export class DungeonGenerator {
       minRooms = 6;
       maxRooms = 10;
     } else if (difficulty === 3) {
-      // Goblin Camp - Larger
-      width = 45;
-      height = 35;
-      minRooms = 7;
-      maxRooms = 11;
+      // Goblin Camp - Medium-Large (reduced from 45x35)
+      width = 38;
+      height = 30;
+      minRooms = 6;
+      maxRooms = 9;
     } else if (difficulty === 4) {
-      // Orc Stronghold - Much larger
-      width = 50;
-      height = 40;
-      minRooms = 8;
-      maxRooms = 13;
+      // Orc Stronghold - Large (reduced from 50x40)
+      width = 42;
+      height = 33;
+      minRooms = 7;
+      maxRooms = 10;
     } else if (difficulty === 5) {
-      // Frozen Wasteland - Massive
-      width = 55;
-      height = 45;
+      // Frozen Wasteland - Large+ (reduced from 55x45)
+      width = 45;
+      height = 36;
+      minRooms = 8;
+      maxRooms = 11;
+    } else if (difficulty === 6) {
+      // Volcano Depths - Very Large (reduced from 60x50)
+      width = 48;
+      height = 38;
+      minRooms = 9;
+      maxRooms = 13;
+    } else if (difficulty >= 7) {
+      // Demon Realm - Huge (reduced from 70x60)
+      width = 52;
+      height = 42;
       minRooms = 10;
       maxRooms = 15;
-    } else if (difficulty === 6) {
-      // Volcano Depths - Huge
-      width = 60;
-      height = 50;
-      minRooms = 12;
-      maxRooms = 18;
-    } else if (difficulty >= 7) {
-      // Demon Realm - Gigantic
-      width = 70;
-      height = 60;
-      minRooms = 15;
-      maxRooms = 22;
     }
 
     // Adjust based on theme openness

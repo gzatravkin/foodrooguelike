@@ -69,7 +69,7 @@ export class GameModeManager {
       console.log(`[EXPEDITION] Loading expedition: ${expeditionData?.name || 'Unknown'}, Theme: ${theme}, Level: ${level}, Difficulty: ${expeditionData?.difficulty}`);
     }
 
-    // Use expedition difficulty for dungeon generation, NOT the level (1-50)
+    // Use expedition difficulty for dungeon generation, NOT the level (1-10)
     // Difficulty determines map complexity, level determines enemy strength
     const difficulty = expeditionData?.difficulty || 1;
     const dungeon = MapSystem.createDungeon(difficulty, theme);
@@ -104,7 +104,7 @@ export class GameModeManager {
     let numEnemies: number;
     if (isBoss) {
       // Boss levels: 1-3 boss enemies based on level
-      numEnemies = 1 + Math.floor(level / 20); // 1 at levels 5,15, 2 at 25,30, 3 at 50
+      numEnemies = Math.ceil(level / 4); // 1 at level 3, 2 at levels 5-7, 3 at level 10
       console.log(`[ENEMY SPAWN] Boss level - spawning ${numEnemies} boss enemies`);
     } else {
       // Normal levels: base count + level scaling

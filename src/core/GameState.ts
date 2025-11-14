@@ -47,7 +47,7 @@ export interface SavedRecipeConfig {
 }
 
 export interface ExpeditionProgress {
-    currentLevel: number; // Current level player can attempt (1-50)
+    currentLevel: number; // Current level player can attempt (1-10)
     highestLevelCompleted: number; // Highest level successfully completed
 }
 
@@ -455,8 +455,8 @@ class GameState {
             progress.highestLevelCompleted = level;
         }
 
-        // Unlock next level if not at max (50)
-        if (level < 50 && level >= progress.currentLevel) {
+        // Unlock next level if not at max (10)
+        if (level < 10 && level >= progress.currentLevel) {
             progress.currentLevel = level + 1;
         }
 

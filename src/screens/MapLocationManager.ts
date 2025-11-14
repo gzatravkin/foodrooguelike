@@ -29,7 +29,7 @@ export class MapLocationManager {
 
   private initializeLocations(): void {
     // Create map locations based on expeditions
-    // Each location requires completing level 10 of the previous expedition
+    // Each location requires completing level 1 of the previous expedition
     this.locations = [
       {
         id: 'forest_outskirts',
@@ -54,7 +54,7 @@ export class MapLocationManager {
         radius: 50,
         color: '#5D4037',
         icon: '🕳️',
-        requiredPreviousLevel: 10,
+        requiredPreviousLevel: 1,
         previousExpeditionId: 'forest_outskirts'
       },
       {
@@ -68,7 +68,7 @@ export class MapLocationManager {
         radius: 55,
         color: '#8B4513',
         icon: '⛺',
-        requiredPreviousLevel: 10,
+        requiredPreviousLevel: 1,
         previousExpeditionId: 'dark_cave'
       },
       {
@@ -82,7 +82,7 @@ export class MapLocationManager {
         radius: 60,
         color: '#424242',
         icon: '🏰',
-        requiredPreviousLevel: 10,
+        requiredPreviousLevel: 1,
         previousExpeditionId: 'goblin_camp'
       },
       {
@@ -96,7 +96,7 @@ export class MapLocationManager {
         radius: 60,
         color: '#81D4FA',
         icon: '❄️',
-        requiredPreviousLevel: 10,
+        requiredPreviousLevel: 1,
         previousExpeditionId: 'orc_stronghold'
       },
       {
@@ -110,7 +110,7 @@ export class MapLocationManager {
         radius: 65,
         color: '#FF5722',
         icon: '🌋',
-        requiredPreviousLevel: 10,
+        requiredPreviousLevel: 1,
         previousExpeditionId: 'frozen_wasteland'
       },
       {
@@ -124,7 +124,7 @@ export class MapLocationManager {
         radius: 70,
         color: '#9C27B0',
         icon: '👹',
-        requiredPreviousLevel: 10,
+        requiredPreviousLevel: 1,
         previousExpeditionId: 'volcano_depths'
       }
     ];

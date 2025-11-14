@@ -615,7 +615,7 @@ export class GameScreen {
       this.addCombatLog('=== LEVEL COMPLETE ===', '#4CAF50');
       this.addCombatLog(`Level ${currentLevel} cleared!`, '#4CAF50');
 
-      if (currentLevel < 50) {
+      if (currentLevel < 10) {
         this.addCombatLog(`Level ${currentLevel + 1} unlocked!`, '#FFD700');
       } else {
         this.addCombatLog('Max level reached!', '#FFD700');

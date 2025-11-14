@@ -20,7 +20,7 @@ export interface ExpeditionLocation {
  * Helper function to check if a level is a boss level
  */
 export function isBossLevel(level: number): boolean {
-    return level === 5 || level === 15 || level === 25 || level === 30 || level === 50;
+    return level === 3 || level === 5 || level === 7 || level === 10;
 }
 
 /**
@@ -34,10 +34,10 @@ export function getLevelMultipliers(level: number): {
     loot: number;
 } {
     return {
-        health: 1.0 + (level - 1) * 0.05,
-        attack: 1.0 + (level - 1) * 0.04,
-        defense: 1.0 + (level - 1) * 0.03,
-        count: Math.floor((level - 1) / 5),
-        loot: 1.0 + level * 0.02
+        health: 1.0 + (level - 1) * 0.25,
+        attack: 1.0 + (level - 1) * 0.20,
+        defense: 1.0 + (level - 1) * 0.15,
+        count: Math.floor((level - 1) / 2),
+        loot: 1.0 + level * 0.15
     };
 }

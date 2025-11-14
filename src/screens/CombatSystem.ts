@@ -265,7 +265,17 @@ export class CombatSystem {
       }
     }
 
-    this.projectiles = this.projectiles.filter(p => p.alive);
+    // Use swap-remove pattern instead of filter() for better performance
+    let writeIndex = 0;
+    for (let readIndex = 0; readIndex < this.projectiles.length; readIndex++) {
+      if (this.projectiles[readIndex].alive) {
+        if (writeIndex !== readIndex) {
+          this.projectiles[writeIndex] = this.projectiles[readIndex];
+        }
+        writeIndex++;
+      }
+    }
+    this.projectiles.length = writeIndex;
   }
 
   updateCorpses(deltaTime: number): void {
@@ -273,7 +283,17 @@ export class CombatSystem {
       corpse.update(deltaTime);
     }
 
-    this.corpses = this.corpses.filter(c => !c.isExpired());
+    // Use swap-remove pattern instead of filter() for better performance
+    let writeIndex = 0;
+    for (let readIndex = 0; readIndex < this.corpses.length; readIndex++) {
+      if (!this.corpses[readIndex].isExpired()) {
+        if (writeIndex !== readIndex) {
+          this.corpses[writeIndex] = this.corpses[readIndex];
+        }
+        writeIndex++;
+      }
+    }
+    this.corpses.length = writeIndex;
   }
 
   findNearbyCorpse(playerX: number, playerY: number): Corpse | null {

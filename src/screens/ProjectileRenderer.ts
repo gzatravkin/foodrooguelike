@@ -17,9 +17,9 @@ export class ProjectileRenderer {
 
   renderProjectiles(projectiles: Projectile[]): void {
     for (const proj of projectiles) {
-      const speed = Math.sqrt(proj.vx * proj.vx + proj.vy * proj.vy);
-      const normalizedVx = proj.vx / speed;
-      const normalizedVy = proj.vy / speed;
+      // Use cached normalized direction instead of recalculating
+      const normalizedVx = proj.normalizedVx;
+      const normalizedVy = proj.normalizedVy;
 
       // Render based on shape
       switch (proj.shape) {

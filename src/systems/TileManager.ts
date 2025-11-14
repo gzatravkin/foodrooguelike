@@ -42,6 +42,10 @@ export class TileManager {
     this.currentTheme = theme;
   }
 
+  static getCurrentTheme(): Theme | null {
+    return this.currentTheme;
+  }
+
   static getTileColor(type: TileType): string {
     // Use theme-specific colors for floor and wall if a theme is active
     if (this.currentTheme) {

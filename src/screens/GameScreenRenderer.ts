@@ -16,6 +16,7 @@ import { Trap } from '../entities/Trap';
 import { GameMode } from './GameModeManager';
 import { Weapon } from '../entities/types';
 import { Particle } from '../entities/Particle';
+import { TileManager } from '../systems/TileManager';
 
 export class GameScreenRenderer {
   private tileRenderer: TileRenderer;
@@ -227,13 +228,22 @@ export class GameScreenRenderer {
   }
 
   renderNPCs(npcs: Enemy[]): void {
-    // Render patron NPCs with dining patron appearance
+    // Get current theme to determine which patron sprite to use
+    const currentTheme = TileManager.getCurrentTheme();
+
+    // Render patron NPCs with theme-based appearance
     for (const npc of npcs) {
       // Only render patron NPCs (not regular enemies)
       if (npc.aiBehavior === 'patron') {
+        // Determine sprite key based on current theme
+        let spriteKey = 'patron'; // default
+        if (currentTheme) {
+          spriteKey = `patron-${currentTheme}`;
+        }
+
         // Render patron sprite (static, not rotated)
         const spriteSize = npc.size * 1.5;
-        this.renderer.drawCachedSVG('patron', npc.x, npc.y, spriteSize, spriteSize, 0);
+        this.renderer.drawCachedSVG(spriteKey, npc.x, npc.y, spriteSize, spriteSize, 0);
       }
     }
   }

@@ -48,6 +48,7 @@ import {
 } from './SVGEnvironment';
 import {
   createPatronSVG,
+  createThemedPatronSVG,
 } from './SVGPatron';
 
 // Re-export all
@@ -79,6 +80,7 @@ export {
   createFloorTileSVG,
   createWallTileSVG,
   createPatronSVG,
+  createThemedPatronSVG,
 };
 
 // Map enemy IDs to SVG generators

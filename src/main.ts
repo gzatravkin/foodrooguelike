@@ -74,6 +74,15 @@ class Game {
         console.log('Loading game data...');
         await dataLoader.loadAll();
 
+        // Load saved game state if it exists
+        console.log('Loading saved game...');
+        const saveLoaded = gameState.loadGame();
+        if (saveLoaded) {
+            console.log('✓ Save game loaded successfully');
+        } else {
+            console.log('No save found, starting new game');
+        }
+
         console.log('Initializing 2D top-view roguelike...');
         this.gameScreen = new GameScreen(this.renderer, this.input);
         await this.gameScreen.init();

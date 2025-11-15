@@ -411,6 +411,35 @@ export class StructureTileRenderer {
     ctx.fill();
   }
 
+  renderCharacterCustomization(worldX: number, worldY: number, size: number): void {
+    const floorColor = TileManager.getTileColor(TileType.FLOOR);
+    this.renderer.drawRect(worldX, worldY, size, size, floorColor);
+
+    const ctx = this.renderer.getContext();
+    const camera = this.renderer.getCamera();
+    const screenX = worldX - camera.x;
+    const screenY = worldY - camera.y;
+
+    // Draw table base
+    ctx.fillStyle = '#8B4513';
+    ctx.fillRect(screenX + size * 0.2, screenY + size * 0.5, size * 0.6, size * 0.4);
+
+    // Draw mirror frame
+    ctx.fillStyle = '#FFD700';
+    ctx.fillRect(screenX + size * 0.25, screenY + size * 0.1, size * 0.5, size * 0.5);
+
+    // Draw mirror surface
+    ctx.fillStyle = '#E0FFFF';
+    ctx.fillRect(screenX + size * 0.3, screenY + size * 0.15, size * 0.4, size * 0.4);
+
+    // Draw sparkles
+    ctx.fillStyle = '#FFFFFF';
+    ctx.beginPath();
+    ctx.arc(screenX + size * 0.35, screenY + size * 0.2, 2, 0, Math.PI * 2);
+    ctx.arc(screenX + size * 0.65, screenY + size * 0.4, 2, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
   // Helper method to adjust brightness of a hex color
   private adjustBrightness(hexColor: string, adjustment: number): string {
     // Remove # if present

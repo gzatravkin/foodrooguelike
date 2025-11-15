@@ -62,6 +62,14 @@ export interface NPCClientData {
     theme?: string; // Theme from last visited location for visual appearance
 }
 
+export interface CharacterCustomization {
+    gender: 'male' | 'female' | 'other';
+    hairStyle: 'short' | 'long' | 'bald' | 'ponytail' | 'mohawk';
+    hairColor: 'black' | 'brown' | 'blonde' | 'red' | 'white' | 'blue' | 'green';
+    skinTone: 'light' | 'medium' | 'dark' | 'tan' | 'pale';
+    eyeColor: 'brown' | 'blue' | 'green' | 'gray' | 'hazel';
+}
+
 export interface GameData {
     player: PlayerStats;
     gold: number;
@@ -69,7 +77,7 @@ export interface GameData {
     dishes: string[]; // IDs of cooked dishes available to sell/eat
     discoveredRecipes: string[];
     savedRecipeConfigs: SavedRecipeConfig[]; // Quick-select recipe configurations
-    currentScreen: 'menu' | 'shop' | 'cooking' | 'settings' | 'restaurant' | 'upgrades' | 'recipebook' | 'game' | 'training' | 'expedition' | 'worldmap' | 'diningroom';
+    currentScreen: 'menu' | 'shop' | 'cooking' | 'settings' | 'restaurant' | 'upgrades' | 'recipebook' | 'game' | 'training' | 'expedition' | 'worldmap' | 'diningroom' | 'customization';
     combatWeapon?: string; // Combat weapon ID (rusty_sword, iron_sword, etc.)
     equipment: {
         weapon?: string; // Equipment with slot="weapon" (steel_sword, iron_sword equipment)
@@ -98,6 +106,7 @@ export interface GameData {
     unlockedExpeditions: string[]; // IDs of expeditions that have been unlocked
     lastVisitedLocation?: string; // Last expedition location visited
     diningRoomClients: NPCClientData[]; // NPCs waiting for food in the dining room
+    characterCustomization: CharacterCustomization; // Character appearance and bonuses
 }
 
 class GameState {
@@ -155,7 +164,14 @@ class GameState {
             },
             unlockedExpeditions: ['forest_outskirts'], // Start with first expedition unlocked
             lastVisitedLocation: undefined,
-            diningRoomClients: []
+            diningRoomClients: [],
+            characterCustomization: {
+                gender: 'other',
+                hairStyle: 'short',
+                hairColor: 'brown',
+                skinTone: 'medium',
+                eyeColor: 'brown'
+            }
         };
     }
 
@@ -356,6 +372,18 @@ class GameState {
             const saveData = localStorage.getItem('foodroguelike_save');
             if (saveData) {
                 this.state = JSON.parse(saveData);
+
+                // Ensure backward compatibility for old saves
+                if (!this.state.characterCustomization) {
+                    this.state.characterCustomization = {
+                        gender: 'other',
+                        hairStyle: 'short',
+                        hairColor: 'brown',
+                        skinTone: 'medium',
+                        eyeColor: 'brown'
+                    };
+                }
+
                 // Recalculate player stats from upgrades after loading
                 this.recalculatePlayerStats();
                 eventBus.emit('game:loaded');
@@ -570,6 +598,12 @@ class GameState {
             }
         });
 
+        // Calculate bonuses from character customization
+        const customizationBonuses = this.calculateCustomizationBonuses();
+        totalMaxHealthBonus += customizationBonuses.maxHealth || 0;
+        totalAttackBonus += customizationBonuses.attack || 0;
+        totalDefenseBonus += customizationBonuses.defense || 0;
+
         // Apply bonuses to base stats
         const newMaxHealth = baseStats.maxHealth + totalMaxHealthBonus;
         const newAttack = baseStats.attack + totalAttackBonus;
@@ -651,6 +685,138 @@ class GameState {
 
     getDiningRoomClients(): NPCClientData[] {
         return this.state.diningRoomClients;
+    }
+
+    // Character customization methods
+    updateCharacterCustomization(customization: Partial<CharacterCustomization>): void {
+        this.state.characterCustomization = {
+            ...this.state.characterCustomization,
+            ...customization
+        };
+        // Recalculate player stats when customization changes
+        this.recalculatePlayerStats();
+        eventBus.emit('character:customized', this.state.characterCustomization);
+    }
+
+    getCharacterCustomization(): CharacterCustomization {
+        return this.state.characterCustomization;
+    }
+
+    // Calculate stat bonuses based on character customization
+    calculateCustomizationBonuses(): Partial<PlayerStats> {
+        const bonuses: Partial<PlayerStats> = {
+            maxHealth: 0,
+            health: 0,
+            attack: 0,
+            defense: 0
+        };
+
+        const custom = this.state.characterCustomization;
+
+        // Gender bonuses
+        switch (custom.gender) {
+            case 'male':
+                bonuses.attack = 2; // +2 attack
+                bonuses.maxHealth = 10; // +10 max health
+                break;
+            case 'female':
+                bonuses.defense = 2; // +2 defense
+                bonuses.attack = 1; // +1 attack
+                break;
+            case 'other':
+                bonuses.maxHealth = 5; // +5 max health
+                bonuses.defense = 1; // +1 defense
+                bonuses.attack = 1; // +1 attack
+                break;
+        }
+
+        // Hair style bonuses (agility/speed themed)
+        switch (custom.hairStyle) {
+            case 'bald':
+                bonuses.defense = (bonuses.defense || 0) + 1; // +1 defense (streamlined)
+                break;
+            case 'short':
+                bonuses.attack = (bonuses.attack || 0) + 1; // +1 attack (practical)
+                break;
+            case 'long':
+                bonuses.maxHealth = (bonuses.maxHealth || 0) + 5; // +5 health (flowing)
+                break;
+            case 'ponytail':
+                bonuses.attack = (bonuses.attack || 0) + 1; // +1 attack (focused)
+                bonuses.defense = (bonuses.defense || 0) + 1; // +1 defense
+                break;
+            case 'mohawk':
+                bonuses.attack = (bonuses.attack || 0) + 2; // +2 attack (intimidating)
+                break;
+        }
+
+        // Hair color bonuses (elemental themed)
+        switch (custom.hairColor) {
+            case 'black':
+                bonuses.defense = (bonuses.defense || 0) + 1; // +1 defense (shadow)
+                break;
+            case 'brown':
+                bonuses.maxHealth = (bonuses.maxHealth || 0) + 5; // +5 health (earth)
+                break;
+            case 'blonde':
+                bonuses.attack = (bonuses.attack || 0) + 1; // +1 attack (light)
+                break;
+            case 'red':
+                bonuses.attack = (bonuses.attack || 0) + 2; // +2 attack (fire)
+                break;
+            case 'white':
+                bonuses.defense = (bonuses.defense || 0) + 2; // +2 defense (ice)
+                break;
+            case 'blue':
+                bonuses.maxHealth = (bonuses.maxHealth || 0) + 5; // +5 health (water)
+                break;
+            case 'green':
+                bonuses.maxHealth = (bonuses.maxHealth || 0) + 10; // +10 health (nature)
+                break;
+        }
+
+        // Skin tone bonuses (constitution themed)
+        switch (custom.skinTone) {
+            case 'pale':
+                bonuses.maxHealth = (bonuses.maxHealth || 0) + 5; // +5 health
+                break;
+            case 'light':
+                bonuses.defense = (bonuses.defense || 0) + 1; // +1 defense
+                break;
+            case 'medium':
+                bonuses.attack = (bonuses.attack || 0) + 1; // +1 attack
+                bonuses.defense = (bonuses.defense || 0) + 1; // +1 defense
+                break;
+            case 'tan':
+                bonuses.attack = (bonuses.attack || 0) + 1; // +1 attack
+                bonuses.maxHealth = (bonuses.maxHealth || 0) + 5; // +5 health
+                break;
+            case 'dark':
+                bonuses.maxHealth = (bonuses.maxHealth || 0) + 10; // +10 health
+                break;
+        }
+
+        // Eye color bonuses (perception themed)
+        switch (custom.eyeColor) {
+            case 'brown':
+                bonuses.defense = (bonuses.defense || 0) + 1; // +1 defense
+                break;
+            case 'blue':
+                bonuses.attack = (bonuses.attack || 0) + 1; // +1 attack
+                break;
+            case 'green':
+                bonuses.maxHealth = (bonuses.maxHealth || 0) + 5; // +5 health
+                break;
+            case 'gray':
+                bonuses.defense = (bonuses.defense || 0) + 2; // +2 defense
+                break;
+            case 'hazel':
+                bonuses.attack = (bonuses.attack || 0) + 1; // +1 attack
+                bonuses.defense = (bonuses.defense || 0) + 1; // +1 defense
+                break;
+        }
+
+        return bonuses;
     }
 }
 

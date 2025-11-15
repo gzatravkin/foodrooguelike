@@ -46,6 +46,12 @@ export class BaseCampGenerator {
     tiles[3][17] = TileType.SHOP;
     tiles[3][18] = TileType.SHOP;
 
+    // Add character customization (middle-left area)
+    tiles[9][3] = TileType.CHARACTER_CUSTOMIZATION;
+    tiles[9][4] = TileType.CHARACTER_CUSTOMIZATION;
+    tiles[10][3] = TileType.CHARACTER_CUSTOMIZATION;
+    tiles[10][4] = TileType.CHARACTER_CUSTOMIZATION;
+
     // Add training hall (bottom-left area)
     tiles[16][3] = TileType.TRAINING_HALL;
     tiles[16][4] = TileType.TRAINING_HALL;

@@ -441,6 +441,8 @@ export class GameScreen {
           gameState.setScreen('upgrades');
         } else if (tileType === TileType.DINING_ROOM) {
           gameState.setScreen('diningroom');
+        } else if (tileType === TileType.CHARACTER_CUSTOMIZATION) {
+          gameState.setScreen('customization');
         }
       } else if (this.gameModeManager.getMode() === 'expedition') {
         // Special case for stairs on exact tile

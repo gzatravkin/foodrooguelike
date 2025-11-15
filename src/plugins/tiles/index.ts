@@ -44,6 +44,9 @@ import { MysteriousDoorTile } from './definitions/mysterious_door';
 import { LibraryTile } from './definitions/library';
 import { BlacksmithTile } from './definitions/blacksmith';
 
+// CUSTOMIZATION BUILDING
+import { CharacterCustomizationTile } from './definitions/character_customization';
+
 // HARVESTABLE ITEMS
 import { BerryBushTile } from './definitions/berry_bush';
 import { HerbPlantTile } from './definitions/herb_plant';
@@ -97,6 +100,9 @@ export function initializeTiles(): void {
   // NEW BUILDINGS - Proof of concept!
   TileRegistry.register(LibraryTile);
   TileRegistry.register(BlacksmithTile);
+
+  // CUSTOMIZATION BUILDING
+  TileRegistry.register(CharacterCustomizationTile);
 
   // HARVESTABLE ITEMS
   TileRegistry.register(BerryBushTile);

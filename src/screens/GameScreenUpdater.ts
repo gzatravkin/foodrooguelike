@@ -207,6 +207,9 @@ export class GameScreenUpdater {
       } else if (tileType === TileType.UPGRADES_HALL) {
         showPrompt = true;
         promptText = 'Press E to enter Upgrades Hall';
+      } else if (tileType === TileType.CHARACTER_CUSTOMIZATION) {
+        showPrompt = true;
+        promptText = 'Press E to customize character';
       }
     } else if (mode === 'expedition') {
       // Check for stairs down on the exact tile

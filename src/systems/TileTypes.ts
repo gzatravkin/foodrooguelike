@@ -24,6 +24,7 @@ export enum TileType {
   POISON_TRAP = 18,
   UPGRADES_HALL = 19,
   DINING_ROOM = 27,
+  CHARACTER_CUSTOMIZATION = 28,
   // Harvestable items
   BERRY_BUSH = 20,
   HERB_PLANT = 21,

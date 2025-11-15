@@ -111,6 +111,8 @@ export interface GameData {
 
 class GameState {
     private state: GameData;
+    private saveTimeout: number | null = null;
+    private readonly AUTOSAVE_DELAY = 1000; // Debounce saves by 1 second
 
     constructor() {
         this.state = this.getInitialState();
@@ -182,16 +184,19 @@ class GameState {
     updatePlayer(updates: Partial<PlayerStats>): void {
         this.state.player = { ...this.state.player, ...updates };
         eventBus.emit('player:updated', this.state.player);
+        this.triggerAutosave();
     }
 
     addGold(amount: number): void {
         this.state.gold += amount;
         eventBus.emit('gold:changed', this.state.gold);
+        this.triggerAutosave();
     }
 
     addToInventory(itemId: string): void {
         this.state.inventory.push(itemId);
         eventBus.emit('inventory:changed', this.state.inventory);
+        this.triggerAutosave();
     }
 
     removeFromInventory(itemId: string): boolean {
@@ -199,6 +204,7 @@ class GameState {
         if (index > -1) {
             this.state.inventory.splice(index, 1);
             eventBus.emit('inventory:changed', this.state.inventory);
+            this.triggerAutosave();
             return true;
         }
         return false;
@@ -208,6 +214,7 @@ class GameState {
         if (!this.state.discoveredRecipes.includes(recipeId)) {
             this.state.discoveredRecipes.push(recipeId);
             eventBus.emit('recipe:discovered', recipeId);
+            this.triggerAutosave();
         }
     }
 
@@ -217,6 +224,7 @@ class GameState {
         if (!exists) {
             this.state.savedRecipeConfigs.push(config);
             eventBus.emit('recipe:saved', config);
+            this.triggerAutosave();
         }
     }
 
@@ -283,18 +291,21 @@ class GameState {
     equipWeapon(weaponId: string): void {
         this.state.combatWeapon = weaponId;
         eventBus.emit('weapon:equipped', weaponId);
+        this.triggerAutosave();
     }
 
     // Equip weapon equipment (type="equipment", slot="weapon")
     equipWeaponEquipment(equipmentId: string): void {
         this.state.equipment.weapon = equipmentId;
         eventBus.emit('weapon-equipment:equipped', equipmentId);
+        this.triggerAutosave();
     }
 
     // Equip armor equipment (type="equipment", slot="armor")
     equipArmor(armorId: string): void {
         this.state.equipment.armor = armorId;
         eventBus.emit('armor:equipped', armorId);
+        this.triggerAutosave();
     }
 
     addBuff(buff: GameData['activeBuffs'][0]): void {
@@ -319,6 +330,7 @@ class GameState {
     addDish(dishId: string): void {
         this.state.dishes.push(dishId);
         eventBus.emit('dish:added', dishId);
+        this.triggerAutosave();
     }
 
     removeDish(dishId: string): boolean {
@@ -326,6 +338,7 @@ class GameState {
         if (index > -1) {
             this.state.dishes.splice(index, 1);
             eventBus.emit('dish:removed', dishId);
+            this.triggerAutosave();
             return true;
         }
         return false;
@@ -335,11 +348,13 @@ class GameState {
         this.state.restaurant.level = newLevel;
         this.state.restaurant.location = newLocation;
         eventBus.emit('restaurant:upgraded', this.state.restaurant);
+        this.triggerAutosave();
     }
 
     addReputation(amount: number): void {
         this.state.restaurant.reputation += amount;
         eventBus.emit('reputation:changed', this.state.restaurant.reputation);
+        this.triggerAutosave();
     }
 
     purchaseUpgrade(category: keyof GameData['upgrades'], upgradeId: string): void {
@@ -350,6 +365,7 @@ class GameState {
             this.state.upgrades[category].push({ id: upgradeId, level: 1 });
         }
         eventBus.emit('upgrade:purchased', { category, upgradeId });
+        this.triggerAutosave();
     }
 
     getUpgradeLevel(category: keyof GameData['upgrades'], upgradeId: string): number {
@@ -365,6 +381,17 @@ class GameState {
         } catch (error) {
             console.error('Failed to save game:', error);
         }
+    }
+
+    // Debounced autosave - called after state changes
+    private triggerAutosave(): void {
+        if (this.saveTimeout !== null) {
+            clearTimeout(this.saveTimeout);
+        }
+        this.saveTimeout = setTimeout(() => {
+            this.saveGame();
+            this.saveTimeout = null;
+        }, this.AUTOSAVE_DELAY) as unknown as number;
     }
 
     loadGame(): boolean {
@@ -410,6 +437,7 @@ class GameState {
             this.state.trainingSkills.push({ id: skillId, level: 1 });
         }
         eventBus.emit('training:purchased', { skillId });
+        this.triggerAutosave();
     }
 
     getTrainingSkillLevel(skillId: string): number {
@@ -469,6 +497,7 @@ class GameState {
         if (this.spendGold(unlockCost)) {
             this.state.unlockedExpeditions.push(expeditionId);
             eventBus.emit('expedition:unlocked', expeditionId);
+            this.triggerAutosave();
             return true;
         }
 
@@ -495,11 +524,13 @@ class GameState {
         }
 
         eventBus.emit('expedition:levelCompleted', { expeditionId, level });
+        this.triggerAutosave();
     }
 
     updateRestaurantLocation(expeditionId: string): void {
         this.state.restaurant.location = expeditionId;
         eventBus.emit('restaurant:relocated', { location: expeditionId });
+        this.triggerAutosave();
     }
 
     getRestaurantLocation(): string {
@@ -510,6 +541,7 @@ class GameState {
         if (this.state.gold >= amount) {
             this.state.gold -= amount;
             eventBus.emit('gold:changed', this.state.gold);
+            this.triggerAutosave();
             return true;
         }
         return false;
@@ -625,6 +657,7 @@ class GameState {
     // Dining room management methods
     setLastVisitedLocation(locationId: string): void {
         this.state.lastVisitedLocation = locationId;
+        this.triggerAutosave();
     }
 
     getLastVisitedLocation(): string | undefined {
@@ -674,12 +707,14 @@ class GameState {
         }
 
         eventBus.emit('diningroom:clientsSpawned', this.state.diningRoomClients);
+        this.triggerAutosave();
     }
 
     serveDishToClient(clientIndex: number): void {
         if (clientIndex >= 0 && clientIndex < this.state.diningRoomClients.length) {
             this.state.diningRoomClients[clientIndex].wantsFood = false;
             eventBus.emit('diningroom:clientServed', clientIndex);
+            this.triggerAutosave();
         }
     }
 
@@ -696,6 +731,7 @@ class GameState {
         // Recalculate player stats when customization changes
         this.recalculatePlayerStats();
         eventBus.emit('character:customized', this.state.characterCustomization);
+        this.triggerAutosave();
     }
 
     getCharacterCustomization(): CharacterCustomization {

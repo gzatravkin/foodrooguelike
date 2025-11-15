@@ -211,24 +211,36 @@ export class GameScreen {
     window.addEventListener('keydown', (e) => {
       const currentScreen = gameState.getState().currentScreen;
 
-      // Handle escape key to open menu (when in game and not in cheat panel)
-      if (e.key === 'Escape' && currentScreen === 'game' && !this.cheatPanel.isVisible()) {
+      // Handle escape key - priority: cheat panel > UI screens > open menu
+      if (e.key === 'Escape') {
         e.preventDefault();
         e.stopPropagation();
-        console.log('Opening in-game menu...');
-        gameState.setScreen('menu');
-        return;
+
+        // 1. If cheat panel is open, close it
+        if (this.cheatPanel.isVisible()) {
+          this.cheatPanel.close();
+          return;
+        }
+
+        // 2. If in game or worldmap, open menu
+        if (currentScreen === 'game' || currentScreen === 'worldmap') {
+          console.log('Opening in-game menu...');
+          gameState.setScreen('menu');
+          return;
+        }
+
+        // 3. If in any UI screen, close it and return to game
+        const uiScreens = ['menu', 'cooking', 'shop', 'recipebook', 'settings', 'restaurant', 'upgrades', 'training', 'expedition', 'diningroom', 'customization'];
+        if (uiScreens.includes(currentScreen)) {
+          console.log('Closing UI screen:', currentScreen);
+          gameState.setScreen('game');
+          return;
+        }
       }
 
       if (e.key === '`' || e.key === 'Dead') {
         e.preventDefault();
         this.cheatPanel.toggle();
-        return;
-      }
-
-      if (e.key === 'Escape' && this.cheatPanel.isVisible()) {
-        e.preventDefault();
-        this.cheatPanel.close();
         return;
       }
     });
@@ -394,11 +406,24 @@ export class GameScreen {
       this.input.setVirtualButton('interact', controlState.buttons.interact);
       this.input.setVirtualButton('loot', controlState.buttons.loot);
 
-      // Handle escape button on mobile
+      // Handle escape button on mobile (same logic as desktop ESC key)
       if (controlState.buttons.escape) {
         const currentScreen = gameState.getState().currentScreen;
-        if (currentScreen === 'game' && !this.cheatPanel.isVisible()) {
+
+        // 1. If cheat panel is open, close it
+        if (this.cheatPanel.isVisible()) {
+          this.cheatPanel.close();
+        }
+        // 2. If in game or worldmap, open menu
+        else if (currentScreen === 'game' || currentScreen === 'worldmap') {
           gameState.setScreen('menu');
+        }
+        // 3. If in any UI screen, close it and return to game
+        else {
+          const uiScreens = ['menu', 'cooking', 'shop', 'recipebook', 'settings', 'restaurant', 'upgrades', 'training', 'expedition', 'diningroom', 'customization'];
+          if (uiScreens.includes(currentScreen)) {
+            gameState.setScreen('game');
+          }
         }
       }
     }

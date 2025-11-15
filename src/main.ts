@@ -42,6 +42,7 @@ class Game {
 
         this.setupPreact();
         this.setupEventListeners();
+        this.setupMobileEscButton();
     }
 
     private setupPreact(): void {
@@ -73,6 +74,15 @@ class Game {
 
         console.log('Loading game data...');
         await dataLoader.loadAll();
+
+        // Load saved game state if it exists
+        console.log('Loading saved game...');
+        const saveLoaded = gameState.loadGame();
+        if (saveLoaded) {
+            console.log('✓ Save game loaded successfully');
+        } else {
+            console.log('No save found, starting new game');
+        }
 
         console.log('Initializing 2D top-view roguelike...');
         this.gameScreen = new GameScreen(this.renderer, this.input);
@@ -114,6 +124,39 @@ class Game {
         window.addEventListener('focus', () => {
             console.log('Game resumed (window gained focus)');
             this.lastTime = performance.now();
+        });
+    }
+
+    private setupMobileEscButton(): void {
+        const mobileEscButton = document.getElementById('mobile-esc-button');
+        if (!mobileEscButton) {
+            console.warn('Mobile ESC button not found');
+            return;
+        }
+
+        // Show button only on mobile devices
+        if (this.input.isMobileDevice()) {
+            mobileEscButton.classList.remove('hidden');
+        }
+
+        // Handle ESC button click (same logic as desktop ESC key)
+        mobileEscButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const currentScreen = gameState.getState().currentScreen;
+
+            // 1. If in game or worldmap, open menu
+            if (currentScreen === 'game' || currentScreen === 'worldmap') {
+                gameState.setScreen('menu');
+            }
+            // 2. If in any UI screen, close it and return to game
+            else {
+                const uiScreens = ['menu', 'cooking', 'shop', 'recipebook', 'settings', 'restaurant', 'upgrades', 'training', 'expedition', 'diningroom', 'customization'];
+                if (uiScreens.includes(currentScreen)) {
+                    gameState.setScreen('game');
+                }
+            }
         });
     }
 }

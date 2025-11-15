@@ -243,12 +243,48 @@
         .screen::-webkit-scrollbar-thumb:hover {
             background: linear-gradient(180deg, #66BB6A 0%, #4CAF50 100%);
         }
+
+        /* Mobile ESC button - floats on top of all UIs */
+        #mobile-esc-button {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 60px;
+            height: 60px;
+            background: rgba(158, 158, 158, 0.4);
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            z-index: 9999;
+            cursor: pointer;
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+            transition: background 0.2s;
+        }
+
+        #mobile-esc-button:active {
+            background: rgba(158, 158, 158, 0.6);
+            transform: scale(0.95);
+        }
+
+        #mobile-esc-button.hidden {
+            display: none !important;
+        }
     </style>
 </head>
 <body>
     <div id="game-container">
         <canvas id="game-canvas"></canvas>
         <div id="game-ui"></div>
+        <button id="mobile-esc-button" class="hidden">ESC</button>
     </div>
     <script type="module" src="/src/main.ts"></script>
 </body>

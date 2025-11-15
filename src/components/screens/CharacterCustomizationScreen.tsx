@@ -121,6 +121,13 @@ export function CharacterCustomizationScreen() {
   }, []);
 
   const updateCustomization = (field: keyof CharacterCustomization, value: string) => {
+    // Update local state immediately for responsive UI
+    const updated = {
+      ...customization,
+      [field]: value
+    };
+    setCustomization(updated);
+    // Also update game state
     gameState.updateCharacterCustomization({ [field]: value });
   };
 

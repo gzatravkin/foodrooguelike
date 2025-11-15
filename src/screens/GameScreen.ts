@@ -214,7 +214,7 @@ export class GameScreen {
       // Handle escape key - priority: cheat panel > UI screens > open menu
       if (e.key === 'Escape') {
         e.preventDefault();
-        e.stopPropagation();
+        e.stopImmediatePropagation(); // Use stopImmediatePropagation to prevent other handlers
 
         // 1. If cheat panel is open, close it
         if (this.cheatPanel.isVisible()) {
@@ -243,7 +243,7 @@ export class GameScreen {
         this.cheatPanel.toggle();
         return;
       }
-    });
+    }, true); // Use capture phase to ensure this handler runs first
 
     window.addEventListener('click', (e) => {
       if (this.cheatPanel.isVisible()) {

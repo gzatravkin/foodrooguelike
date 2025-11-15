@@ -66,6 +66,9 @@ export class TileRenderer {
       case TileType.DINING_ROOM:
         this.structureRenderer.renderDiningRoom(worldX, worldY, size);
         break;
+      case TileType.CHARACTER_CUSTOMIZATION:
+        this.structureRenderer.renderCharacterCustomization(worldX, worldY, size);
+        break;
       case TileType.STAIRS_DOWN:
         this.structureRenderer.renderStairsDown(worldX, worldY, size);
         break;

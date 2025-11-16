@@ -54,7 +54,7 @@ export class BaseCampGenerator {
         for (let dx = 0; dx < width; dx++) {
           const tileY = y + dy;
           const tileX = x + dx;
-          if (tileY >= 0 && tileY < tiles.length && tileX >= 0 && tileX < tiles[0].length) {
+          if (tileY >= 0 && tileY < tiles.length && tileX >= 0 && tileX < tiles[0].length && building.tileType !== undefined) {
             tiles[tileY][tileX] = building.tileType;
           }
         }

@@ -11,6 +11,7 @@ import { CombatSystem } from './CombatSystem';
 import { ParticleSystem } from '../entities/Particle';
 import { TileRegistry } from '../plugins/tiles/TileRegistry';
 import { BuildingRegistry } from '../plugins/BuildingRegistry';
+import { TileTypeMapper } from '../plugins/TileTypeMapper';
 
 export class GameScreenUpdater {
   private deadEnemiesSet = new Set<Enemy>();
@@ -253,30 +254,9 @@ export class GameScreenUpdater {
   }
 
   private getTileIdFromType(tileType: TileType): string | null {
-    // Map TileType enum to tile plugin IDs
-    const tileTypeMap: Record<number, string> = {
-      // Buildings
-      [TileType.COOKING_STATION]: 'cooking_station',
-      [TileType.SHOP]: 'shop',
-      [TileType.CHARACTER_CUSTOMIZATION]: 'character_customization',
-      [TileType.TRAINING_HALL]: 'training_hall',
-      [TileType.UPGRADES_HALL]: 'upgrades_hall',
-      [TileType.DINING_ROOM]: 'dining_room',
-      // Dungeon tiles
-      [TileType.HEALTH_FOUNTAIN]: 'health_fountain',
-      [TileType.TREASURE_CHEST]: 'treasure_chest',
-      [TileType.SHRINE]: 'shrine',
-      [TileType.TELEPORTER]: 'teleporter',
-      // Harvestable plants
-      [TileType.BERRY_BUSH]: 'berry_bush',
-      [TileType.HERB_PLANT]: 'herb_plant',
-      [TileType.MUSHROOM_PATCH]: 'mushroom_patch',
-      [TileType.CRYSTAL_FORMATION]: 'crystal_formation',
-      [TileType.FIRE_PLANT]: 'fire_plant',
-      [TileType.VOID_PLANT]: 'void_plant',
-      [TileType.ANCIENT_TREE]: 'ancient_tree',
-    };
-    return tileTypeMap[tileType] || null;
+    // Use centralized TileTypeMapper for automatic mapping!
+    // No need to maintain manual mapping tables anymore.
+    return TileTypeMapper.getTileIdFromType(tileType);
   }
 
   updateCamera(player: Player, renderer: any): void {

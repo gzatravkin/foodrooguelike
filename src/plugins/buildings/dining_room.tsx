@@ -14,6 +14,7 @@ import { GoldDisplay, MessageDisplay, SectionTitle } from '../../components/comm
 import { CloseButton, ActionButton } from '../../components/common/Button';
 import { Card, CardTitle, CardEffect } from '../../components/common/Card';
 import { formatDishEffects } from '../../utils/formatting';
+import { TileType } from '../../systems/MapSystem';
 
 // =============================================================================
 // SCREEN COMPONENT
@@ -128,6 +129,8 @@ export const DiningRoomBuilding: BuildingPlugin = {
   id: 'dining_room',
   name: 'Dining Room',
   description: 'Eat your cooked dishes to restore health or sell them for gold',
+
+  tileType: TileType.DINING_ROOM,
 
   tile: {
     color: '#8B4513',

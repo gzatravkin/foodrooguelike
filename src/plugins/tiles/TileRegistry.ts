@@ -5,7 +5,7 @@
 
 import { PluginRegistry, Plugin } from '../../core/PluginRegistry';
 import { Player } from '../../entities/Player';
-import { MapSystem } from '../../systems/MapSystem';
+import { MapSystem, TileType } from '../../systems/MapSystem';
 
 export interface TileInteraction {
   canInteract: (player: Player, tileX: number, tileY: number, mapSystem: MapSystem) => boolean;
@@ -25,6 +25,9 @@ export interface TilePlugin extends Plugin {
   walkable: boolean;
   blocksLight?: boolean;
 
+  // TileType mapping (optional - for automatic lookup of interactive tiles)
+  tileType?: TileType;
+
   // Optional custom rendering
   rendering?: TileRendering;
 
@@ -42,6 +45,7 @@ export interface TilePlugin extends Plugin {
 class TileRegistryClass extends PluginRegistry<TilePlugin> {
   private tileIdToIndex: Map<string, number> = new Map();
   private indexToTileId: Map<number, string> = new Map();
+  private tileTypeToId: Map<TileType, string> = new Map();
   private nextIndex: number = 0;
 
   register(plugin: TilePlugin): void {
@@ -52,6 +56,11 @@ class TileRegistryClass extends PluginRegistry<TilePlugin> {
       this.tileIdToIndex.set(plugin.id, this.nextIndex);
       this.indexToTileId.set(this.nextIndex, plugin.id);
       this.nextIndex++;
+    }
+
+    // Store TileType mapping if provided
+    if (plugin.tileType !== undefined) {
+      this.tileTypeToId.set(plugin.tileType, plugin.id);
     }
   }
 
@@ -70,6 +79,14 @@ class TileRegistryClass extends PluginRegistry<TilePlugin> {
 
   getTileId(index: number): string {
     return this.indexToTileId.get(index) || 'floor';
+  }
+
+  /**
+   * Get tile ID from TileType (automatic mapping!)
+   * This eliminates the need for manual TileType -> ID mappings
+   */
+  getTileIdByTileType(tileType: TileType): string | null {
+    return this.tileTypeToId.get(tileType) || null;
   }
 }
 

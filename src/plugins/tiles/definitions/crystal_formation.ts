@@ -1,6 +1,7 @@
 import { TilePlugin } from '../TileRegistry';
 import { gameState } from '../../../core/GameState';
 import { entityFactory } from '../../../entities/EntityFactory';
+import { TileType } from '../../../systems/MapSystem';
 
 const harvestedCrystals = new Set<string>();
 
@@ -10,6 +11,7 @@ export const CrystalFormationTile: TilePlugin = {
   color: '#87CEEB',
   walkable: true,
   blocksLight: false,
+  tileType: TileType.CRYSTAL_FORMATION,
   interaction: {
     canInteract: (player, tileX, tileY) => {
       const key = `${tileX},${tileY}`;

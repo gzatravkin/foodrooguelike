@@ -1,6 +1,7 @@
 import { TilePlugin } from '../TileRegistry';
 import { gameState } from '../../../core/GameState';
 import { entityFactory } from '../../../entities/EntityFactory';
+import { TileType } from '../../../systems/MapSystem';
 
 const harvestedBushes = new Set<string>();
 
@@ -10,6 +11,7 @@ export const BerryBushTile: TilePlugin = {
   color: '#8B4513',
   walkable: true,
   blocksLight: false,
+  tileType: TileType.BERRY_BUSH,
   interaction: {
     canInteract: (player, tileX, tileY) => {
       const key = `${tileX},${tileY}`;

@@ -1,4 +1,5 @@
 import { TilePlugin } from '../TileRegistry';
+import { TileType } from '../../../systems/MapSystem';
 
 const usedShrines = new Set<string>();
 let playerBuffs: { speed?: number; damage?: number; defense?: number; duration: number } | null = null;
@@ -9,6 +10,7 @@ export const ShrineTile: TilePlugin = {
   color: '#DAA520',
   walkable: true,
   blocksLight: false,
+  tileType: TileType.SHRINE,
   interaction: {
     canInteract: (player, tileX, tileY) => {
       const key = `${tileX},${tileY}`;

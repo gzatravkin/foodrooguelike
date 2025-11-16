@@ -5,6 +5,7 @@
 
 import { BuildingPlugin } from '../BuildingRegistry';
 import { UpgradesScreen } from '../../components/screens/UpgradesScreen';
+import { TileType } from '../../systems/MapSystem';
 
 // =============================================================================
 // BUILDING DEFINITION
@@ -14,6 +15,8 @@ export const UpgradesHallBuilding: BuildingPlugin = {
   id: 'upgrades_hall',
   name: 'Upgrades Hall',
   description: 'Purchase permanent upgrades for your kitchen, restaurant, and character',
+
+  tileType: TileType.UPGRADES_HALL,
 
   tile: {
     color: '#9370DB',

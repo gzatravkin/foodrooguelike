@@ -1,6 +1,7 @@
 import { TilePlugin } from '../TileRegistry';
 import { gameState } from '../../../core/GameState';
 import { entityFactory } from '../../../entities/EntityFactory';
+import { TileType } from '../../../systems/MapSystem';
 
 const harvestedHerbs = new Set<string>();
 
@@ -10,6 +11,7 @@ export const HerbPlantTile: TilePlugin = {
   color: '#228B22',
   walkable: true,
   blocksLight: false,
+  tileType: TileType.HERB_PLANT,
   interaction: {
     canInteract: (player, tileX, tileY) => {
       const key = `${tileX},${tileY}`;

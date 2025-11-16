@@ -5,6 +5,7 @@
 
 import { BuildingPlugin } from '../BuildingRegistry';
 import { CookingScreen } from '../../components/screens/CookingScreen';
+import { TileType } from '../../systems/MapSystem';
 
 // =============================================================================
 // BUILDING DEFINITION
@@ -14,6 +15,8 @@ export const CookingStationBuilding: BuildingPlugin = {
   id: 'cooking_station',
   name: 'Cooking Station',
   description: 'Cook delicious dishes from gathered ingredients',
+
+  tileType: TileType.COOKING_STATION,
 
   tile: {
     color: '#FF6347',

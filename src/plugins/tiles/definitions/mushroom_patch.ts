@@ -1,6 +1,7 @@
 import { TilePlugin } from '../TileRegistry';
 import { gameState } from '../../../core/GameState';
 import { entityFactory } from '../../../entities/EntityFactory';
+import { TileType } from '../../../systems/MapSystem';
 
 const harvestedMushrooms = new Set<string>();
 
@@ -10,6 +11,7 @@ export const MushroomPatchTile: TilePlugin = {
   color: '#8B7355',
   walkable: true,
   blocksLight: false,
+  tileType: TileType.MUSHROOM_PATCH,
   interaction: {
     canInteract: (player, tileX, tileY) => {
       const key = `${tileX},${tileY}`;

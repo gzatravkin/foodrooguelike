@@ -13,11 +13,7 @@ import { GrassTile } from './definitions/grass';
 import { WaterTile } from './definitions/water';
 import { LavaTile } from './definitions/lava';
 import { IceTile } from './definitions/ice';
-import { CookingStationTile } from './definitions/cooking_station';
-import { ShopTile } from './definitions/shop';
 import { ExpeditionPortalTile } from './definitions/expedition_portal';
-import { TrainingHallTile } from './definitions/training_hall';
-import { UpgradesHallTile } from './definitions/upgrades_hall';
 import { StairsDownTile } from './definitions/stairs_down';
 import { StairsUpTile } from './definitions/stairs_up';
 import { HealthFountainTile } from './definitions/health_fountain';
@@ -44,9 +40,6 @@ import { MysteriousDoorTile } from './definitions/mysterious_door';
 import { LibraryTile } from './definitions/library';
 import { BlacksmithTile } from './definitions/blacksmith';
 
-// CUSTOMIZATION BUILDING
-import { CharacterCustomizationTile } from './definitions/character_customization';
-
 // HARVESTABLE ITEMS
 import { BerryBushTile } from './definitions/berry_bush';
 import { HerbPlantTile } from './definitions/herb_plant';
@@ -66,10 +59,7 @@ export function initializeTiles(): void {
   TileRegistry.register(FloorTile);
   TileRegistry.register(WallTile);
   TileRegistry.register(DoorTile);
-  TileRegistry.register(CookingStationTile);
-  TileRegistry.register(ShopTile);
   TileRegistry.register(ExpeditionPortalTile);
-  TileRegistry.register(TrainingHallTile);
   TileRegistry.register(StairsDownTile);
   TileRegistry.register(StairsUpTile);
   TileRegistry.register(WaterTile);
@@ -82,7 +72,6 @@ export function initializeTiles(): void {
   TileRegistry.register(ShrineTile);
   TileRegistry.register(SpikeTrapTile);
   TileRegistry.register(PoisonTrapTile);
-  TileRegistry.register(UpgradesHallTile);
 
   // NEW TILES - Proof of concept!
   TileRegistry.register(MudTile);
@@ -100,9 +89,6 @@ export function initializeTiles(): void {
   // NEW BUILDINGS - Proof of concept!
   TileRegistry.register(LibraryTile);
   TileRegistry.register(BlacksmithTile);
-
-  // CUSTOMIZATION BUILDING
-  TileRegistry.register(CharacterCustomizationTile);
 
   // HARVESTABLE ITEMS
   TileRegistry.register(BerryBushTile);

@@ -34,7 +34,13 @@ export class TileRenderer {
       const building = BuildingRegistry.getBuilding(tileId);
       if (building?.tile.render) {
         const ctx = this.renderer.getContext();
+        const camera = this.renderer.getCamera();
+
+        // Apply camera transformation so render functions can use world coordinates
+        ctx.save();
+        ctx.translate(-camera.x, -camera.y);
         building.tile.render(ctx, worldX, worldY, size);
+        ctx.restore();
         return;
       }
 
@@ -42,15 +48,13 @@ export class TileRenderer {
       const tilePlugin = TileRegistry.getTileById(tileId);
       if (tilePlugin?.rendering?.render) {
         const ctx = this.renderer.getContext();
-        tilePlugin.rendering.render(ctx, worldX, worldY, size);
-        return;
-      }
+        const camera = this.renderer.getCamera();
 
-      // Fallback: render simple colored rectangle
-      if (tilePlugin) {
-        const ctx = this.renderer.getContext();
-        ctx.fillStyle = tilePlugin.color;
-        ctx.fillRect(worldX, worldY, size, size);
+        // Apply camera transformation so render functions can use world coordinates
+        ctx.save();
+        ctx.translate(-camera.x, -camera.y);
+        tilePlugin.rendering.render(ctx, worldX, worldY, size);
+        ctx.restore();
         return;
       }
     }

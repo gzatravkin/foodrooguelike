@@ -6,6 +6,7 @@
 import { BuildingPlugin } from '../BuildingRegistry';
 import { CookingScreen } from '../../components/screens/CookingScreen';
 
+
 // =============================================================================
 // BUILDING DEFINITION
 // =============================================================================
@@ -14,6 +15,8 @@ export const CookingStationBuilding: BuildingPlugin = {
   id: 'cooking_station',
   name: 'Cooking Station',
   description: 'Cook delicious dishes from gathered ingredients',
+
+  // TileType is AUTO-ASSIGNED at registration - no manual enum needed!
 
   tile: {
     color: '#FF6347',
@@ -33,7 +36,7 @@ export const CookingStationBuilding: BuildingPlugin = {
 
   baseCamp: {
     enabled: true,
-    position: { x: 2, y: 3 },
+    position: { x: 3, y: 2 },  // Fixed: was swapped
     size: { width: 2, height: 2 },
     priority: 95,
   },

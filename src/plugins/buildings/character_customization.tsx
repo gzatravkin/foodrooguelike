@@ -196,6 +196,8 @@ export const CharacterCustomizationBuilding: BuildingPlugin = {
   name: 'Character Customization',
   description: 'Customize your character appearance and gain stat bonuses',
 
+  // TileType is AUTO-ASSIGNED at registration - no manual enum needed!
+
   // Tile appearance
   tile: {
     color: '#FF69B4',
@@ -244,7 +246,7 @@ export const CharacterCustomizationBuilding: BuildingPlugin = {
   // Base camp placement (auto-places in base camp!)
   baseCamp: {
     enabled: true,
-    position: { x: 9, y: 3 },
+    position: { x: 3, y: 9 },  // Fixed: was swapped
     size: { width: 2, height: 2 },
     priority: 100,
   },

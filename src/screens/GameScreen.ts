@@ -26,6 +26,7 @@ import { GameModeManager, GameMode } from './GameModeManager';
 import { SVGAssetLoader } from './SVGAssetLoader';
 import { TileRegistry } from '../plugins/tiles/TileRegistry';
 import { BuildingRegistry } from '../plugins/BuildingRegistry';
+import { TileTypeMapper } from '../plugins/TileTypeMapper';
 import { eventBus } from '../core/EventBus';
 
 export class GameScreen {
@@ -134,21 +135,9 @@ export class GameScreen {
   }
 
   private getTileIdFromType(tileType: TileType): string | null {
-    // Map TileType enum to tile plugin IDs
-    const tileTypeMap: Record<number, string> = {
-      [TileType.HEALTH_FOUNTAIN]: 'health_fountain',
-      [TileType.TREASURE_CHEST]: 'treasure_chest',
-      [TileType.SHRINE]: 'shrine',
-      [TileType.TELEPORTER]: 'teleporter',
-      [TileType.BERRY_BUSH]: 'berry_bush',
-      [TileType.HERB_PLANT]: 'herb_plant',
-      [TileType.MUSHROOM_PATCH]: 'mushroom_patch',
-      [TileType.CRYSTAL_FORMATION]: 'crystal_formation',
-      [TileType.FIRE_PLANT]: 'fire_plant',
-      [TileType.VOID_PLANT]: 'void_plant',
-      [TileType.ANCIENT_TREE]: 'ancient_tree',
-    };
-    return tileTypeMap[tileType] || null;
+    // Use centralized TileTypeMapper for automatic mapping!
+    // No need to maintain manual mapping tables anymore.
+    return TileTypeMapper.getTileIdFromType(tileType);
   }
 
   private setupEventListeners(): void {

@@ -129,6 +129,8 @@ export const DiningRoomBuilding: BuildingPlugin = {
   name: 'Dining Room',
   description: 'Eat your cooked dishes to restore health or sell them for gold',
 
+  // TileType is AUTO-ASSIGNED at registration - no manual enum needed!
+
   tile: {
     color: '#8B4513',
     walkable: true,
@@ -147,8 +149,8 @@ export const DiningRoomBuilding: BuildingPlugin = {
 
   baseCamp: {
     enabled: true,
-    position: { x: 12, y: 27 },
-    size: { width: 4, height: 4 },
+    position: { x: 27, y: 12 },  // Fixed: was swapped
+    size: { width: 2, height: 3 },  // Fixed: was 4x4, should be 2x3
     priority: 80,
   },
 };

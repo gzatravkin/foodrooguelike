@@ -1,5 +1,6 @@
 /**
  * TileRenderer - Handles tile rendering for the game screen
+ * Now automatically uses render functions from TileRegistry!
  */
 
 import { CanvasRenderer } from '../rendering/CanvasRenderer';
@@ -8,6 +9,9 @@ import { TerrainTileRenderer } from './TerrainTileRenderer';
 import { StructureTileRenderer } from './StructureTileRenderer';
 import { InteractiveTileRenderer } from './InteractiveTileRenderer';
 import { TrapTileRenderer } from './TrapTileRenderer';
+import { TileTypeMapper } from '../plugins/TileTypeMapper';
+import { TileRegistry } from '../plugins/tiles/TileRegistry';
+import { BuildingRegistry } from '../plugins/BuildingRegistry';
 
 export class TileRenderer {
   private terrainRenderer: TerrainTileRenderer;
@@ -23,6 +27,35 @@ export class TileRenderer {
   }
 
   public renderTile(tileType: TileType, worldX: number, worldY: number, size: number, x: number, y: number): void {
+    // NEW SYSTEM: Try to get tile/building from registry first
+    const tileId = TileTypeMapper.getTileIdFromType(tileType);
+    if (tileId) {
+      // Check if it's a building with custom render
+      const building = BuildingRegistry.getBuilding(tileId);
+      if (building?.tile.render) {
+        const ctx = this.renderer.getContext();
+        building.tile.render(ctx, worldX, worldY, size);
+        return;
+      }
+
+      // Check if it's a tile plugin with custom render
+      const tilePlugin = TileRegistry.getTileById(tileId);
+      if (tilePlugin?.rendering?.render) {
+        const ctx = this.renderer.getContext();
+        tilePlugin.rendering.render(ctx, worldX, worldY, size);
+        return;
+      }
+
+      // Fallback: render simple colored rectangle
+      if (tilePlugin) {
+        const ctx = this.renderer.getContext();
+        ctx.fillStyle = tilePlugin.color;
+        ctx.fillRect(worldX, worldY, size, size);
+        return;
+      }
+    }
+
+    // LEGACY SYSTEM: Fallback for tiles not yet migrated to plugin system
     switch (tileType) {
       // Terrain tiles
       case TileType.GRASS:
@@ -38,7 +71,7 @@ export class TileRenderer {
         this.terrainRenderer.renderIce(worldX, worldY, size, x, y);
         break;
 
-      // Structure tiles
+      // Structure tiles (basic ones without plugins yet)
       case TileType.FLOOR:
         this.structureRenderer.renderFloor(worldX, worldY, size, x, y);
         break;
@@ -48,26 +81,8 @@ export class TileRenderer {
       case TileType.DOOR:
         this.structureRenderer.renderDoor(worldX, worldY, size);
         break;
-      case TileType.COOKING_STATION:
-        this.structureRenderer.renderCookingStation(worldX, worldY, size);
-        break;
-      case TileType.SHOP:
-        this.structureRenderer.renderShopTile(worldX, worldY, size);
-        break;
       case TileType.EXPEDITION_PORTAL:
         this.structureRenderer.renderExpeditionPortal(worldX, worldY, size);
-        break;
-      case TileType.TRAINING_HALL:
-        this.structureRenderer.renderTrainingHall(worldX, worldY, size);
-        break;
-      case TileType.UPGRADES_HALL:
-        this.structureRenderer.renderUpgradesHall(worldX, worldY, size);
-        break;
-      case TileType.DINING_ROOM:
-        this.structureRenderer.renderDiningRoom(worldX, worldY, size);
-        break;
-      case TileType.CHARACTER_CUSTOMIZATION:
-        this.structureRenderer.renderCharacterCustomization(worldX, worldY, size);
         break;
       case TileType.STAIRS_DOWN:
         this.structureRenderer.renderStairsDown(worldX, worldY, size);
@@ -76,49 +91,12 @@ export class TileRenderer {
         this.structureRenderer.renderStairsUp(worldX, worldY, size);
         break;
 
-      // Interactive tiles
-      case TileType.HEALTH_FOUNTAIN:
-        this.interactiveRenderer.renderHealthFountain(worldX, worldY, size);
-        break;
-      case TileType.TREASURE_CHEST:
-        this.interactiveRenderer.renderTreasureChest(worldX, worldY, size);
-        break;
-      case TileType.TELEPORTER:
-        this.interactiveRenderer.renderTeleporter(worldX, worldY, size);
-        break;
-      case TileType.SHRINE:
-        this.interactiveRenderer.renderShrine(worldX, worldY, size);
-        break;
-
-      // Trap tiles
+      // Trap tiles (if not in plugin system yet)
       case TileType.SPIKE_TRAP:
         this.trapRenderer.renderSpikeTrap(worldX, worldY, size);
         break;
       case TileType.POISON_TRAP:
         this.trapRenderer.renderPoisonTrap(worldX, worldY, size);
-        break;
-
-      // Harvestable items
-      case TileType.BERRY_BUSH:
-        this.interactiveRenderer.renderBerryBush(worldX, worldY, size);
-        break;
-      case TileType.HERB_PLANT:
-        this.interactiveRenderer.renderHerbPlant(worldX, worldY, size);
-        break;
-      case TileType.MUSHROOM_PATCH:
-        this.interactiveRenderer.renderMushroomPatch(worldX, worldY, size);
-        break;
-      case TileType.CRYSTAL_FORMATION:
-        this.interactiveRenderer.renderCrystalFormation(worldX, worldY, size);
-        break;
-      case TileType.FIRE_PLANT:
-        this.interactiveRenderer.renderFirePlant(worldX, worldY, size);
-        break;
-      case TileType.VOID_PLANT:
-        this.interactiveRenderer.renderVoidPlant(worldX, worldY, size);
-        break;
-      case TileType.ANCIENT_TREE:
-        this.interactiveRenderer.renderAncientTree(worldX, worldY, size);
         break;
     }
   }

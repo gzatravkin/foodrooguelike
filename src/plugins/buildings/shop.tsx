@@ -6,6 +6,7 @@
 import { BuildingPlugin } from '../BuildingRegistry';
 import { ShopScreen } from '../../components/screens/ShopScreen';
 
+
 // =============================================================================
 // BUILDING DEFINITION
 // =============================================================================
@@ -14,6 +15,8 @@ export const ShopBuilding: BuildingPlugin = {
   id: 'shop',
   name: 'Shop',
   description: 'Buy weapons and equipment to prepare for expeditions',
+
+  // TileType is AUTO-ASSIGNED at registration - no manual enum needed!
 
   tile: {
     color: '#FFD700',

@@ -1,6 +1,7 @@
 import { TilePlugin } from '../TileRegistry';
 import { gameState } from '../../../core/GameState';
 import { entityFactory } from '../../../entities/EntityFactory';
+import { TileType } from '../../../systems/MapSystem';
 
 const openedChests = new Set<string>();
 
@@ -10,6 +11,7 @@ export const TreasureChestTile: TilePlugin = {
   color: '#DAA520',
   walkable: true,
   blocksLight: false,
+  tileType: TileType.TREASURE_CHEST,
   interaction: {
     canInteract: (player, tileX, tileY) => {
       const key = `${tileX},${tileY}`;

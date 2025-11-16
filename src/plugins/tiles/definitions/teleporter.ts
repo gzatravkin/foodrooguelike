@@ -1,4 +1,5 @@
 import { TilePlugin } from '../TileRegistry';
+import { TileType } from '../../../systems/MapSystem';
 
 export const TeleporterTile: TilePlugin = {
   id: 'teleporter',
@@ -6,6 +7,7 @@ export const TeleporterTile: TilePlugin = {
   color: '#8B00FF',
   walkable: true,
   blocksLight: false,
+  tileType: TileType.TELEPORTER,
   interaction: {
     canInteract: () => true,
     onInteract: (player, tileX, tileY, mapSystem, onLog, context) => {

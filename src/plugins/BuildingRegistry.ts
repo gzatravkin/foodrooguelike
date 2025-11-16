@@ -6,13 +6,16 @@
 import { ComponentType } from 'preact';
 import { TileRegistry, TilePlugin } from './tiles/TileRegistry';
 import { Player } from '../entities/Player';
-import { MapSystem } from '../systems/MapSystem';
+import { MapSystem, TileType } from '../systems/MapSystem';
 
 export interface BuildingPlugin {
   // Basic info
   id: string;
   name: string;
   description?: string;
+
+  // TileType mapping (OPTIONAL - auto-assigned if not provided!)
+  tileType?: TileType;
 
   // Tile configuration
   tile: {
@@ -56,12 +59,24 @@ class BuildingRegistryClass {
   private buildings: Map<string, BuildingPlugin> = new Map();
   private screenComponents: Map<string, ComponentType<any>> = new Map();
   private screenIdToBuildingId: Map<string, string> = new Map();
+  private tileTypeToId: Map<TileType, string> = new Map();
+  private nextAutoTileType: number = 1000; // Start auto-assignment at 1000 to avoid conflicts
 
   register(building: BuildingPlugin): void {
     console.log(`🏢 Registering building: ${building.name}`);
 
+    // AUTO-ASSIGN TileType if not provided!
+    if (building.tileType === undefined) {
+      building.tileType = this.nextAutoTileType as TileType;
+      console.log(`   Auto-assigned TileType ${this.nextAutoTileType} to ${building.name}`);
+      this.nextAutoTileType++;
+    }
+
     // Store building
     this.buildings.set(building.id, building);
+
+    // Store TileType mapping for automatic lookup
+    this.tileTypeToId.set(building.tileType, building.id);
 
     // Auto-register as tile plugin
     const tilePlugin: TilePlugin = {
@@ -121,6 +136,14 @@ class BuildingRegistryClass {
   hasScreenForBuilding(buildingId: string): boolean {
     const building = this.buildings.get(buildingId);
     return !!building?.screen;
+  }
+
+  /**
+   * Get building ID from TileType (automatic mapping!)
+   * This eliminates the need for manual TileType -> ID mappings
+   */
+  getBuildingIdByTileType(tileType: TileType): string | null {
+    return this.tileTypeToId.get(tileType) || null;
   }
 }
 

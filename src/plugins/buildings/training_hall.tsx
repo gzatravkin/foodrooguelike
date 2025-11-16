@@ -132,6 +132,8 @@ export const TrainingHallBuilding: BuildingPlugin = {
   name: 'Training Hall',
   description: 'Train your skills and improve your combat abilities',
 
+  // TileType is AUTO-ASSIGNED at registration - no manual enum needed!
+
   tile: {
     color: '#CD853F',
     walkable: true,
@@ -150,7 +152,7 @@ export const TrainingHallBuilding: BuildingPlugin = {
 
   baseCamp: {
     enabled: true,
-    position: { x: 16, y: 3 },
+    position: { x: 3, y: 16 },  // Fixed: was swapped
     size: { width: 2, height: 2 },
     priority: 90,
   },

@@ -1,4 +1,5 @@
 import { TilePlugin } from '../TileRegistry';
+import { TileType } from '../../../systems/MapSystem';
 
 const interactedFountains = new Set<string>();
 
@@ -8,6 +9,7 @@ export const HealthFountainTile: TilePlugin = {
   color: '#FF69B4',
   walkable: true,
   blocksLight: false,
+  tileType: TileType.HEALTH_FOUNTAIN,
   interaction: {
     canInteract: (player, tileX, tileY) => {
       const key = `${tileX},${tileY}`;

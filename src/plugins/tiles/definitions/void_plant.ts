@@ -1,6 +1,7 @@
 import { TilePlugin } from '../TileRegistry';
 import { gameState } from '../../../core/GameState';
 import { entityFactory } from '../../../entities/EntityFactory';
+import { TileType } from '../../../systems/MapSystem';
 
 const harvestedVoidPlants = new Set<string>();
 
@@ -10,6 +11,7 @@ export const VoidPlantTile: TilePlugin = {
   color: '#4B0082',
   walkable: true,
   blocksLight: false,
+  tileType: TileType.VOID_PLANT,
   interaction: {
     canInteract: (player, tileX, tileY) => {
       const key = `${tileX},${tileY}`;

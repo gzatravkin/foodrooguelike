@@ -57,17 +57,6 @@ export class TileRenderer {
         ctx.restore();
         return;
       }
-
-      // Fallback: render simple colored rectangle
-      if (tilePlugin) {
-        const camera = this.renderer.getCamera();
-        const screenX = worldX - camera.x;
-        const screenY = worldY - camera.y;
-        const ctx = this.renderer.getContext();
-        ctx.fillStyle = tilePlugin.color;
-        ctx.fillRect(screenX, screenY, size, size);
-        return;
-      }
     }
 
     // LEGACY SYSTEM: Fallback for tiles not yet migrated to plugin system

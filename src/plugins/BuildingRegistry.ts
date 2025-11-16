@@ -14,8 +14,8 @@ export interface BuildingPlugin {
   name: string;
   description?: string;
 
-  // TileType mapping (for automatic lookup)
-  tileType: TileType;
+  // TileType mapping (OPTIONAL - auto-assigned if not provided!)
+  tileType?: TileType;
 
   // Tile configuration
   tile: {
@@ -60,9 +60,17 @@ class BuildingRegistryClass {
   private screenComponents: Map<string, ComponentType<any>> = new Map();
   private screenIdToBuildingId: Map<string, string> = new Map();
   private tileTypeToId: Map<TileType, string> = new Map();
+  private nextAutoTileType: number = 1000; // Start auto-assignment at 1000 to avoid conflicts
 
   register(building: BuildingPlugin): void {
     console.log(`🏢 Registering building: ${building.name}`);
+
+    // AUTO-ASSIGN TileType if not provided!
+    if (building.tileType === undefined) {
+      building.tileType = this.nextAutoTileType as TileType;
+      console.log(`   Auto-assigned TileType ${this.nextAutoTileType} to ${building.name}`);
+      this.nextAutoTileType++;
+    }
 
     // Store building
     this.buildings.set(building.id, building);

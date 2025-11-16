@@ -47,6 +47,7 @@ class TileRegistryClass extends PluginRegistry<TilePlugin> {
   private indexToTileId: Map<number, string> = new Map();
   private tileTypeToId: Map<TileType, string> = new Map();
   private nextIndex: number = 0;
+  private nextAutoTileType: number = 2000; // Start auto-assignment at 2000 (buildings use 1000+)
 
   register(plugin: TilePlugin): void {
     super.register(plugin);
@@ -58,7 +59,15 @@ class TileRegistryClass extends PluginRegistry<TilePlugin> {
       this.nextIndex++;
     }
 
-    // Store TileType mapping if provided
+    // AUTO-ASSIGN TileType if not provided!
+    if (plugin.tileType === undefined && plugin.interaction) {
+      // Only auto-assign for interactive tiles (not basic terrain like grass, water, etc.)
+      plugin.tileType = this.nextAutoTileType as TileType;
+      console.log(`🔧 Auto-assigned TileType ${this.nextAutoTileType} to ${plugin.name}`);
+      this.nextAutoTileType++;
+    }
+
+    // Store TileType mapping if provided or auto-assigned
     if (plugin.tileType !== undefined) {
       this.tileTypeToId.set(plugin.tileType, plugin.id);
     }

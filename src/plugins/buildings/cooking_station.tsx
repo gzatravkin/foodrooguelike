@@ -5,7 +5,7 @@
 
 import { BuildingPlugin } from '../BuildingRegistry';
 import { CookingScreen } from '../../components/screens/CookingScreen';
-import { TileType } from '../../systems/MapSystem';
+
 
 // =============================================================================
 // BUILDING DEFINITION
@@ -16,7 +16,7 @@ export const CookingStationBuilding: BuildingPlugin = {
   name: 'Cooking Station',
   description: 'Cook delicious dishes from gathered ingredients',
 
-  tileType: TileType.COOKING_STATION,
+  // TileType is AUTO-ASSIGNED at registration - no manual enum needed!
 
   tile: {
     color: '#FF6347',

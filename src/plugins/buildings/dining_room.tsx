@@ -150,8 +150,8 @@ export const DiningRoomBuilding: BuildingPlugin = {
 
   baseCamp: {
     enabled: true,
-    position: { x: 12, y: 27 },
-    size: { width: 4, height: 4 },
+    position: { x: 27, y: 12 },  // Fixed: was swapped
+    size: { width: 2, height: 3 },  // Fixed: was 4x4, should be 2x3
     priority: 80,
   },
 };

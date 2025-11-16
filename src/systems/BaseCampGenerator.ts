@@ -1,9 +1,11 @@
 /**
  * BaseCampGenerator - Generates the base camp map
+ * Now automatically places buildings from BuildingRegistry!
  */
 
 import { TileType, GameMap } from './TileTypes';
 import { getTileSize } from '../utils/MobileUtils';
+import { BuildingRegistry } from '../plugins/BuildingRegistry';
 
 export class BaseCampGenerator {
   static generate(restaurantLocation?: string): GameMap {
@@ -34,35 +36,30 @@ export class BaseCampGenerator {
       }
     }
 
-    // Add cooking station (top-left area)
-    tiles[2][3] = TileType.COOKING_STATION;
-    tiles[2][4] = TileType.COOKING_STATION;
-    tiles[3][3] = TileType.COOKING_STATION;
-    tiles[3][4] = TileType.COOKING_STATION;
+    // AUTOMATIC BUILDING PLACEMENT: Use BuildingRegistry!
+    // Get all buildings configured for base camp, sorted by priority
+    const baseCampBuildings = BuildingRegistry.getBaseCampBuildings()
+      .sort((a, b) => (b.baseCamp?.priority || 0) - (a.baseCamp?.priority || 0));
 
-    // Add shop (top-right area of main room)
-    tiles[2][17] = TileType.SHOP;
-    tiles[2][18] = TileType.SHOP;
-    tiles[3][17] = TileType.SHOP;
-    tiles[3][18] = TileType.SHOP;
+    // Place each building at its configured position
+    for (const building of baseCampBuildings) {
+      if (!building.baseCamp) continue;
 
-    // Add character customization (middle-left area)
-    tiles[9][3] = TileType.CHARACTER_CUSTOMIZATION;
-    tiles[9][4] = TileType.CHARACTER_CUSTOMIZATION;
-    tiles[10][3] = TileType.CHARACTER_CUSTOMIZATION;
-    tiles[10][4] = TileType.CHARACTER_CUSTOMIZATION;
+      const { x, y } = building.baseCamp.position;
+      const width = building.baseCamp.size?.width || 1;
+      const height = building.baseCamp.size?.height || 1;
 
-    // Add training hall (bottom-left area)
-    tiles[16][3] = TileType.TRAINING_HALL;
-    tiles[16][4] = TileType.TRAINING_HALL;
-    tiles[17][3] = TileType.TRAINING_HALL;
-    tiles[17][4] = TileType.TRAINING_HALL;
-
-    // Add upgrades hall (bottom-right area of main room)
-    tiles[16][17] = TileType.UPGRADES_HALL;
-    tiles[16][18] = TileType.UPGRADES_HALL;
-    tiles[17][17] = TileType.UPGRADES_HALL;
-    tiles[17][18] = TileType.UPGRADES_HALL;
+      // Place the building tiles
+      for (let dy = 0; dy < height; dy++) {
+        for (let dx = 0; dx < width; dx++) {
+          const tileY = y + dy;
+          const tileX = x + dx;
+          if (tileY >= 0 && tileY < tiles.length && tileX >= 0 && tileX < tiles[0].length) {
+            tiles[tileY][tileX] = building.tileType;
+          }
+        }
+      }
+    }
 
     // Add expedition portal (bottom center)
     tiles[16][10] = TileType.EXPEDITION_PORTAL;
@@ -112,13 +109,7 @@ export class BaseCampGenerator {
       }
     }
 
-    // Add dining room interaction tiles (center of dining room)
-    tiles[12][27] = TileType.DINING_ROOM;
-    tiles[12][28] = TileType.DINING_ROOM;
-    tiles[13][27] = TileType.DINING_ROOM;
-    tiles[13][28] = TileType.DINING_ROOM;
-    tiles[14][27] = TileType.DINING_ROOM;
-    tiles[14][28] = TileType.DINING_ROOM;
+    // Dining room building is now placed automatically via BuildingRegistry above!
 
     return {
       width,

@@ -36,7 +36,7 @@ export const UpgradesHallBuilding: BuildingPlugin = {
 
   baseCamp: {
     enabled: true,
-    position: { x: 16, y: 17 },
+    position: { x: 17, y: 16 },  // Fixed: was swapped
     size: { width: 2, height: 2 },
     priority: 85,
   },

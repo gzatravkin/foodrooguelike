@@ -10,6 +10,7 @@ import { MapSystem, TileType } from '../systems/MapSystem';
 import { CombatSystem } from './CombatSystem';
 import { ParticleSystem } from '../entities/Particle';
 import { TileRegistry } from '../plugins/tiles/TileRegistry';
+import { BuildingRegistry } from '../plugins/BuildingRegistry';
 
 export class GameScreenUpdater {
   private deadEnemiesSet = new Set<Enemy>();
@@ -191,7 +192,19 @@ export class GameScreenUpdater {
 
     const tileType = mapSystem.getTileAt(player.x, player.y);
 
-    if (mode === 'base' && tileType) {
+    if (mode === 'base' && tileType !== null) {
+      // First, check if it's a building (new system - auto-registered!)
+      const tileId = this.getTileIdFromType(tileType);
+      if (tileId) {
+        const building = BuildingRegistry.getBuilding(tileId);
+        if (building) {
+          showPrompt = true;
+          promptText = building.interaction.prompt;
+          return { showPrompt, promptText };
+        }
+      }
+
+      // Fallback to hardcoded prompts for non-building tiles
       if (tileType === TileType.SHOP) {
         showPrompt = true;
         promptText = 'Press E to enter Shop';
@@ -207,9 +220,6 @@ export class GameScreenUpdater {
       } else if (tileType === TileType.UPGRADES_HALL) {
         showPrompt = true;
         promptText = 'Press E to enter Upgrades Hall';
-      } else if (tileType === TileType.CHARACTER_CUSTOMIZATION) {
-        showPrompt = true;
-        promptText = 'Press E to customize character';
       }
     } else if (mode === 'expedition') {
       // Check for stairs down on the exact tile

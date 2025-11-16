@@ -52,7 +52,7 @@ class Game {
         // Listen to screen changes from gameState
         eventBus.on('screen:changed', (screenName: string) => {
             // Show/hide UI overlay for UI screens
-            const uiScreens = ['base', 'cooking', 'shop', 'recipebook', 'settings', 'restaurant', 'upgrades', 'training', 'expedition', 'diningroom'];
+            const uiScreens = ['base', 'cooking', 'shop', 'recipebook', 'settings', 'restaurant', 'upgrades', 'training', 'expedition', 'diningroom', 'customization'];
             if (uiScreens.includes(screenName)) {
                 this.uiElement.classList.add('active');
             } else {

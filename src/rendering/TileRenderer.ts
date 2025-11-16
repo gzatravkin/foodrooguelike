@@ -44,6 +44,17 @@ export class TileRenderer {
         return;
       }
 
+      // Check if building exists but has no custom render - use fallback rendering
+      if (building) {
+        // Render floor first
+        this.structureRenderer.renderFloor(worldX, worldY, size, x, y);
+
+        // Then render building indicator with its color
+        const buildingColor = building.tile.color;
+        this.renderer.drawRect(worldX + size * 0.2, worldY + size * 0.2, size * 0.6, size * 0.6, buildingColor);
+        return;
+      }
+
       // Check if it's a tile plugin with custom render
       const tilePlugin = TileRegistry.getTileById(tileId);
       if (tilePlugin?.rendering?.render) {

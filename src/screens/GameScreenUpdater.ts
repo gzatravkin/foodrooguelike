@@ -10,6 +10,7 @@ import { MapSystem, TileType } from '../systems/MapSystem';
 import { CombatSystem } from './CombatSystem';
 import { ParticleSystem } from '../entities/Particle';
 import { TileRegistry } from '../plugins/tiles/TileRegistry';
+import { BuildingRegistry } from '../plugins/BuildingRegistry';
 
 export class GameScreenUpdater {
   private deadEnemiesSet = new Set<Enemy>();
@@ -191,25 +192,22 @@ export class GameScreenUpdater {
 
     const tileType = mapSystem.getTileAt(player.x, player.y);
 
-    if (mode === 'base' && tileType) {
-      if (tileType === TileType.SHOP) {
-        showPrompt = true;
-        promptText = 'Press E to enter Shop';
-      } else if (tileType === TileType.EXPEDITION_PORTAL) {
+    if (mode === 'base' && tileType !== null) {
+      // Check if it's a building (auto-registered via BuildingRegistry!)
+      const tileId = this.getTileIdFromType(tileType);
+      if (tileId) {
+        const building = BuildingRegistry.getBuilding(tileId);
+        if (building) {
+          showPrompt = true;
+          promptText = building.interaction.prompt;
+          return { showPrompt, promptText };
+        }
+      }
+
+      // Special handling for expedition portal (doesn't use BuildingRegistry yet)
+      if (tileType === TileType.EXPEDITION_PORTAL) {
         showPrompt = true;
         promptText = 'Press E to open World Map';
-      } else if (tileType === TileType.COOKING_STATION) {
-        showPrompt = true;
-        promptText = 'Press E to Cook';
-      } else if (tileType === TileType.TRAINING_HALL) {
-        showPrompt = true;
-        promptText = 'Press E to enter Training Hall';
-      } else if (tileType === TileType.UPGRADES_HALL) {
-        showPrompt = true;
-        promptText = 'Press E to enter Upgrades Hall';
-      } else if (tileType === TileType.CHARACTER_CUSTOMIZATION) {
-        showPrompt = true;
-        promptText = 'Press E to customize character';
       }
     } else if (mode === 'expedition') {
       // Check for stairs down on the exact tile

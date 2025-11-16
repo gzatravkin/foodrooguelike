@@ -25,6 +25,7 @@ import { TileInteractionManager } from './TileInteractionManager';
 import { GameModeManager, GameMode } from './GameModeManager';
 import { SVGAssetLoader } from './SVGAssetLoader';
 import { TileRegistry } from '../plugins/tiles/TileRegistry';
+import { BuildingRegistry } from '../plugins/BuildingRegistry';
 import { eventBus } from '../core/EventBus';
 
 export class GameScreen {
@@ -454,20 +455,19 @@ export class GameScreen {
     if (this.inputHandler.handleInteract()) {
       const tileType = this.mapSystem.getTileAt(this.player.x, this.player.y);
       if (this.gameModeManager.getMode() === 'base' && tileType) {
-        if (tileType === TileType.SHOP) {
-          gameState.setScreen('shop');
-        } else if (tileType === TileType.EXPEDITION_PORTAL) {
+        // Check if it's a building (auto-opens screen via BuildingRegistry!)
+        const tileId = this.getTileIdFromType(tileType);
+        if (tileId) {
+          const building = BuildingRegistry.getBuilding(tileId);
+          if (building?.screen) {
+            gameState.setScreen(building.screen.id as any);
+            return; // Exit early - building handled
+          }
+        }
+
+        // Special handling for expedition portal (doesn't use BuildingRegistry yet)
+        if (tileType === TileType.EXPEDITION_PORTAL) {
           gameState.setScreen('worldmap');
-        } else if (tileType === TileType.COOKING_STATION) {
-          gameState.setScreen('cooking');
-        } else if (tileType === TileType.TRAINING_HALL) {
-          gameState.setScreen('training');
-        } else if (tileType === TileType.UPGRADES_HALL) {
-          gameState.setScreen('upgrades');
-        } else if (tileType === TileType.DINING_ROOM) {
-          gameState.setScreen('diningroom');
-        } else if (tileType === TileType.CHARACTER_CUSTOMIZATION) {
-          gameState.setScreen('customization');
         }
       } else if (this.gameModeManager.getMode() === 'expedition') {
         // Special case for stairs on exact tile

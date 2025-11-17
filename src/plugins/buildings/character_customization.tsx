@@ -10,6 +10,7 @@ import { gameState, CharacterCustomization } from '../../core/GameState';
 import { ScreenContainer, ScreenHeader } from '../../components/common/Layout';
 import { CloseButton } from '../../components/common/Button';
 import { eventBus } from '../../core/EventBus';
+import { TileType } from '../../systems/TileTypes';
 
 // =============================================================================
 // SCREEN COMPONENT (defined inline in same file!)
@@ -196,7 +197,8 @@ export const CharacterCustomizationBuilding: BuildingPlugin = {
   name: 'Character Customization',
   description: 'Customize your character appearance and gain stat bonuses',
 
-  // TileType is AUTO-ASSIGNED at registration - no manual enum needed!
+  // Explicit TileType assignment to match the enum
+  tileType: TileType.CHARACTER_CUSTOMIZATION,
 
   // Tile appearance
   tile: {

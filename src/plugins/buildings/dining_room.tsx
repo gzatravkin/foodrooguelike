@@ -14,6 +14,7 @@ import { GoldDisplay, MessageDisplay, SectionTitle } from '../../components/comm
 import { CloseButton, ActionButton } from '../../components/common/Button';
 import { Card, CardTitle, CardEffect } from '../../components/common/Card';
 import { formatDishEffects } from '../../utils/formatting';
+import { TileType } from '../../systems/TileTypes';
 
 // =============================================================================
 // SCREEN COMPONENT
@@ -129,7 +130,8 @@ export const DiningRoomBuilding: BuildingPlugin = {
   name: 'Dining Room',
   description: 'Eat your cooked dishes to restore health or sell them for gold',
 
-  // TileType is AUTO-ASSIGNED at registration - no manual enum needed!
+  // Explicit TileType assignment to match the enum
+  tileType: TileType.DINING_ROOM,
 
   tile: {
     color: '#8B4513',

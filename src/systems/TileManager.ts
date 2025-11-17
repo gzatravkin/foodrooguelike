@@ -15,27 +15,33 @@ export class TileManager {
   }
 
   private static setupTileColors(): void {
+    // Basic structure tiles
     this.tileColors.set(TileType.FLOOR, '#2a2a2a');
     this.tileColors.set(TileType.WALL, '#555');
     this.tileColors.set(TileType.DOOR, '#8b4513');
-    this.tileColors.set(TileType.COOKING_STATION, '#ff6b35');
-    this.tileColors.set(TileType.SHOP, '#4ecdc4');
+
+    // Special structure tiles
     this.tileColors.set(TileType.EXPEDITION_PORTAL, '#9b59b6');
-    this.tileColors.set(TileType.TRAINING_HALL, '#FFD700');
-    this.tileColors.set(TileType.UPGRADES_HALL, '#b19cd9');
-    this.tileColors.set(TileType.DINING_ROOM, '#ff9999');
     this.tileColors.set(TileType.STAIRS_DOWN, '#95a5a6');
     this.tileColors.set(TileType.STAIRS_UP, '#ecf0f1');
+
+    // Terrain tiles
     this.tileColors.set(TileType.WATER, '#1e90ff');
     this.tileColors.set(TileType.LAVA, '#ff4500');
     this.tileColors.set(TileType.ICE, '#87ceeb');
     this.tileColors.set(TileType.GRASS, '#228b22');
+
+    // Interactive tiles (legacy)
     this.tileColors.set(TileType.HEALTH_FOUNTAIN, '#ff69b4');
     this.tileColors.set(TileType.TREASURE_CHEST, '#ffd700');
     this.tileColors.set(TileType.TELEPORTER, '#8b00ff');
     this.tileColors.set(TileType.SHRINE, '#daa520');
+
+    // Trap tiles
     this.tileColors.set(TileType.SPIKE_TRAP, '#8b0000');
     this.tileColors.set(TileType.POISON_TRAP, '#32cd32');
+
+    // Note: Building colors are defined in their custom render functions
   }
 
   static setTheme(theme: Theme | null): void {

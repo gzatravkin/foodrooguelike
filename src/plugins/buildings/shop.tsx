@@ -5,7 +5,6 @@
 
 import { BuildingPlugin } from '../BuildingRegistry';
 import { ShopScreen } from '../../components/screens/ShopScreen';
-import { TileType } from '../../systems/TileTypes';
 
 
 // =============================================================================
@@ -17,8 +16,7 @@ export const ShopBuilding: BuildingPlugin = {
   name: 'Shop',
   description: 'Buy weapons and equipment to prepare for expeditions',
 
-  // Explicit TileType assignment to match the enum
-  tileType: TileType.SHOP,
+  // TileType is AUTO-ASSIGNED at registration - no manual enum needed!
 
   tile: {
     color: '#FFD700',

@@ -5,7 +5,6 @@
 
 import { BuildingPlugin } from '../BuildingRegistry';
 import { CookingScreen } from '../../components/screens/CookingScreen';
-import { TileType } from '../../systems/TileTypes';
 
 
 // =============================================================================
@@ -17,8 +16,7 @@ export const CookingStationBuilding: BuildingPlugin = {
   name: 'Cooking Station',
   description: 'Cook delicious dishes from gathered ingredients',
 
-  // Explicit TileType assignment to match the enum
-  tileType: TileType.COOKING_STATION,
+  // TileType is AUTO-ASSIGNED at registration - no manual enum needed!
 
   tile: {
     color: '#FF6347',

@@ -12,7 +12,6 @@ import { GoldDisplay } from '../../components/common/Display';
 import { CloseButton } from '../../components/common/Button';
 import { Card, CardTitle, CardEffect } from '../../components/common/Card';
 import { formatEffect, calculateUpgradeCost } from '../../utils/formatting';
-import { TileType } from '../../systems/TileTypes';
 
 // =============================================================================
 // SCREEN COMPONENT
@@ -133,8 +132,7 @@ export const TrainingHallBuilding: BuildingPlugin = {
   name: 'Training Hall',
   description: 'Train your skills and improve your combat abilities',
 
-  // Explicit TileType assignment to match the enum
-  tileType: TileType.TRAINING_HALL,
+  // TileType is AUTO-ASSIGNED at registration - no manual enum needed!
 
   tile: {
     color: '#CD853F',

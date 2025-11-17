@@ -279,6 +279,10 @@ class GameState {
     }
 
     setScreen(screen: GameData['currentScreen']): void {
+        // Guard: Don't open the same screen if already on it
+        if (this.state.currentScreen === screen) {
+            return;
+        }
         this.state.currentScreen = screen;
         eventBus.emit('screen:changed', screen);
     }

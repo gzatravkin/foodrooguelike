@@ -82,6 +82,7 @@ class BuildingRegistryClass {
     const tilePlugin: TilePlugin = {
       id: building.id,
       name: building.name,
+      tileType: building.tileType, // IMPORTANT: Pass the tileType to avoid double-assignment!
       color: building.tile.color,
       walkable: building.tile.walkable,
       blocksLight: building.tile.blocksLight,

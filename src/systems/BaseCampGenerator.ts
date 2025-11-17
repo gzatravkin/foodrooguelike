@@ -36,31 +36,6 @@ export class BaseCampGenerator {
       }
     }
 
-    // AUTOMATIC BUILDING PLACEMENT: Use BuildingRegistry!
-    // Get all buildings configured for base camp, sorted by priority
-    const baseCampBuildings = BuildingRegistry.getBaseCampBuildings()
-      .sort((a, b) => (b.baseCamp?.priority || 0) - (a.baseCamp?.priority || 0));
-
-    // Place each building at its configured position
-    for (const building of baseCampBuildings) {
-      if (!building.baseCamp) continue;
-
-      const { x, y } = building.baseCamp.position;
-      const width = building.baseCamp.size?.width || 1;
-      const height = building.baseCamp.size?.height || 1;
-
-      // Place the building tiles
-      for (let dy = 0; dy < height; dy++) {
-        for (let dx = 0; dx < width; dx++) {
-          const tileY = y + dy;
-          const tileX = x + dx;
-          if (tileY >= 0 && tileY < tiles.length && tileX >= 0 && tileX < tiles[0].length && building.tileType !== undefined) {
-            tiles[tileY][tileX] = building.tileType;
-          }
-        }
-      }
-    }
-
     // Add expedition portal (bottom center)
     tiles[16][10] = TileType.EXPEDITION_PORTAL;
     tiles[16][11] = TileType.EXPEDITION_PORTAL;
@@ -109,7 +84,31 @@ export class BaseCampGenerator {
       }
     }
 
-    // Dining room building is now placed automatically via BuildingRegistry above!
+    // AUTOMATIC BUILDING PLACEMENT: Use BuildingRegistry!
+    // IMPORTANT: This MUST be done LAST, after all floor/wall setup, to prevent buildings from being overwritten!
+    // Get all buildings configured for base camp, sorted by priority
+    const baseCampBuildings = BuildingRegistry.getBaseCampBuildings()
+      .sort((a, b) => (b.baseCamp?.priority || 0) - (a.baseCamp?.priority || 0));
+
+    // Place each building at its configured position
+    for (const building of baseCampBuildings) {
+      if (!building.baseCamp) continue;
+
+      const { x, y } = building.baseCamp.position;
+      const buildingWidth = building.baseCamp.size?.width || 1;
+      const buildingHeight = building.baseCamp.size?.height || 1;
+
+      // Place the building tiles
+      for (let dy = 0; dy < buildingHeight; dy++) {
+        for (let dx = 0; dx < buildingWidth; dx++) {
+          const tileY = y + dy;
+          const tileX = x + dx;
+          if (tileY >= 0 && tileY < tiles.length && tileX >= 0 && tileX < tiles[0].length && building.tileType !== undefined) {
+            tiles[tileY][tileX] = building.tileType;
+          }
+        }
+      }
+    }
 
     return {
       width,

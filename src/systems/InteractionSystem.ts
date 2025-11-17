@@ -55,40 +55,54 @@ export class InteractionSystem {
     }
 
     /**
-     * Handle base camp interactions (buildings)
+     * Handle base camp interactions (buildings and tiles)
      */
     private handleBaseCampInteraction(
         tileType: TileType,
         onLog?: (text: string, color: string) => void
     ): boolean {
-        // Get building from tile type
+        // Get tile/building ID from tile type
         const tileId = TileTypeMapper.getTileIdFromType(tileType);
         if (!tileId) {
             return false;
         }
 
+        // First, check if it's a building
         const building = BuildingRegistry.getBuilding(tileId);
-        if (!building) {
-            return false;
+        if (building) {
+            // If building has a screen, open it
+            if (building.screen) {
+                gameState.setScreen(building.screen.id as any);
+                return true;
+            }
+
+            // If building has custom interaction, execute it
+            if (building.interaction.onInteract) {
+                // Note: This path is for buildings without screens but with custom interactions
+                // Currently all buildings have screens, but this supports future custom interactions
+                return false;
+            }
         }
 
-        // If building has a screen, open it
-        if (building.screen) {
-            gameState.setScreen(building.screen.id as any);
-            return true;
-        }
-
-        // If building has custom interaction, execute it
-        if (building.interaction.onInteract) {
-            // Note: This path is for buildings without screens but with custom interactions
-            // Currently all buildings have screens, but this supports future custom interactions
-            return false;
-        }
-
-        // Special handling for expedition portal (not using BuildingRegistry yet)
-        if (tileType === TileType.EXPEDITION_PORTAL) {
-            gameState.setScreen('worldmap');
-            return true;
+        // If not a building, check if it's an interactive tile
+        const tilePlugin = TileRegistry.getTileById(tileId);
+        if (tilePlugin?.interaction?.canInteract) {
+            // Check if we can interact with this tile
+            // For base camp, we don't have specific tile coordinates, so we use basic check
+            if (tilePlugin.interaction.canInteract(
+                {} as any, // player (not used in basic canInteract checks)
+                0, 0, // tile coordinates (not used in base camp)
+                {} as any // mapSystem (not used in basic canInteract checks)
+            )) {
+                // Call the tile's interaction
+                tilePlugin.interaction.onInteract(
+                    {} as any, // player
+                    0, 0, // tile coordinates
+                    {} as any, // mapSystem
+                    onLog || ((text, color) => {})
+                );
+                return true;
+            }
         }
 
         return false;
@@ -175,15 +189,21 @@ export class InteractionSystem {
         if (mode === 'base') {
             const tileId = TileTypeMapper.getTileIdFromType(tileType);
             if (tileId) {
+                // First check if it's a building
                 const building = BuildingRegistry.getBuilding(tileId);
                 if (building?.interaction.prompt) {
                     return building.interaction.prompt;
                 }
-            }
 
-            // Special handling for expedition portal
-            if (tileType === TileType.EXPEDITION_PORTAL) {
-                return 'Press E to view World Map';
+                // Then check if it's an interactive tile
+                const tilePlugin = TileRegistry.getTileById(tileId);
+                if (tilePlugin?.interaction) {
+                    // Return a generic prompt for tiles (or could be customized per tile)
+                    if (tileType === TileType.EXPEDITION_PORTAL) {
+                        return 'Press E to view World Map';
+                    }
+                    return 'Press E to interact';
+                }
             }
         }
         // EXPEDITION MODE

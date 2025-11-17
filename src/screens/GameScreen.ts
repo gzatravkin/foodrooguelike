@@ -27,6 +27,7 @@ import { SVGAssetLoader } from './SVGAssetLoader';
 import { TileRegistry } from '../plugins/tiles/TileRegistry';
 import { BuildingRegistry } from '../plugins/BuildingRegistry';
 import { TileTypeMapper } from '../plugins/TileTypeMapper';
+import { InteractionSystem } from '../systems/InteractionSystem';
 import { eventBus } from '../core/EventBus';
 
 export class GameScreen {
@@ -54,6 +55,7 @@ export class GameScreen {
   private tileInteractionManager: TileInteractionManager;
   private gameModeManager: GameModeManager;
   private svgAssetLoader: SVGAssetLoader;
+  private interactionSystem: InteractionSystem;
 
   constructor(
     renderer: CanvasRenderer,
@@ -79,6 +81,7 @@ export class GameScreen {
     this.tileInteractionManager = new TileInteractionManager();
     this.gameModeManager = new GameModeManager(this.spawnManager);
     this.svgAssetLoader = new SVGAssetLoader();
+    this.interactionSystem = new InteractionSystem();
 
     // Load saved state
     const initialState = gameState.getState();
@@ -440,66 +443,20 @@ export class GameScreen {
       () => this.loadBaseCamp()
     );
 
-    // Handle interact action (E key or virtual button)
+    // Handle interact action (E key or virtual button) using centralized InteractionSystem
     if (this.inputHandler.handleInteract()) {
-      const tileType = this.mapSystem.getTileAt(this.player.x, this.player.y);
-      if (this.gameModeManager.getMode() === 'base' && tileType) {
-        // Check if it's a building (auto-opens screen via BuildingRegistry!)
-        const tileId = this.getTileIdFromType(tileType);
-        if (tileId) {
-          const building = BuildingRegistry.getBuilding(tileId);
-          if (building?.screen) {
-            gameState.setScreen(building.screen.id as any);
-            return; // Exit early - building handled
-          }
-        }
+      const handled = this.interactionSystem.handleInteraction(
+        this.player,
+        this.mapSystem,
+        this.gameModeManager.getMode(),
+        (text, color) => this.addCombatLog(text, color)
+      );
 
-        // Special handling for expedition portal (doesn't use BuildingRegistry yet)
-        if (tileType === TileType.EXPEDITION_PORTAL) {
-          gameState.setScreen('worldmap');
-        }
-      } else if (this.gameModeManager.getMode() === 'expedition') {
-        // Special case for stairs on exact tile
+      // Special handling for stairs in expedition mode (loadBaseCamp needs to be called here)
+      if (handled && this.gameModeManager.getMode() === 'expedition') {
+        const tileType = this.mapSystem.getTileAt(this.player.x, this.player.y);
         if (tileType === TileType.STAIRS_DOWN) {
           this.loadBaseCamp();
-        } else {
-          // Check nearby tiles for interactive elements (increased interaction range)
-          const map = this.mapSystem.getCurrentMap();
-          if (map) {
-            const playerTileX = Math.floor(this.player.x / map.tileSize);
-            const playerTileY = Math.floor(this.player.y / map.tileSize);
-            const interactionRadius = 1; // Check 1 tile in each direction
-
-            let interacted = false;
-
-            // Check tiles in a 3x3 grid around the player
-            for (let dy = -interactionRadius; dy <= interactionRadius && !interacted; dy++) {
-              for (let dx = -interactionRadius; dx <= interactionRadius && !interacted; dx++) {
-                const checkX = playerTileX + dx;
-                const checkY = playerTileY + dy;
-                const checkTileType = this.mapSystem.getTileAt(checkX * map.tileSize + map.tileSize/2, checkY * map.tileSize + map.tileSize/2);
-
-                if (checkTileType !== null) {
-                  const tileId = this.getTileIdFromType(checkTileType);
-                  if (tileId) {
-                    const tilePlugin = TileRegistry.getTileById(tileId);
-                    if (tilePlugin?.interaction) {
-                      if (tilePlugin.interaction.canInteract(this.player, checkX, checkY, this.mapSystem)) {
-                        tilePlugin.interaction.onInteract(
-                          this.player,
-                          checkX,
-                          checkY,
-                          this.mapSystem,
-                          (text, color) => this.addCombatLog(text, color)
-                        );
-                        interacted = true;
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
         }
       }
     }

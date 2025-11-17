@@ -138,6 +138,65 @@ export const TrainingHallBuilding: BuildingPlugin = {
     color: '#CD853F',
     walkable: true,
     blocksLight: false,
+
+    // Custom rendering - Training dummy and weapons
+    render: (ctx: CanvasRenderingContext2D, worldX: number, worldY: number, size: number) => {
+      // Draw floor background
+      ctx.fillStyle = '#3a3a3a';
+      ctx.fillRect(worldX, worldY, size, size);
+
+      // Training dummy base
+      ctx.fillStyle = '#654321';
+      ctx.fillRect(worldX + size * 0.4, worldY + size * 0.7, size * 0.2, size * 0.25);
+
+      // Training dummy body (straw/fabric)
+      ctx.fillStyle = '#D2B48C';
+      ctx.beginPath();
+      ctx.ellipse(worldX + size * 0.5, worldY + size * 0.5, size * 0.15, size * 0.2, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Training dummy head
+      ctx.fillStyle = '#C19A6B';
+      ctx.beginPath();
+      ctx.arc(worldX + size * 0.5, worldY + size * 0.28, size * 0.1, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Dummy arms (sticks)
+      ctx.strokeStyle = '#8B7355';
+      ctx.lineWidth = size * 0.04;
+      // Left arm
+      ctx.beginPath();
+      ctx.moveTo(worldX + size * 0.35, worldY + size * 0.4);
+      ctx.lineTo(worldX + size * 0.25, worldY + size * 0.5);
+      ctx.stroke();
+      // Right arm
+      ctx.beginPath();
+      ctx.moveTo(worldX + size * 0.65, worldY + size * 0.4);
+      ctx.lineTo(worldX + size * 0.75, worldY + size * 0.5);
+      ctx.stroke();
+
+      // Sword leaning against dummy
+      ctx.strokeStyle = '#C0C0C0';
+      ctx.lineWidth = size * 0.05;
+      ctx.beginPath();
+      ctx.moveTo(worldX + size * 0.75, worldY + size * 0.3);
+      ctx.lineTo(worldX + size * 0.85, worldY + size * 0.75);
+      ctx.stroke();
+
+      // Sword handle
+      ctx.fillStyle = '#8B4513';
+      ctx.fillRect(worldX + size * 0.72, worldY + size * 0.28, size * 0.06, size * 0.08);
+
+      // Target marks on dummy
+      ctx.strokeStyle = '#FF4500';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(worldX + size * 0.5, worldY + size * 0.5, size * 0.06, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(worldX + size * 0.5, worldY + size * 0.5, size * 0.03, 0, Math.PI * 2);
+      ctx.stroke();
+    },
   },
 
   interaction: {

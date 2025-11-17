@@ -135,6 +135,102 @@ export const DiningRoomBuilding: BuildingPlugin = {
     color: '#8B4513',
     walkable: true,
     blocksLight: false,
+
+    // Custom rendering - Dining table with place settings
+    render: (ctx: CanvasRenderingContext2D, worldX: number, worldY: number, size: number) => {
+      // Draw floor background
+      ctx.fillStyle = '#3a3a3a';
+      ctx.fillRect(worldX, worldY, size, size);
+
+      // Dining table (wooden)
+      ctx.fillStyle = '#8b4513';
+      ctx.fillRect(worldX + size * 0.15, worldY + size * 0.4, size * 0.7, size * 0.35);
+
+      // Table legs
+      ctx.fillStyle = '#654321';
+      ctx.fillRect(worldX + size * 0.18, worldY + size * 0.7, size * 0.08, size * 0.15);
+      ctx.fillRect(worldX + size * 0.74, worldY + size * 0.7, size * 0.08, size * 0.15);
+
+      // Plate (ceramic)
+      ctx.fillStyle = '#f5f5dc';
+      ctx.beginPath();
+      ctx.ellipse(worldX + size * 0.35, worldY + size * 0.5, size * 0.1, size * 0.08, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Plate rim
+      ctx.strokeStyle = '#d3d3d3';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.ellipse(worldX + size * 0.35, worldY + size * 0.5, size * 0.1, size * 0.08, 0, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Fork (left side of plate)
+      ctx.strokeStyle = '#C0C0C0';
+      ctx.lineWidth = size * 0.02;
+      ctx.beginPath();
+      ctx.moveTo(worldX + size * 0.22, worldY + size * 0.5);
+      ctx.lineTo(worldX + size * 0.22, worldY + size * 0.62);
+      ctx.stroke();
+
+      // Fork prongs
+      ctx.lineWidth = 1;
+      for (let i = 0; i < 3; i++) {
+        ctx.beginPath();
+        ctx.moveTo(worldX + size * (0.2 + i * 0.02), worldY + size * 0.5);
+        ctx.lineTo(worldX + size * (0.2 + i * 0.02), worldY + size * 0.46);
+        ctx.stroke();
+      }
+
+      // Knife (right side of plate)
+      ctx.lineWidth = size * 0.02;
+      ctx.beginPath();
+      ctx.moveTo(worldX + size * 0.48, worldY + size * 0.5);
+      ctx.lineTo(worldX + size * 0.48, worldY + size * 0.62);
+      ctx.stroke();
+
+      // Knife blade
+      ctx.fillStyle = '#C0C0C0';
+      ctx.beginPath();
+      ctx.moveTo(worldX + size * 0.48, worldY + size * 0.46);
+      ctx.lineTo(worldX + size * 0.485, worldY + size * 0.5);
+      ctx.lineTo(worldX + size * 0.475, worldY + size * 0.5);
+      ctx.closePath();
+      ctx.fill();
+
+      // Wine glass
+      ctx.strokeStyle = '#87CEEB';
+      ctx.lineWidth = size * 0.03;
+      ctx.beginPath();
+      ctx.moveTo(worldX + size * 0.65, worldY + size * 0.45);
+      ctx.lineTo(worldX + size * 0.65, worldY + size * 0.52);
+      ctx.lineTo(worldX + size * 0.62, worldY + size * 0.56);
+      ctx.lineTo(worldX + size * 0.68, worldY + size * 0.56);
+      ctx.stroke();
+
+      // Wine glass bowl
+      ctx.beginPath();
+      ctx.arc(worldX + size * 0.65, worldY + size * 0.4, size * 0.05, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Candle (centerpiece)
+      ctx.fillStyle = '#FFE5B4';
+      ctx.fillRect(worldX + size * 0.73, worldY + size * 0.48, size * 0.04, size * 0.12);
+
+      // Candle flame
+      ctx.fillStyle = '#FFA500';
+      ctx.beginPath();
+      ctx.moveTo(worldX + size * 0.75, worldY + size * 0.48);
+      ctx.lineTo(worldX + size * 0.73, worldY + size * 0.44);
+      ctx.lineTo(worldX + size * 0.77, worldY + size * 0.44);
+      ctx.closePath();
+      ctx.fill();
+
+      // Flame glow
+      ctx.fillStyle = 'rgba(255, 200, 0, 0.3)';
+      ctx.beginPath();
+      ctx.arc(worldX + size * 0.75, worldY + size * 0.44, size * 0.06, 0, Math.PI * 2);
+      ctx.fill();
+    },
   },
 
   interaction: {

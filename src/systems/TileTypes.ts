@@ -3,28 +3,32 @@
  */
 
 export enum TileType {
+  // Basic structure tiles
   FLOOR = 0,
   WALL = 1,
   DOOR = 2,
-  COOKING_STATION = 3,
-  SHOP = 4,
+
+  // Special structure tiles
   EXPEDITION_PORTAL = 5,
-  TRAINING_HALL = 6,
   STAIRS_DOWN = 7,
   STAIRS_UP = 8,
+
+  // Terrain tiles
   WATER = 9,
   LAVA = 10,
   ICE = 11,
   GRASS = 12,
+
+  // Interactive tiles (legacy - may be converted to plugins)
   HEALTH_FOUNTAIN = 13,
   TREASURE_CHEST = 14,
   TELEPORTER = 15,
   SHRINE = 16,
+
+  // Trap tiles
   SPIKE_TRAP = 17,
   POISON_TRAP = 18,
-  UPGRADES_HALL = 19,
-  DINING_ROOM = 27,
-  CHARACTER_CUSTOMIZATION = 28,
+
   // Harvestable items
   BERRY_BUSH = 20,
   HERB_PLANT = 21,
@@ -33,6 +37,8 @@ export enum TileType {
   FIRE_PLANT = 24,
   VOID_PLANT = 25,
   ANCIENT_TREE = 26,
+
+  // Building tiles are auto-assigned starting from 1000 via BuildingRegistry
 }
 
 export type Tile = {

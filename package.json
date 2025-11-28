@@ -29,6 +29,7 @@
     "vitest": "^4.0.8"
   },
   "dependencies": {
+    "phaser": "^3.90.0",
     "preact": "^10.27.2"
   }
 }

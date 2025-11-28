@@ -5,7 +5,7 @@
 
 import { ComponentType } from 'preact';
 import { TileRegistry, TilePlugin } from './tiles/TileRegistry';
-import { Player } from '../entities/Player';
+import { PhaserPlayer } from '../entities/PhaserPlayer';
 import { MapSystem, TileType } from '../systems/MapSystem';
 
 export interface BuildingPlugin {
@@ -29,8 +29,8 @@ export interface BuildingPlugin {
   interaction: {
     prompt: string; // e.g., "Press E to customize character"
     interactKey?: string; // Default: 'E'
-    canInteract?: (player: Player, tileX: number, tileY: number, mapSystem: MapSystem) => boolean;
-    onInteract?: (player: Player, tileX: number, tileY: number, mapSystem: MapSystem, onLog: (text: string, color: string) => void, context?: any) => void;
+    canInteract?: (player: PhaserPlayer, tileX: number, tileY: number, mapSystem: MapSystem) => boolean;
+    onInteract?: (player: PhaserPlayer, tileX: number, tileY: number, mapSystem: MapSystem, onLog: (text: string, color: string) => void, context?: any) => void;
   };
 
   // Screen (optional - for buildings that open UI)

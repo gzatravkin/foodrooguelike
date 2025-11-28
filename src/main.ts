@@ -1,170 +1,182 @@
 /**
- * Main entry point - Initializes and starts the game (2D Top-View Roguelike)
+ * Main entry point - Initializes Phaser 3 game
  */
 
 import { render, h } from 'preact';
-import { GameLoop } from './core/GameLoop';
+import Phaser from 'phaser';
+import { phaserConfig } from './core/PhaserConfig';
+import { PreloadScene } from './scenes/PreloadScene';
+import { GameScene } from './scenes/GameScene';
+import { GlobalMapScene } from './scenes/GlobalMapScene';
 import { gameState } from './core/GameState';
 import { eventBus } from './core/EventBus';
 import { dataLoader } from './core/DataLoader';
-import { CanvasRenderer } from './rendering/CanvasRenderer';
-import { InputManager } from './core/InputManager';
-import { GameScreen } from './screens/GameScreen';
-import { GlobalMapScreen } from './screens/GlobalMapScreen';
 import { initializeAllPlugins } from './plugins';
 import { App } from './components/App';
+import { InputManager } from './core/InputManager';
 
 class Game {
-    private renderer: CanvasRenderer;
-    private input: InputManager;
-    private gameScreen!: GameScreen;
-    private globalMapScreen!: GlobalMapScreen;
-    private gameLoop: GameLoop;
-    private lastTime: number = 0;
-    private uiElement: HTMLDivElement;
-    private currentCanvasScreen: 'game' | 'worldmap' = 'game';
+  private phaserGame: Phaser.Game | null = null;
+  private uiElement: HTMLDivElement;
+  private input: InputManager;
 
-    constructor() {
-        const canvasElement = document.getElementById('game-canvas') as HTMLCanvasElement;
-        if (!canvasElement) {
-            throw new Error('Canvas element not found');
+  constructor() {
+    const uiEl = document.getElementById('game-ui');
+    if (!uiEl || !(uiEl instanceof HTMLDivElement)) {
+      throw new Error('UI element not found');
+    }
+    this.uiElement = uiEl;
+
+    this.input = new InputManager();
+    this.setupPreact();
+    this.setupEventListeners();
+    this.setupMobileEscButton();
+  }
+
+  private setupPreact(): void {
+    // Render Preact app into UI container
+    render(h(App, null), this.uiElement);
+
+    // Listen to screen changes from gameState
+    eventBus.on('screen:changed', (screenName: string) => {
+      // Show/hide UI overlay for UI screens
+      const uiScreens = [
+        'base',
+        'cooking',
+        'shop',
+        'recipebook',
+        'settings',
+        'restaurant',
+        'upgrades',
+        'training',
+        'expedition',
+        'diningroom',
+        'customization',
+        'menu',
+      ];
+
+      if (uiScreens.includes(screenName)) {
+        this.uiElement.classList.add('active');
+      } else {
+        this.uiElement.classList.remove('active');
+      }
+
+      // Switch Phaser scenes for game/worldmap
+      if (this.phaserGame) {
+        if (screenName === 'worldmap') {
+          this.phaserGame.scene.pause('GameScene');
+          this.phaserGame.scene.start('GlobalMapScene');
+        } else if (screenName === 'game') {
+          this.phaserGame.scene.pause('GlobalMapScene');
+          this.phaserGame.scene.start('GameScene');
         }
+      }
+    });
+  }
 
-        const uiEl = document.getElementById('game-ui');
-        if (!uiEl || !(uiEl instanceof HTMLDivElement)) {
-            throw new Error('UI element not found');
+  async init(): Promise<void> {
+    console.log('🎮 Initializing plugin system...');
+    initializeAllPlugins();
+
+    console.log('Loading game data...');
+    await dataLoader.loadAll();
+
+    // Load saved game state if it exists
+    console.log('Loading saved game...');
+    const saveLoaded = gameState.loadGame();
+    if (saveLoaded) {
+      console.log('✓ Save game loaded successfully');
+    } else {
+      console.log('No save found, starting new game');
+    }
+
+    console.log('Initializing Phaser 3...');
+
+    // Add scenes to config
+    const config = {
+      ...phaserConfig,
+      scene: [PreloadScene, GameScene, GlobalMapScene],
+    };
+
+    // Create Phaser game
+    this.phaserGame = new Phaser.Game(config);
+
+    console.log('Game initialized successfully!');
+  }
+
+  private setupEventListeners(): void {
+    // Handle window focus/blur for pausing
+    window.addEventListener('blur', () => {
+      console.log('Game paused (window lost focus)');
+      if (this.phaserGame) {
+        this.phaserGame.scene.pause('GameScene');
+      }
+    });
+
+    window.addEventListener('focus', () => {
+      console.log('Game resumed (window gained focus)');
+      if (this.phaserGame) {
+        const currentScreen = gameState.getState().currentScreen;
+        if (currentScreen === 'game') {
+          this.phaserGame.scene.resume('GameScene');
         }
-        this.uiElement = uiEl;
+      }
+    });
+  }
 
-        this.renderer = new CanvasRenderer(canvasElement);
-        this.input = new InputManager();
-        this.gameLoop = new GameLoop();
-
-        this.setupPreact();
-        this.setupEventListeners();
-        this.setupMobileEscButton();
+  private setupMobileEscButton(): void {
+    const mobileEscButton = document.getElementById('mobile-esc-button');
+    if (!mobileEscButton) {
+      console.warn('Mobile ESC button not found');
+      return;
     }
 
-    private setupPreact(): void {
-        // Render Preact app into UI container
-        render(h(App, null), this.uiElement);
-
-        // Listen to screen changes from gameState
-        eventBus.on('screen:changed', (screenName: string) => {
-            // Show/hide UI overlay for UI screens
-            const uiScreens = ['base', 'cooking', 'shop', 'recipebook', 'settings', 'restaurant', 'upgrades', 'training', 'expedition', 'diningroom', 'customization'];
-            if (uiScreens.includes(screenName)) {
-                this.uiElement.classList.add('active');
-            } else {
-                this.uiElement.classList.remove('active');
-            }
-
-            // Switch canvas screen for game/worldmap
-            if (screenName === 'worldmap') {
-                this.currentCanvasScreen = 'worldmap';
-            } else if (screenName === 'game') {
-                this.currentCanvasScreen = 'game';
-            }
-        });
+    // Show button only on mobile devices
+    if (this.input.isMobileDevice()) {
+      mobileEscButton.classList.remove('hidden');
     }
 
-    async init(): Promise<void> {
-        console.log('🎮 Initializing plugin system...');
-        initializeAllPlugins();
+    // Handle ESC button click
+    mobileEscButton.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
 
-        console.log('Loading game data...');
-        await dataLoader.loadAll();
+      const currentScreen = gameState.getState().currentScreen;
 
-        // Load saved game state if it exists
-        console.log('Loading saved game...');
-        const saveLoaded = gameState.loadGame();
-        if (saveLoaded) {
-            console.log('✓ Save game loaded successfully');
-        } else {
-            console.log('No save found, starting new game');
+      // If in game or worldmap, open menu
+      if (currentScreen === 'game' || currentScreen === 'worldmap') {
+        gameState.setScreen('menu');
+      }
+      // If in any UI screen, close it and return to game
+      else {
+        const uiScreens = [
+          'menu',
+          'cooking',
+          'shop',
+          'recipebook',
+          'settings',
+          'restaurant',
+          'upgrades',
+          'training',
+          'expedition',
+          'diningroom',
+          'customization',
+        ];
+        if (uiScreens.includes(currentScreen)) {
+          gameState.setScreen('game');
         }
-
-        console.log('Initializing 2D top-view roguelike...');
-        this.gameScreen = new GameScreen(this.renderer, this.input);
-        await this.gameScreen.init();
-
-        console.log('Initializing global map...');
-        this.globalMapScreen = new GlobalMapScreen(this.renderer, this.input);
-
-        console.log('Game initialized successfully!');
-    }
-
-    start(): void {
-        this.gameLoop.start();
-        this.lastTime = performance.now();
-        this.gameLoop.loop(this.update.bind(this));
-        console.log('Game started!');
-    }
-
-    private update(currentTime: number): void {
-        const deltaTime = (currentTime - this.lastTime) / 1000;
-        this.lastTime = currentTime;
-
-        // Update and render based on current canvas screen
-        if (this.currentCanvasScreen === 'worldmap') {
-            this.globalMapScreen.update(deltaTime);
-            this.globalMapScreen.render();
-        } else {
-            this.gameScreen.update(deltaTime);
-            this.gameScreen.render();
-        }
-    }
-
-    private setupEventListeners(): void {
-        // Handle window focus/blur for pausing
-        window.addEventListener('blur', () => {
-            console.log('Game paused (window lost focus)');
-        });
-
-        window.addEventListener('focus', () => {
-            console.log('Game resumed (window gained focus)');
-            this.lastTime = performance.now();
-        });
-    }
-
-    private setupMobileEscButton(): void {
-        const mobileEscButton = document.getElementById('mobile-esc-button');
-        if (!mobileEscButton) {
-            console.warn('Mobile ESC button not found');
-            return;
-        }
-
-        // Show button only on mobile devices
-        if (this.input.isMobileDevice()) {
-            mobileEscButton.classList.remove('hidden');
-        }
-
-        // Handle ESC button click (same logic as desktop ESC key)
-        mobileEscButton.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-
-            const currentScreen = gameState.getState().currentScreen;
-
-            // 1. If in game or worldmap, open menu
-            if (currentScreen === 'game' || currentScreen === 'worldmap') {
-                gameState.setScreen('menu');
-            }
-            // 2. If in any UI screen, close it and return to game
-            else {
-                const uiScreens = ['menu', 'cooking', 'shop', 'recipebook', 'settings', 'restaurant', 'upgrades', 'training', 'expedition', 'diningroom', 'customization'];
-                if (uiScreens.includes(currentScreen)) {
-                    gameState.setScreen('game');
-                }
-            }
-        });
-    }
+      }
+    });
+  }
 }
 
 // Start the game
 const game = new Game();
-game.init().then(() => {
-    game.start();
-}).catch((error) => {
+game
+  .init()
+  .then(() => {
+    console.log('🎮 Game started!');
+  })
+  .catch((error) => {
     console.error('Failed to initialize game:', error);
-});
+  });

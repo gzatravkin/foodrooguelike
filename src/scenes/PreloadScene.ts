@@ -94,9 +94,10 @@ export class PreloadScene extends Phaser.Scene {
   }
 
   private loadSVGAsTexture(key: string, svg: string): void {
-    const blob = new Blob([svg], { type: 'image/svg+xml' });
-    const url = URL.createObjectURL(blob);
-    this.load.image(key, url);
+    // Convert SVG string to base64 data URL
+    const base64 = btoa(unescape(encodeURIComponent(svg)));
+    const dataUrl = `data:image/svg+xml;base64,${base64}`;
+    this.load.image(key, dataUrl);
   }
 
   create(): void {

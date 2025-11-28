@@ -3,11 +3,23 @@
  */
 
 import Phaser from 'phaser';
-import { createPlayerSVG, createSlimeSVG, createGoblinSVG, createSkeletonSVG, createBulletSVG, createMagicBoltSVG, createFireBallSVG } from '../rendering/SVGArt';
+import { ENEMY_SVG_MAP } from '../rendering/SVGArt';
+import { TilesetGenerator } from '../rendering/TilesetGenerator';
+import {
+  createPlayerSVG,
+  createBulletSVG,
+  createMagicBoltSVG,
+  createFireBallSVG,
+  createPlasmaBoltSVG,
+  createCorpseSVG,
+} from '../rendering/SVGArt';
 
 export class PreloadScene extends Phaser.Scene {
+  private tilesetGenerator: TilesetGenerator;
+
   constructor() {
     super({ key: 'PreloadScene' });
+    this.tilesetGenerator = new TilesetGenerator();
   }
 
   preload(): void {
@@ -49,27 +61,42 @@ export class PreloadScene extends Phaser.Scene {
       percentText.destroy();
     });
 
+    // Load tileset
+    this.loadTileset();
+
     // Preload SVG assets as textures
-    this.loadSVGAssets();
+    this.loadSpriteAssets();
   }
 
-  private loadSVGAssets(): void {
-    // Convert SVG strings to data URIs and load as images
-    const svgAssets = [
-      { key: 'player', svg: createPlayerSVG() },
-      { key: 'slime', svg: createSlimeSVG() },
-      { key: 'goblin', svg: createGoblinSVG() },
-      { key: 'skeleton', svg: createSkeletonSVG() },
-      { key: 'bullet', svg: createBulletSVG() },
-      { key: 'arrow', svg: createMagicBoltSVG() },
-      { key: 'fireball', svg: createFireBallSVG() },
-    ];
+  private loadTileset(): void {
+    // Generate tileset from tile plugins
+    const tilesetDataURL = this.tilesetGenerator.generateTilesetDataURL();
+    this.load.image('tileset', tilesetDataURL);
+  }
 
-    svgAssets.forEach(({ key, svg }) => {
-      const blob = new Blob([svg], { type: 'image/svg+xml' });
-      const url = URL.createObjectURL(blob);
-      this.load.image(key, url);
+  private loadSpriteAssets(): void {
+    // Player
+    this.loadSVGAsTexture('player', createPlayerSVG());
+
+    // All enemies from the enemy SVG map
+    Object.entries(ENEMY_SVG_MAP).forEach(([enemyId, svgGenerator]) => {
+      this.loadSVGAsTexture(enemyId, svgGenerator());
     });
+
+    // Projectiles
+    this.loadSVGAsTexture('bullet', createBulletSVG());
+    this.loadSVGAsTexture('magic_bolt', createMagicBoltSVG());
+    this.loadSVGAsTexture('fireball', createFireBallSVG());
+    this.loadSVGAsTexture('plasma_bolt', createPlasmaBoltSVG());
+
+    // Environment
+    this.loadSVGAsTexture('corpse', createCorpseSVG('default'));
+  }
+
+  private loadSVGAsTexture(key: string, svg: string): void {
+    const blob = new Blob([svg], { type: 'image/svg+xml' });
+    const url = URL.createObjectURL(blob);
+    this.load.image(key, url);
   }
 
   create(): void {

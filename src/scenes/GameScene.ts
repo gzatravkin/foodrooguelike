@@ -10,6 +10,8 @@ import { gameState } from '../core/GameState';
 import { eventBus } from '../core/EventBus';
 import { entityFactory } from '../entities/EntityFactory';
 import { MapSystem } from '../systems/MapSystem';
+import { TileRegistry } from '../plugins/tiles/TileRegistry';
+import { TileTypeMapper } from '../plugins/TileTypeMapper';
 
 export class GameScene extends Phaser.Scene {
   private player!: PhaserPlayer;
@@ -23,6 +25,7 @@ export class GameScene extends Phaser.Scene {
     D: Phaser.Input.Keyboard.Key;
   };
   private mapSystem: MapSystem;
+  private tilemap!: Phaser.Tilemaps.Tilemap;
   private tileLayer!: Phaser.Tilemaps.TilemapLayer;
 
   constructor() {
@@ -33,10 +36,7 @@ export class GameScene extends Phaser.Scene {
   create(): void {
     console.log('GameScene created');
 
-    // Set up world bounds
-    this.physics.world.setBounds(0, 0, 2000, 2000);
-
-    // Create tilemap (simplified for now)
+    // Create tilemap from MapSystem
     this.createTilemap();
 
     // Create player
@@ -44,11 +44,19 @@ export class GameScene extends Phaser.Scene {
     const weaponId = initialState.combatWeapon || 'fists';
     const startingWeapon = entityFactory.createWeapon(weaponId);
 
-    this.player = new PhaserPlayer(this, 400, 300, 'player', startingWeapon || undefined);
+    // Get spawn position from map
+    const map = this.mapSystem.getCurrentMap();
+    const spawnX = map ? (map.width / 2) * map.tileSize : 400;
+    const spawnY = map ? (map.height / 2) * map.tileSize : 300;
+
+    this.player = new PhaserPlayer(this, spawnX, spawnY, 'player', startingWeapon || undefined);
 
     // Setup camera to follow player
     this.cameras.main.startFollow(this.player);
-    this.cameras.main.setBounds(0, 0, 2000, 2000);
+    if (map) {
+      this.cameras.main.setBounds(0, 0, map.width * map.tileSize, map.height * map.tileSize);
+      this.physics.world.setBounds(0, 0, map.width * map.tileSize, map.height * map.tileSize);
+    }
 
     // Setup input
     this.cursors = this.input.keyboard!.createCursorKeys();
@@ -86,28 +94,75 @@ export class GameScene extends Phaser.Scene {
   }
 
   private createTilemap(): void {
-    // Create a simple tilemap for now
-    // In a full migration, this would use the MapSystem data
-    const map = this.make.tilemap({
-      width: 50,
-      height: 50,
-      tileWidth: 32,
-      tileHeight: 32,
+    // Generate a base camp map using MapSystem
+    const gameMap = MapSystem.createBaseCamp();
+    this.mapSystem.loadMap(gameMap);
+
+    // Create Phaser tilemap
+    this.tilemap = this.make.tilemap({
+      width: gameMap.width,
+      height: gameMap.height,
+      tileWidth: gameMap.tileSize,
+      tileHeight: gameMap.tileSize,
     });
 
-    const tiles = map.addTilesetImage('tiles', undefined, 32, 32, 0, 0);
-    this.tileLayer = map.createBlankLayer('layer1', tiles!)!;
+    // Add the tileset image we generated in PreloadScene
+    const tileset = this.tilemap.addTilesetImage('tileset', 'tileset', gameMap.tileSize, gameMap.tileSize, 0, 0);
+    if (!tileset) {
+      console.error('Failed to load tileset');
+      return;
+    }
 
-    // Fill with floor tiles
-    this.tileLayer.fill(0);
-    this.tileLayer.setCollisionByExclusion([0]);
+    // Create tile layer
+    this.tileLayer = this.tilemap.createBlankLayer('layer1', tileset)!;
+
+    // Populate tilemap from MapSystem data
+    for (let y = 0; y < gameMap.height; y++) {
+      for (let x = 0; x < gameMap.width; x++) {
+        const tileType = gameMap.tiles[y][x];
+
+        // Get tile ID from tile type
+        const tileId = TileTypeMapper.getTileIdFromType(tileType);
+
+        // Get tile index for the tileset
+        const tileIndex = tileId ? TileRegistry.getTileIndex(tileId) : 0;
+
+        // Set tile in Phaser tilemap
+        this.tileLayer.putTileAt(tileIndex, x, y);
+      }
+    }
+
+    // Set up collision for non-walkable tiles
+    for (let y = 0; y < gameMap.height; y++) {
+      for (let x = 0; x < gameMap.width; x++) {
+        const tileType = gameMap.tiles[y][x];
+        if (!this.mapSystem.isTileWalkable(tileType)) {
+          const tile = this.tileLayer.getTileAt(x, y);
+          if (tile) {
+            tile.setCollision(true, true, true, true);
+          }
+        }
+      }
+    }
   }
 
   private spawnTestEnemies(): void {
     // Spawn a few test enemies
     for (let i = 0; i < 5; i++) {
-      const x = Phaser.Math.Between(100, 700);
-      const y = Phaser.Math.Between(100, 500);
+      const map = this.mapSystem.getCurrentMap();
+      if (!map) continue;
+
+      // Find a random walkable position
+      let x = 0;
+      let y = 0;
+      let attempts = 0;
+      do {
+        x = Phaser.Math.Between(2, map.width - 2) * map.tileSize;
+        y = Phaser.Math.Between(2, map.height - 2) * map.tileSize;
+        attempts++;
+      } while (!this.mapSystem.canMoveTo(x, y) && attempts < 100);
+
+      if (attempts >= 100) continue; // Couldn't find a valid spawn
 
       const enemy = new PhaserEnemy(
         this,

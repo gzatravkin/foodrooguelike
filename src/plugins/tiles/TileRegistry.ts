@@ -4,14 +4,14 @@
  */
 
 import { PluginRegistry, Plugin } from '../../core/PluginRegistry';
-import { Player } from '../../entities/Player';
+import { PhaserPlayer } from '../../entities/PhaserPlayer';
 import { MapSystem, TileType } from '../../systems/MapSystem';
 
 export interface TileInteraction {
-  canInteract: (player: Player, tileX: number, tileY: number, mapSystem: MapSystem) => boolean;
-  onInteract: (player: Player, tileX: number, tileY: number, mapSystem: MapSystem, onLog: (text: string, color: string) => void, context?: any) => void;
-  onStepOn?: (player: Player, tileX: number, tileY: number, deltaTime: number, onLog: (text: string, color: string) => void) => void;
-  update?: (deltaTime: number, player: Player, tileX: number, tileY: number) => void;
+  canInteract: (player: PhaserPlayer, tileX: number, tileY: number, mapSystem: MapSystem) => boolean;
+  onInteract: (player: PhaserPlayer, tileX: number, tileY: number, mapSystem: MapSystem, onLog: (text: string, color: string) => void, context?: any) => void;
+  onStepOn?: (player: PhaserPlayer, tileX: number, tileY: number, deltaTime: number, onLog: (text: string, color: string) => void) => void;
+  update?: (deltaTime: number, player: PhaserPlayer, tileX: number, tileY: number) => void;
 }
 
 export interface TileRendering {

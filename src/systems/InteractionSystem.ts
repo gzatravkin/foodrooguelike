@@ -3,7 +3,7 @@
  * Provides consistent interaction behavior with cooldowns to prevent multiple triggers
  */
 
-import { Player } from '../entities/Player';
+import { PhaserPlayer } from '../entities/PhaserPlayer';
 import { MapSystem, TileType } from './MapSystem';
 import { BuildingRegistry } from '../plugins/BuildingRegistry';
 import { TileTypeMapper } from '../plugins/TileTypeMapper';
@@ -19,7 +19,7 @@ export class InteractionSystem {
      * Returns true if an interaction was handled
      */
     handleInteraction(
-        player: Player,
+        player: PhaserPlayer,
         mapSystem: MapSystem,
         mode: 'base' | 'expedition',
         onLog?: (text: string, color: string) => void
@@ -112,7 +112,7 @@ export class InteractionSystem {
      * Handle expedition interactions (tiles, stairs, etc.)
      */
     private handleExpeditionInteraction(
-        player: Player,
+        player: PhaserPlayer,
         mapSystem: MapSystem,
         tileType: TileType,
         onLog?: (text: string, color: string) => void
@@ -176,7 +176,7 @@ export class InteractionSystem {
      * Returns null if no interaction available
      */
     getInteractionPrompt(
-        player: Player,
+        player: PhaserPlayer,
         mapSystem: MapSystem,
         mode: 'base' | 'expedition'
     ): string | null {

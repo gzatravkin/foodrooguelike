@@ -35,6 +35,17 @@ export class PhaserPlayer extends Phaser.Physics.Arcade.Sprite {
   public hasDoubleDash: boolean = false;
   public dashCharges: number = 0;
 
+  // Compatibility getter for old plugin system
+  public get stats() {
+    return {
+      maxHealth: this.maxHealth,
+      health: this.health,
+      attack: this.attack,
+      defense: this.defense,
+      speed: this.moveSpeed,
+    };
+  }
+
   constructor(scene: Phaser.Scene, x: number, y: number, texture: string, initialWeapon?: Weapon) {
     super(scene, x, y, texture);
 

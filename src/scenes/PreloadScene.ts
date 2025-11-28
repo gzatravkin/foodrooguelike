@@ -3,15 +3,11 @@
  */
 
 import Phaser from 'phaser';
-import { SVGAssetLoader } from '../screens/SVGAssetLoader';
 import { createPlayerSVG, createSlimeSVG, createGoblinSVG, createSkeletonSVG, createBulletSVG, createMagicBoltSVG, createFireBallSVG } from '../rendering/SVGArt';
 
 export class PreloadScene extends Phaser.Scene {
-  private svgAssetLoader: SVGAssetLoader;
-
   constructor() {
     super({ key: 'PreloadScene' });
-    this.svgAssetLoader = new SVGAssetLoader();
   }
 
   preload(): void {

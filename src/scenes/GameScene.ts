@@ -12,6 +12,7 @@ import { entityFactory } from '../entities/EntityFactory';
 import { MapSystem } from '../systems/MapSystem';
 import { TileRegistry } from '../plugins/tiles/TileRegistry';
 import { TileTypeMapper } from '../plugins/TileTypeMapper';
+import { InteractionSystem } from '../systems/InteractionSystem';
 
 export class GameScene extends Phaser.Scene {
   private player!: PhaserPlayer;
@@ -25,12 +26,14 @@ export class GameScene extends Phaser.Scene {
     D: Phaser.Input.Keyboard.Key;
   };
   private mapSystem: MapSystem;
+  private interactionSystem: InteractionSystem;
   private tilemap!: Phaser.Tilemaps.Tilemap;
   private tileLayer!: Phaser.Tilemaps.TilemapLayer;
 
   constructor() {
     super({ key: 'GameScene' });
     this.mapSystem = new MapSystem();
+    this.interactionSystem = new InteractionSystem();
   }
 
   create(): void {
@@ -84,6 +87,10 @@ export class GameScene extends Phaser.Scene {
 
     this.input.keyboard!.on('keydown-SPACE', () => {
       this.handlePlayerDash();
+    });
+
+    this.input.keyboard!.on('keydown-E', () => {
+      this.handleInteraction();
     });
 
     // Spawn some test enemies
@@ -277,6 +284,25 @@ export class GameScene extends Phaser.Scene {
     if (this.player.dashCharges === 0) {
       const baseCooldown = 3.0;
       this.player.dashCooldown = baseCooldown * (1 - this.player.dashCooldownReduction);
+    }
+  }
+
+  private handleInteraction(): void {
+    // We're always in base mode for now (base camp)
+    const mode = 'base';
+
+    // Handle the interaction
+    const handled = this.interactionSystem.handleInteraction(
+      this.player,
+      this.mapSystem,
+      mode,
+      (text: string, color: string) => {
+        console.log(`[${color}] ${text}`);
+      }
+    );
+
+    if (!handled) {
+      console.log('Nothing to interact with here');
     }
   }
 
